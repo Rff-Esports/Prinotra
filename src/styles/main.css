@@ -1,0 +1,153 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-black: #0A0A0A;
+  --color-charcoal: #141414;
+  --color-beige: #F7F4EE;
+  --color-warmbeige: #EFEAE0;
+  --color-sand: #DDD4C4;
+  --color-gold: #C5A880;
+  --color-grey: #787673;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #FAFAF7;
+  color: #1A1A1A;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, .font-serif-heading {
+  font-family: 'Cormorant Garamond', serif;
+  letter-spacing: -0.015em;
+}
+
+.brand-title {
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.18em;
+}
+
+/* ==============================================================================
+   SIGNATURE PRINTORA SHIRT FLIP 3D LOADING ANIMATION (Requirement 23.C)
+   Concept:
+   1. Branded 3D T-shirt in center with realistic perspective.
+   2. Flips upward with 3D rotation and dynamic specular light & shadow.
+   3. "PRINTORA" and tagline "MAKE IT YOURS." appear elegantly.
+   4. Smooth transition into page.
+   ============================================================================== */
+
+.perspective-1000 {
+  perspective: 1200px;
+}
+
+.shirt-3d-box {
+  transform-style: preserve-3d;
+  animation: shirtFlipCycle 2.8s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+}
+
+@keyframes shirtFlipCycle {
+  0% {
+    transform: rotateX(70deg) rotateY(-20deg) rotateZ(10deg) translateY(40px) scale(0.85);
+    opacity: 0;
+    box-shadow: 0 40px 60px -10px rgba(0, 0, 0, 0.4);
+  }
+  20% {
+    opacity: 1;
+  }
+  45% {
+    transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) translateY(0px) scale(1.02);
+    box-shadow: 0 25px 45px -10px rgba(0, 0, 0, 0.18);
+  }
+  60% {
+    transform: rotateX(-12deg) rotateY(8deg) rotateZ(-2deg) translateY(-8px) scale(1.04);
+  }
+  80% {
+    transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) translateY(0px) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: rotateX(-50deg) rotateY(15deg) translateY(-50px) scale(0.9);
+    opacity: 0;
+  }
+}
+
+.shirt-shadow {
+  animation: shadowPulse 2.8s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+}
+
+@keyframes shadowPulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.1;
+  }
+  45% {
+    transform: scale(1.1);
+    opacity: 0.35;
+  }
+  60% {
+    transform: scale(0.9);
+    opacity: 0.25;
+  }
+  100% {
+    transform: scale(0.5);
+    opacity: 0.05;
+  }
+}
+
+/* Reduced motion accessibility fallback */
+@media (prefers-reduced-motion: reduce) {
+  .shirt-3d-box, .shirt-shadow {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: #F4F1EA;
+}
+::-webkit-scrollbar-thumb {
+  background: #C4BCAD;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9E9585;
+}
+
+/* Luxury card hover glow */
+.luxury-card {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+}
+.luxury-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 22px 35px -12px rgba(10, 10, 10, 0.08);
+}
+
+/* Line clamps */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Smooth fade in */
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}

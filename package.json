@@ -1,0 +1,19 @@
+{
+  "name": "printora",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "build": "echo 'Static build ready'"
+  },
+  "keywords": [
+    "printora",
+    "custom-merchandise",
+    "custom-jerseys",
+    "ecommerce"
+  ],
+  "author": "PRINTORA",
+  "license": "ISC"
+}
