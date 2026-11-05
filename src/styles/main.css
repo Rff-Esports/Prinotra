@@ -151,3 +151,19 @@ h1, h2, h3, .font-serif-heading {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ==============================================================================
+   Block Netlify Drawer / Feedback overlay
+   ============================================================================== */
+iframe[src*="netlify"],
+[data-netlify-drawer],
+#netlify-drawer,
+.netlify-drawer,
+div[id*="netlify-drawer"],
+netlify-drawer {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
