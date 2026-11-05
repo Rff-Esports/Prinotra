@@ -68,12 +68,36 @@ class PrintoraApp {
     const oldLoader = document.getElementById('printora-shirt-loader');
     if (oldLoader) oldLoader.remove();
 
-    this.render();
-    this.attachEventListeners();
+    // Route immediately on initial page mount (supports direct links like #admin or ?admin=1)
+    this.route();
+
+    // Global keyboard shortcut to open Admin Portal: Ctrl+Shift+A or Cmd+Shift+A
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+        e.preventDefault();
+        window.location.hash = '#admin';
+        this.route();
+      }
+    });
+
+    // Also listen to popstate for history navigation
+    window.addEventListener('popstate', () => {
+      this.currentHash = window.location.hash || '';
+      this.route();
+    });
   }
 
   route() {
-    const isNowAdmin = this.currentHash === '#admin';
+    this.currentHash = window.location.hash || '';
+    const search = window.location.search || '';
+    const hashLower = this.currentHash.toLowerCase();
+    
+    // Check if admin is requested via hash or query param
+    const isNowAdmin = hashLower === '#admin' || 
+                       hashLower.startsWith('#admin') || 
+                       search.includes('admin=true') || 
+                       search.includes('admin=1') ||
+                       search.includes('admin=portal');
     const wasAdmin = this.isAdminView === true;
 
     if (isNowAdmin) {
@@ -84,6 +108,11 @@ class PrintoraApp {
     }
 
     if (wasAdmin && !isNowAdmin) {
+      this.isAdminView = false;
+      this.render();
+      this.attachEventListeners();
+    } else if (!this.appContainer.querySelector('#navbar')) {
+      // First boot for storefront
       this.isAdminView = false;
       this.render();
       this.attachEventListeners();
@@ -106,12 +135,23 @@ class PrintoraApp {
   }
 
   renderAdminOnly() {
-    this.appContainer.innerHTML = `
-      ${renderAdminDashboard()}
-      ${renderPolicyModal()}
-    `;
-    initAdminEvents();
-    initPolicyModalEvents();
+    try {
+      this.appContainer.innerHTML = `
+        ${renderAdminDashboard()}
+        ${renderPolicyModal()}
+      `;
+      initAdminEvents();
+      initPolicyModalEvents();
+    } catch (err) {
+      console.error("Admin render failed:", err);
+      this.appContainer.innerHTML = `
+        <div class="min-h-screen bg-black text-white p-8 flex flex-col items-center justify-center">
+          <h2 class="text-xl font-bold text-[#FF6B35] mb-2">Admin Loading Error</h2>
+          <p class="text-xs text-[#AAA] mb-4">${err.message}</p>
+          <a href="#catalogue" class="text-xs bg-[#222] px-4 py-2 rounded-lg text-white">Return to Store</a>
+        </div>
+      `;
+    }
   }
 
   render() {

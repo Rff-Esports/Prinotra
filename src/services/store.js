@@ -363,7 +363,7 @@ class PrintoraStore {
       whatsappCloudApiToken: "",
       whatsappPhoneNumberId: "",
       razorpayKeyId: safeGetItem('printora_razorpay_key_id') || "rzp_test_Tw51XlubBFx1y1",
-      brevoApiKey: safeGetItem('printora_brevo_api_key') || ""
+      brevoApiKey: safeGetItem('printora_brevo_api_key') || "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"
     };
     if (!saved) return defaults;
     try {

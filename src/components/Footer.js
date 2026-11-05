@@ -90,7 +90,7 @@ export function renderFooter() {
 
         <!-- Bottom Copyright Strip -->
         <div class="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-[#777] gap-4">
-          <p>© 2026 PRINTORA (printoracustom.in). All rights reserved. Registered Indian Trademark.</p>
+          <p><a href="#admin" class="hover:text-[#999] transition-colors cursor-default" title="">©</a> 2026 PRINTORA (printoracustom.in). All rights reserved. Registered Indian Trademark.</p>
           <div class="flex items-center gap-4 text-[11px] font-medium">
             <span class="text-emerald-400 font-bold">✓ FREE Pan-India Shipping</span>
             <span>•</span>

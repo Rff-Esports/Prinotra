@@ -20,10 +20,12 @@ export const ADMIN_ORDER_STATUSES = [
 ];
 
 export function getAdminCredentials() {
-  const saved = localStorage.getItem('printora_admin_credentials');
-  if (saved) {
-    try { return JSON.parse(saved); } catch (e) {}
-  }
+  try {
+    const saved = typeof localStorage !== 'undefined' ? localStorage.getItem('printora_admin_credentials') : null;
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (e) {}
   return {
     username: "admin@printoracustom.in",
     password: "Printora@2026"
@@ -31,19 +33,31 @@ export function getAdminCredentials() {
 }
 
 export function saveAdminCredentials(username, password) {
-  localStorage.setItem('printora_admin_credentials', JSON.stringify({ username, password }));
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('printora_admin_credentials', JSON.stringify({ username, password }));
+    }
+  } catch (e) {}
 }
 
 export function isAdminAuthenticated() {
-  return sessionStorage.getItem('printora_admin_session') === 'active';
+  try {
+    return typeof sessionStorage !== 'undefined' && sessionStorage.getItem('printora_admin_session') === 'active';
+  } catch (e) {
+    return false;
+  }
 }
 
 export function setAdminAuthenticated(val) {
-  if (val) {
-    sessionStorage.setItem('printora_admin_session', 'active');
-  } else {
-    sessionStorage.removeItem('printora_admin_session');
-  }
+  try {
+    if (typeof sessionStorage !== 'undefined') {
+      if (val) {
+        sessionStorage.setItem('printora_admin_session', 'active');
+      } else {
+        sessionStorage.removeItem('printora_admin_session');
+      }
+    }
+  } catch (e) {}
 }
 
 function renderAdminLoginGate() {
