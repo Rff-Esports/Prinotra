@@ -143,23 +143,61 @@ export function renderCheckoutModal() {
               <span class="font-mono text-lg text-black">₹${total}</span>
             </div>
 
-            <!-- Authentic Payment Notice (Requirement 15) -->
-            <div class="mt-3 p-2.5 bg-[#FAF7F2] rounded-lg border border-[#E5DFD4] text-[11px] text-[#555] flex items-start gap-2">
-              <span class="text-amber-700 text-sm">ℹ️</span>
-              <div>
-                <strong class="text-black">No Online Card / Fake Gateway Payment:</strong> In order to give you personalized proof approval and exact turnaround confirmation, your order will be delivered directly to our official WhatsApp. We will send you UPI / QR payment confirmation once your digital proof is approved!
+          <!-- Section 4: Payment Method Selection -->
+          <div class="bg-white border border-[#DDD4C4] rounded-xl p-4 space-y-3">
+            <span class="text-xs uppercase tracking-widest text-[#787673] font-bold block">
+              3. Choose Payment Method
+            </span>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="chk-payment-methods">
+              <label class="cursor-pointer border-2 border-black bg-[#FAF7F2] p-3.5 rounded-xl flex items-start gap-3 transition-all chk-pay-option" data-method="razorpay">
+                <input type="radio" name="payment_method" value="razorpay" checked class="mt-1 text-black">
+                <div>
+                  <strong class="text-xs font-bold text-black flex items-center gap-1.5">
+                    💳 Pay Online (UPI / GPay / Card)
+                  </strong>
+                  <p class="text-[11px] text-[#666] mt-0.5 leading-snug">Instant confirmation via Razorpay. Accepts PhonePe, Google Pay, Paytm, Cards & NetBanking.</p>
+                </div>
+              </label>
+
+              <label class="cursor-pointer border-2 border-[#DDD4C4] hover:border-black bg-white p-3.5 rounded-xl flex items-start gap-3 transition-all chk-pay-option" data-method="whatsapp">
+                <input type="radio" name="payment_method" value="whatsapp" class="mt-1 text-black">
+                <div>
+                  <strong class="text-xs font-bold text-black flex items-center gap-1.5">
+                    💬 Verify & Pay on WhatsApp
+                  </strong>
+                  <p class="text-[11px] text-[#666] mt-0.5 leading-snug">Review digital proof with our team (+91 8106992102) and pay via UPI QR code upon approval.</p>
+                </div>
+              </label>
+            </div>
+
+            <!-- Total Price Summary -->
+            <div class="pt-2 border-t border-[#EFECE4] space-y-1">
+              <div class="flex justify-between text-xs text-[#666]">
+                <span>Items Subtotal:</span>
+                <span class="font-mono font-semibold text-black">₹${subtotal}</span>
+              </div>
+              <div class="flex justify-between text-xs text-[#666]">
+                <span>Pan-India Shipping:</span>
+                <span class="font-mono font-semibold ${shippingCharge === 0 ? 'text-emerald-700' : 'text-black'}">
+                  ${shippingCharge === 0 ? 'FREE' : `₹${shippingCharge}`}
+                </span>
+              </div>
+              <div class="flex justify-between text-base font-bold text-black pt-1">
+                <span>Final Amount Due:</span>
+                <span class="font-mono text-lg text-black">₹${total}</span>
               </div>
             </div>
           </div>
 
           <!-- Submission Action Buttons -->
           <div class="space-y-3 pt-2">
-            <button type="submit" id="checkout-submit-btn" class="w-full bg-[#25D366] hover:bg-[#20BE5B] text-black font-extrabold py-4 px-6 rounded-xl text-sm tracking-wider uppercase transition-all duration-300 shadow-xl flex items-center justify-center gap-2.5 cursor-pointer">
-              ${renderIcon('whatsapp', 'w-5 h-5 text-black')}
-              <span>Place Order & Send via WhatsApp (₹${total})</span>
+            <button type="submit" id="checkout-submit-btn" class="w-full bg-[#111111] hover:bg-[#C5A880] text-white hover:text-black font-extrabold py-4 px-6 rounded-xl text-sm tracking-wider uppercase transition-all duration-300 shadow-xl flex items-center justify-center gap-2.5 cursor-pointer">
+              <span id="chk-btn-icon">${renderIcon('shieldCheck', 'w-5 h-5')}</span>
+              <span id="chk-btn-text">Pay Now via UPI / Cards (₹${total})</span>
             </button>
             <p class="text-[11px] text-center text-[#787673]">
-              Clicking will save your order into our system with a unique Order ID and open WhatsApp with your prefilled order details.
+              🔒 256-bit encrypted secure checkout • Official PRINTORA verification
             </p>
           </div>
 
@@ -237,6 +275,36 @@ export function initCheckoutModalEvents() {
     });
   }
 
+  // Payment method selection toggle
+  const payOptions = document.querySelectorAll('.chk-pay-option');
+  const submitBtn = document.getElementById('checkout-submit-btn');
+  const btnIcon = document.getElementById('chk-btn-icon');
+  const btnText = document.getElementById('chk-btn-text');
+
+  payOptions.forEach(opt => {
+    opt.addEventListener('click', () => {
+      payOptions.forEach(o => {
+        o.classList.remove('border-black', 'bg-[#FAF7F2]');
+        o.classList.add('border-[#DDD4C4]', 'bg-white');
+      });
+      opt.classList.remove('border-[#DDD4C4]', 'bg-white');
+      opt.classList.add('border-black', 'bg-[#FAF7F2]');
+
+      const method = opt.getAttribute('data-method');
+      const total = store.getCartTotal();
+
+      if (method === 'razorpay') {
+        if (submitBtn) submitBtn.className = "w-full bg-[#111111] hover:bg-[#C5A880] text-white hover:text-black font-extrabold py-4 px-6 rounded-xl text-sm tracking-wider uppercase transition-all duration-300 shadow-xl flex items-center justify-center gap-2.5 cursor-pointer";
+        if (btnIcon) btnIcon.innerHTML = renderIcon('shieldCheck', 'w-5 h-5');
+        if (btnText) btnText.textContent = `Pay Now via UPI / Cards (₹${total})`;
+      } else {
+        if (submitBtn) submitBtn.className = "w-full bg-[#25D366] hover:bg-[#20BE5B] text-black font-extrabold py-4 px-6 rounded-xl text-sm tracking-wider uppercase transition-all duration-300 shadow-xl flex items-center justify-center gap-2.5 cursor-pointer";
+        if (btnIcon) btnIcon.innerHTML = renderIcon('whatsapp', 'w-5 h-5 text-black');
+        if (btnText) btnText.textContent = `Place Order & Send via WhatsApp (₹${total})`;
+      }
+    });
+  });
+
   if (form) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -250,6 +318,7 @@ export function initCheckoutModalEvents() {
       const state = document.getElementById('chk-state')?.value;
       const pincode = document.getElementById('chk-pincode')?.value;
       const instructions = document.getElementById('chk-instructions')?.value;
+      const chosenMethod = document.querySelector('input[name="payment_method"]:checked')?.value || 'razorpay';
 
       try {
         const order = await store.submitOrder({
@@ -264,34 +333,85 @@ export function initCheckoutModalEvents() {
           specialInstructions: instructions
         });
 
-        // Hide checkout form
+        // If Razorpay chosen and Razorpay SDK + Key available
+        const razorpayKey = store.settings.razorpayKeyId;
+        if (chosenMethod === 'razorpay' && window.Razorpay && razorpayKey) {
+          const rzpOptions = {
+            key: razorpayKey,
+            amount: Math.round(order.totalAmount * 100), // in paise
+            currency: "INR",
+            name: "PRINTORA",
+            description: `Custom Order #${order.orderCode}`,
+            image: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=200&q=80",
+            prefill: {
+              name: order.customerName,
+              email: order.customerEmail || "",
+              contact: `+91${order.customerPhone}`
+            },
+            theme: {
+              color: "#0A0A0A"
+            },
+            handler: function (response) {
+              // Payment Successful
+              order.status = "Confirmed";
+              order.paymentId = response.razorpay_payment_id;
+              order.internalNotes = `Paid online via Razorpay (Payment ID: ${response.razorpay_payment_id})`;
+              store.saveOrders();
+
+              if (typeof window.confetti === 'function') {
+                window.confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
+              }
+
+              showOrderSuccess(order, response.razorpay_payment_id);
+            },
+            modal: {
+              ondismiss: function () {
+                // Customer cancelled or closed payment popup -> fallback to WhatsApp order
+                showOrderSuccess(order);
+              }
+            }
+          };
+
+          const rzp = new window.Razorpay(rzpOptions);
+          rzp.open();
+          if (modal) modal.classList.add('hidden');
+          return;
+        }
+
+        // WhatsApp direct flow or fallback
         if (modal) modal.classList.add('hidden');
-
-        // Populate success modal
-        const waUrl = generateWhatsAppUrl(order);
-        const codeEl = document.getElementById('success-order-code-text');
-        const nameEl = document.getElementById('success-cust-name');
-        const phoneEl = document.getElementById('success-cust-phone');
-        const cityEl = document.getElementById('success-cust-city');
-        const totalEl = document.getElementById('success-cust-total');
-        const waBtn = document.getElementById('success-whatsapp-send-btn');
-
-        if (codeEl) codeEl.textContent = `Order ID: ${order.orderCode}`;
-        if (nameEl) nameEl.textContent = order.customerName;
-        if (phoneEl) phoneEl.textContent = `+91 ${order.customerPhone}`;
-        if (cityEl) cityEl.textContent = `${order.shippingCity}, ${order.shippingState}`;
-        if (totalEl) totalEl.textContent = `₹${order.totalAmount}`;
-        if (waBtn) waBtn.href = waUrl;
-
-        // Automatically open WhatsApp in new tab (Method 1)
-        window.open(waUrl, '_blank');
-
-        // Show confirmation modal
-        if (successModal) successModal.classList.remove('hidden');
+        showOrderSuccess(order);
 
       } catch (err) {
         alert(err.message);
       }
     });
+  }
+
+  function showOrderSuccess(order, paymentId = null) {
+    const waUrl = generateWhatsAppUrl(order);
+    const codeEl = document.getElementById('success-order-code-text');
+    const nameEl = document.getElementById('success-cust-name');
+    const phoneEl = document.getElementById('success-cust-phone');
+    const cityEl = document.getElementById('success-cust-city');
+    const totalEl = document.getElementById('success-cust-total');
+    const waBtn = document.getElementById('success-whatsapp-send-btn');
+
+    if (codeEl) codeEl.textContent = `Order ID: ${order.orderCode}${paymentId ? ` • Paid: ${paymentId}` : ''}`;
+    if (nameEl) nameEl.textContent = order.customerName;
+    if (phoneEl) phoneEl.textContent = `+91 ${order.customerPhone}`;
+    if (cityEl) cityEl.textContent = `${order.shippingCity}, ${order.shippingState}`;
+    if (totalEl) totalEl.textContent = `₹${order.totalAmount}${paymentId ? ' (PAID ONLINE)' : ''}`;
+    if (waBtn) waBtn.href = waUrl;
+
+    if (paymentId) {
+      alert(`🎉 Payment Successful! Razorpay ID: ${paymentId}\nYour order has been confirmed.`);
+    }
+
+    // Automatically open WhatsApp with pre-filled details
+    window.open(waUrl, '_blank');
+
+    // Show confirmation modal
+    if (successModal) successModal.classList.remove('hidden');
   }
 }

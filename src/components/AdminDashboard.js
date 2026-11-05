@@ -495,6 +495,15 @@ export function renderAdminDashboard() {
                 </div>
               </div>
 
+              <!-- Razorpay Payment Gateway Integration -->
+              <div class="p-4 bg-[#FAF7F2] border border-[#DDD4C4] rounded-xl space-y-3">
+                <span class="text-xs uppercase tracking-wider text-[#997A52] font-bold block">Razorpay Payment Gateway (UPI / Cards / NetBanking)</span>
+                <p class="text-xs text-[#666]">Enter your Razorpay Key ID (starts with rzp_live_ or rzp_test_). Safe for client-side checkout.</p>
+                <div>
+                  <input type="text" id="set-razorpay-key" placeholder="rzp_live_xxxxxxxxxxxx or rzp_test_xxxxxxxxxxxx" value="${settings.razorpayKeyId || ''}" class="w-full bg-white border border-[#DDD4C4] rounded-lg p-2 text-xs font-mono">
+                </div>
+              </div>
+
               <!-- Meta WhatsApp Cloud API Section (Method 2) -->
               <div class="p-4 bg-[#FAF7F2] border border-[#DDD4C4] rounded-xl space-y-3">
                 <span class="text-xs uppercase tracking-wider text-[#997A52] font-bold block">Meta WhatsApp Cloud API (Method 2 - Optional)</span>
@@ -652,6 +661,7 @@ export function initAdminEvents() {
       const freeShippingThreshold = Number(document.getElementById('set-free-threshold')?.value) || 999;
       const shippingFlatFee = Number(document.getElementById('set-flat-fee')?.value) || 60;
       const announcementBanner = document.getElementById('set-announcement')?.value;
+      const razorpayKeyId = document.getElementById('set-razorpay-key')?.value?.trim() || "";
       const supabaseUrl = document.getElementById('set-supabase-url')?.value;
       const supabaseKey = document.getElementById('set-supabase-key')?.value;
 
@@ -663,8 +673,14 @@ export function initAdminEvents() {
         instagramHandle,
         freeShippingThreshold,
         shippingFlatFee,
-        announcementBanner
+        announcementBanner,
+        razorpayKeyId
       };
+      if (razorpayKeyId) {
+        localStorage.setItem('printora_razorpay_key_id', razorpayKeyId);
+      } else {
+        localStorage.removeItem('printora_razorpay_key_id');
+      }
       store.saveSettings();
 
       if (supabaseUrl && supabaseKey) {

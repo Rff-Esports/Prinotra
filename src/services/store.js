@@ -214,7 +214,8 @@ class PrintoraStore {
       freeShippingThreshold: 999,
       announcementBanner: "✦ Custom Apparel & Merch for Individuals & Teams • Free Pan-India Delivery on orders over ₹999 ✦",
       whatsappCloudApiToken: "",
-      whatsappPhoneNumberId: ""
+      whatsappPhoneNumberId: "",
+      razorpayKeyId: localStorage.getItem('printora_razorpay_key_id') || ""
     };
   }
 
