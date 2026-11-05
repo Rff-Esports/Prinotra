@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "deploy": "node --use-system-ca scripts/deploy.js"
   },
   "keywords": [
     "printora",
