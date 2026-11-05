@@ -348,6 +348,13 @@ function renderOrderTrackingCard(order) {
 export function openCustomerAccountModal() {
   const modal = document.getElementById('account-modal');
   if (modal) {
+    const temp = document.createElement('div');
+    temp.innerHTML = renderCustomerAccountModal();
+    const newModal = temp.querySelector('#account-modal');
+    if (newModal) {
+      modal.innerHTML = newModal.innerHTML;
+      initCustomerAccountEvents();
+    }
     modal.classList.remove('hidden');
   }
 }

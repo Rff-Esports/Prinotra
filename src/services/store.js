@@ -24,6 +24,7 @@ class PrintoraStore {
     this.savedDesigns = this.loadSavedDesigns();
     this.coupons = this.loadCoupons();
     this.orders = this.loadOrders();
+    this.registeredUsers = this.loadRegisteredUsers();
     this.bulkEnquiries = this.loadBulkEnquiries();
     this.suppliers = this.loadSuppliers();
     this.supplierAssignments = this.loadSupplierAssignments();
@@ -168,11 +169,27 @@ class PrintoraStore {
       if (liveCloud) {
         let hasChanges = false;
 
+        // 0. Synchronize Deleted Orders across devices
+        if (Array.isArray(liveCloud.deletedOrders) && liveCloud.deletedOrders.length > 0) {
+          const localDeleted = this.loadDeletedOrders();
+          const mergedDeleted = Array.from(new Set([...localDeleted, ...liveCloud.deletedOrders]));
+          safeSetItem('printora_deleted_orders', JSON.stringify(mergedDeleted));
+          const deletedSet = new Set(mergedDeleted);
+          const initialLen = this.orders.length;
+          this.orders = this.orders.filter(o => !deletedSet.has(o.orderCode || o.id));
+          if (this.orders.length !== initialLen) {
+            safeSetItem('printora_orders', JSON.stringify(this.orders));
+            hasChanges = true;
+          }
+        }
+
         // 1. Synchronize Orders across devices
         if (Array.isArray(liveCloud.orders) && liveCloud.orders.length > 0) {
+          const deletedSet = new Set(this.loadDeletedOrders());
           const orderMap = new Map(this.orders.map(o => [o.orderCode || o.id, o]));
           liveCloud.orders.forEach(co => {
             const key = co.orderCode || co.id;
+            if (deletedSet.has(key)) return; // Never restore deleted orders
             if (!orderMap.has(key)) {
               this.orders.unshift(co);
               hasChanges = true;
@@ -186,6 +203,31 @@ class PrintoraStore {
           });
           if (hasChanges) {
             safeSetItem('printora_orders', JSON.stringify(this.orders));
+          }
+        }
+
+        // 1b. Synchronize Registered & Logged-In Users across devices
+        if (Array.isArray(liveCloud.registeredUsers) && liveCloud.registeredUsers.length > 0) {
+          const userMap = new Map();
+          this.registeredUsers.forEach(u => userMap.set((u.email || u.phone || u.id).toLowerCase(), u));
+          let usersChanged = false;
+          liveCloud.registeredUsers.forEach(cu => {
+            const key = (cu.email || cu.phone || cu.id).toLowerCase();
+            if (!userMap.has(key)) {
+              userMap.set(key, cu);
+              usersChanged = true;
+            } else {
+              const existing = userMap.get(key);
+              if (cu.lastLogin && (!existing.lastLogin || new Date(cu.lastLogin) > new Date(existing.lastLogin))) {
+                userMap.set(key, { ...existing, ...cu });
+                usersChanged = true;
+              }
+            }
+          });
+          if (usersChanged) {
+            this.registeredUsers = Array.from(userMap.values()).sort((a, b) => new Date(b.lastLogin || b.createdAt || 0) - new Date(a.lastLogin || a.createdAt || 0));
+            safeSetItem('printora_registered_users', JSON.stringify(this.registeredUsers));
+            hasChanges = true;
           }
         }
 
@@ -408,10 +450,22 @@ class PrintoraStore {
     };
   }
 
+  loadDeletedOrders() {
+    const cloudDeleted = getGlobalCloudState()?.deletedOrders || [];
+    const saved = safeGetItem('printora_deleted_orders');
+    let localDeleted = [];
+    if (saved) {
+      try { localDeleted = JSON.parse(saved); } catch (e) { localDeleted = []; }
+    }
+    return Array.from(new Set([...cloudDeleted, ...localDeleted]));
+  }
+
   loadOrders() {
-    const cloudOrders = getGlobalCloudState()?.orders || [];
+    const deletedList = this.loadDeletedOrders();
+    const deletedSet = new Set(deletedList);
+    const cloudOrders = (getGlobalCloudState()?.orders || []).filter(o => !deletedSet.has(o.orderCode || o.id));
     const saved = safeGetItem('printora_orders');
-    const localOrders = saved ? JSON.parse(saved) : [];
+    const localOrders = (saved ? JSON.parse(saved) : []).filter(o => !deletedSet.has(o.orderCode || o.id));
 
     const defaultOrders = [
       {
@@ -455,7 +509,7 @@ class PrintoraStore {
           courier: "DTDC Express"
         }
       }
-    ];
+    ].filter(o => !deletedSet.has(o.orderCode || o.id));
 
     const mergedMap = new Map();
     defaultOrders.forEach(o => mergedMap.set(o.orderCode || o.id, o));
@@ -469,6 +523,23 @@ class PrintoraStore {
     safeSetItem('printora_orders', JSON.stringify(this.orders));
     pushGlobalCloudState({ orders: this.orders });
     this.notify();
+  }
+
+  deleteOrder(orderCode) {
+    if (!orderCode) return;
+    const deletedList = this.loadDeletedOrders();
+    if (!deletedList.includes(orderCode)) {
+      deletedList.push(orderCode);
+      safeSetItem('printora_deleted_orders', JSON.stringify(deletedList));
+    }
+    this.orders = this.orders.filter(o => o.orderCode !== orderCode && o.id !== orderCode);
+    safeSetItem('printora_orders', JSON.stringify(this.orders));
+    pushGlobalCloudState({
+      orders: this.orders,
+      deletedOrders: deletedList
+    });
+    this.notify();
+    this.showToast(`Order #${orderCode} deleted successfully`, 'info');
   }
 
   loadBulkEnquiries() {
@@ -584,13 +655,91 @@ class PrintoraStore {
   }
 
   loadRegisteredUsers() {
+    const cloudUsers = getGlobalCloudState()?.registeredUsers || [];
     const saved = safeGetItem('printora_registered_users');
-    if (!saved) return [];
-    try { return JSON.parse(saved); } catch (e) { return []; }
+    let localUsers = [];
+    if (saved) {
+      try { localUsers = JSON.parse(saved); } catch (e) { localUsers = []; }
+    }
+    const legacySaved = safeGetItem('printora_users_db');
+    let legacyUsers = [];
+    if (legacySaved) {
+      try { legacyUsers = JSON.parse(legacySaved); } catch (e) { legacyUsers = []; }
+    }
+
+    const defaultUsers = [
+      {
+        id: "usr-demo-01",
+        name: "Rahul Varma",
+        phone: "9848022334",
+        email: "rahul.varma@example.com",
+        gender: "Male",
+        createdAt: new Date(Date.now() - 3600000 * 48).toISOString(),
+        lastLogin: new Date(Date.now() - 3600000 * 2).toISOString()
+      },
+      {
+        id: "usr-demo-02",
+        name: "Ananya Sharma",
+        phone: "9123456789",
+        email: "ananya.sharma@gmail.com",
+        gender: "Female",
+        createdAt: new Date(Date.now() - 3600000 * 72).toISOString(),
+        lastLogin: new Date(Date.now() - 3600000 * 5).toISOString()
+      }
+    ];
+
+    const map = new Map();
+    defaultUsers.forEach(u => map.set((u.email || u.phone || u.id).toLowerCase(), u));
+    legacyUsers.forEach(u => map.set((u.email || u.phone || u.id).toLowerCase(), u));
+    localUsers.forEach(u => map.set((u.email || u.phone || u.id).toLowerCase(), u));
+    cloudUsers.forEach(u => map.set((u.email || u.phone || u.id).toLowerCase(), u));
+
+    return Array.from(map.values()).sort((a, b) => new Date(b.lastLogin || b.createdAt || 0) - new Date(a.lastLogin || a.createdAt || 0));
   }
 
   saveRegisteredUsers(users) {
+    this.registeredUsers = users;
     safeSetItem('printora_registered_users', JSON.stringify(users));
+    pushGlobalCloudState({ registeredUsers: users });
+    this.notify();
+  }
+
+  recordUserLogin(user) {
+    if (!user) return;
+    const users = this.loadRegisteredUsers();
+    const cleanEmail = (user.email || '').trim().toLowerCase();
+    const cleanPhone = (user.phone || '').replace(/[^0-9]/g, '').slice(-10);
+    const key = cleanEmail || cleanPhone;
+    if (!key) return;
+
+    const existingIndex = users.findIndex(u => 
+      (cleanEmail && u.email?.toLowerCase() === cleanEmail) ||
+      (cleanPhone && u.phone?.replace(/[^0-9]/g, '').slice(-10) === cleanPhone)
+    );
+
+    const now = new Date().toISOString();
+    if (existingIndex !== -1) {
+      users[existingIndex] = {
+        ...users[existingIndex],
+        ...user,
+        name: user.name || users[existingIndex].name,
+        gender: user.gender || users[existingIndex].gender || 'Unisex',
+        lastLogin: now
+      };
+    } else {
+      users.unshift({
+        id: user.id || `usr-${Date.now()}`,
+        name: user.name || 'Printora Customer',
+        phone: cleanPhone || user.phone || '',
+        email: cleanEmail || user.email || '',
+        gender: user.gender || 'Unisex',
+        password: user.password || '',
+        createdAt: user.createdAt || now,
+        lastLogin: now
+      });
+    }
+
+    this.saveRegisteredUsers(users);
   }
 
   registerUser({ name, phone, email, gender, password }) {
@@ -617,6 +766,7 @@ class PrintoraStore {
       return { success: false, message: "An account with this email or mobile number already exists. Please sign in." };
     }
 
+    const now = new Date().toISOString();
     const newUser = {
       id: `usr-${Date.now()}`,
       name: name.trim(),
@@ -624,10 +774,11 @@ class PrintoraStore {
       email: cleanEmail,
       gender: gender || 'Unisex',
       password: password,
-      createdAt: new Date().toISOString()
+      createdAt: now,
+      lastLogin: now
     };
 
-    users.push(newUser);
+    users.unshift(newUser);
     this.saveRegisteredUsers(users);
     this.setUser(newUser);
     return { success: true, user: newUser };
@@ -651,6 +802,8 @@ class PrintoraStore {
       return { success: false, message: "Incorrect password. Please enter the correct password." };
     }
 
+    user.lastLogin = new Date().toISOString();
+    this.saveRegisteredUsers(users);
     this.setUser(user);
     return { success: true, user };
   }

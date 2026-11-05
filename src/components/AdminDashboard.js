@@ -120,6 +120,7 @@ export function renderAdminDashboard() {
   const suppliers = store.suppliers;
   const settings = store.settings;
   const coupons = store.coupons;
+  const registeredUsers = store.registeredUsers || store.loadRegisteredUsers();
 
   // Overview Metrics Calculations
   const totalOrders = orders.length;
@@ -204,6 +205,9 @@ export function renderAdminDashboard() {
           </button>
           <button class="admin-tab-btn py-3 border-b-2 border-transparent hover:text-white whitespace-nowrap" data-tab="bulk">
             Bulk Enquiries (${bulkEnquiries.length})
+          </button>
+          <button class="admin-tab-btn py-3 border-b-2 border-transparent hover:text-white whitespace-nowrap" data-tab="users">
+            User Logins (${registeredUsers.length})
           </button>
           <button class="admin-tab-btn py-3 border-b-2 border-transparent hover:text-white whitespace-nowrap" data-tab="settings">
             Store Settings
@@ -295,9 +299,14 @@ export function renderAdminDashboard() {
                         </span>
                       </td>
                       <td class="py-3 px-4">
-                        <button class="admin-view-order-btn text-[#FF6B35] hover:text-black font-bold" data-order-id="${o.orderCode}">
-                          Manage →
-                        </button>
+                        <div class="flex items-center gap-2">
+                          <button class="admin-view-order-btn text-[#FF6B35] hover:text-black font-bold text-xs" data-order-id="${o.orderCode}">
+                            Manage →
+                          </button>
+                          <button class="admin-delete-order-btn text-rose-600 hover:text-rose-800 p-1 rounded hover:bg-rose-50 text-xs font-bold cursor-pointer transition-colors" data-order-id="${o.orderCode}" title="Permanently delete order">
+                            🗑️
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   `).join('')}
@@ -337,7 +346,7 @@ export function renderAdminDashboard() {
                       <span class="text-[11px] text-[#777]">Placed on ${new Date(o.createdAt).toLocaleString()}</span>
                     </div>
 
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2 flex-wrap">
                       <!-- 10-Status Lifecycle Dropdown -->
                       <select class="admin-order-status-select bg-white border border-[#DDD4C4] rounded-xl px-3 py-1.5 text-xs font-bold outline-none" data-order-id="${o.orderCode}">
                         ${ADMIN_ORDER_STATUSES.map(st => `
@@ -345,8 +354,13 @@ export function renderAdminDashboard() {
                         `).join('')}
                       </select>
 
-                      <button class="admin-assign-dealer-btn bg-[#111] hover:bg-[#FF6B35] text-white px-3.5 py-1.5 text-xs rounded-xl font-bold transition-colors" data-order-id="${o.orderCode}">
+                      <button class="admin-assign-dealer-btn bg-[#111] hover:bg-[#FF6B35] text-white px-3.5 py-1.5 text-xs rounded-xl font-bold transition-colors cursor-pointer" data-order-id="${o.orderCode}">
                         Assign Courier
+                      </button>
+
+                      <button class="admin-delete-order-btn bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-200 hover:border-rose-600 px-3 py-1.5 text-xs rounded-xl font-bold transition-all flex items-center gap-1 cursor-pointer" data-order-id="${o.orderCode}" title="Permanently delete order from dashboard and user view">
+                        <span>🗑️</span>
+                        <span>Delete</span>
                       </button>
                     </div>
                   </div>
@@ -782,6 +796,171 @@ export function renderAdminDashboard() {
           </div>
         </div>
 
+        <!-- ==========================================
+             TAB 7: USER LOGINS & REGISTERED ACCOUNTS
+             ========================================== -->
+        <div id="admin-tab-users" class="admin-tab-content hidden space-y-6">
+          <div class="bg-white border border-[#DDD4C4] rounded-2xl p-4 sm:p-6 shadow-sm">
+            
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+              <div>
+                <h3 class="font-heading text-xl font-bold text-black flex items-center gap-2">
+                  <span>Customer Logins & Registrations</span>
+                  <span class="bg-[#111] text-[#FF6B35] text-xs font-mono font-bold px-2.5 py-0.5 rounded-full">${registeredUsers.length} Users</span>
+                </h3>
+                <p class="text-xs text-[#777] mt-0.5">Real-time records of registered customer profiles, mobile numbers, email addresses, and gender synced across all devices.</p>
+              </div>
+
+              <!-- User Search -->
+              <div class="w-full sm:w-72">
+                <input type="text" id="admin-user-search" placeholder="Search name, phone, email or gender..." 
+                       class="w-full bg-[#FAFAF7] border border-[#DDD4C4] rounded-xl px-3.5 py-2 text-xs outline-none focus:border-[#FF6B35] transition-colors font-medium">
+              </div>
+            </div>
+
+            <!-- User Analytics Badges -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+              <div class="bg-[#FAF9F6] border border-[#DDD4C4] rounded-xl p-3.5">
+                <span class="text-[10px] uppercase font-bold text-[#777] tracking-wider block">Total Registered</span>
+                <span class="text-xl font-black text-black font-mono mt-0.5 block">${registeredUsers.length}</span>
+              </div>
+              <div class="bg-blue-50/70 border border-blue-200 rounded-xl p-3.5">
+                <span class="text-[10px] uppercase font-bold text-blue-700 tracking-wider block">Male Customers</span>
+                <span class="text-xl font-black text-blue-800 font-mono mt-0.5 block">
+                  ${registeredUsers.filter(u => (u.gender || '').toLowerCase() === 'male').length}
+                </span>
+              </div>
+              <div class="bg-rose-50/70 border border-rose-200 rounded-xl p-3.5">
+                <span class="text-[10px] uppercase font-bold text-rose-700 tracking-wider block">Female Customers</span>
+                <span class="text-xl font-black text-rose-800 font-mono mt-0.5 block">
+                  ${registeredUsers.filter(u => (u.gender || '').toLowerCase() === 'female').length}
+                </span>
+              </div>
+              <div class="bg-emerald-50/70 border border-emerald-200 rounded-xl p-3.5">
+                <span class="text-[10px] uppercase font-bold text-emerald-700 tracking-wider block">Active Recently</span>
+                <span class="text-xl font-black text-emerald-800 font-mono mt-0.5 block">
+                  ${registeredUsers.filter(u => u.lastLogin).length}
+                </span>
+              </div>
+            </div>
+
+            <!-- Users Table (Desktop & Tablet) -->
+            <div class="hidden md:block overflow-x-auto border border-[#E5E0D5] rounded-xl">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-[#F0EAE1] text-[#555] uppercase font-heading text-[10px] tracking-wider">
+                  <tr>
+                    <th class="py-3 px-4">Customer Name</th>
+                    <th class="py-3 px-4">Mobile Number</th>
+                    <th class="py-3 px-4">Email Address</th>
+                    <th class="py-3 px-4">Gender</th>
+                    <th class="py-3 px-4">Registered Date</th>
+                    <th class="py-3 px-4">Last Login</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-[#E5E0D5]" id="admin-users-table-body">
+                  ${registeredUsers.length === 0 ? `
+                    <tr>
+                      <td colspan="6" class="py-8 text-center text-[#777] font-medium">No registered customers found yet.</td>
+                    </tr>
+                  ` : registeredUsers.map(u => {
+                    const cleanPhone = (u.phone || '').replace(/[^0-9]/g, '').slice(-10);
+                    const genderBadge = (u.gender || '').toLowerCase() === 'male' 
+                      ? 'bg-blue-100 text-blue-800 border-blue-200' 
+                      : (u.gender || '').toLowerCase() === 'female'
+                      ? 'bg-rose-100 text-rose-800 border-rose-200'
+                      : 'bg-zinc-100 text-zinc-800 border-zinc-200';
+                    return `
+                      <tr class="hover:bg-[#FAF9F6] transition-colors admin-user-row" data-search="${(u.name + ' ' + u.phone + ' ' + u.email + ' ' + u.gender).toLowerCase()}">
+                        <td class="py-3.5 px-4 font-bold text-black flex items-center gap-2.5">
+                          <div class="w-7 h-7 rounded-full bg-[#111] text-[#FF6B35] font-bold text-xs flex items-center justify-center flex-shrink-0">
+                            ${(u.name || 'U').charAt(0).toUpperCase()}
+                          </div>
+                          <span>${u.name || 'Anonymous User'}</span>
+                        </td>
+                        <td class="py-3.5 px-4">
+                          ${cleanPhone ? `
+                            <a href="https://wa.me/91${cleanPhone}" target="_blank" rel="noopener noreferrer" class="font-mono text-emerald-700 hover:text-emerald-900 font-bold inline-flex items-center gap-1.5" title="Chat on WhatsApp">
+                              <span>+91 ${cleanPhone}</span>
+                              <span class="text-[10px] bg-emerald-100 text-emerald-800 px-1 rounded">WA</span>
+                            </a>
+                          ` : '<span class="text-[#888]">-</span>'}
+                        </td>
+                        <td class="py-3.5 px-4">
+                          ${u.email ? `
+                            <a href="mailto:${u.email}" class="text-blue-600 hover:underline font-medium">${u.email}</a>
+                          ` : '<span class="text-[#888]">-</span>'}
+                        </td>
+                        <td class="py-3.5 px-4">
+                          <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${genderBadge}">
+                            ${u.gender || 'Unspecified'}
+                          </span>
+                        </td>
+                        <td class="py-3.5 px-4 text-[#666] font-mono text-[11px]">
+                          ${u.createdAt ? new Date(u.createdAt).toLocaleString('en-IN') : 'Prior'}
+                        </td>
+                        <td class="py-3.5 px-4 font-mono text-[11px] text-emerald-700 font-bold">
+                          ${u.lastLogin ? new Date(u.lastLogin).toLocaleString('en-IN') : 'Never'}
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Users Cards List (Mobile Optimized) -->
+            <div class="md:hidden space-y-3" id="admin-users-cards-list">
+              ${registeredUsers.length === 0 ? `
+                <div class="py-8 text-center text-[#777] font-medium bg-[#FAF9F6] rounded-xl border border-[#DDD4C4]">
+                  No registered customers found yet.
+                </div>
+              ` : registeredUsers.map(u => {
+                const cleanPhone = (u.phone || '').replace(/[^0-9]/g, '').slice(-10);
+                const genderBadge = (u.gender || '').toLowerCase() === 'male' 
+                  ? 'bg-blue-100 text-blue-800 border-blue-200' 
+                  : (u.gender || '').toLowerCase() === 'female'
+                  ? 'bg-rose-100 text-rose-800 border-rose-200'
+                  : 'bg-zinc-100 text-zinc-800 border-zinc-200';
+                return `
+                  <div class="p-4 bg-[#FAF9F6] border border-[#DDD4C4] rounded-2xl space-y-2.5 admin-user-card" data-search="${(u.name + ' ' + u.phone + ' ' + u.email + ' ' + u.gender).toLowerCase()}">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-full bg-[#111] text-[#FF6B35] font-bold text-xs flex items-center justify-center flex-shrink-0">
+                          ${(u.name || 'U').charAt(0).toUpperCase()}
+                        </div>
+                        <strong class="text-sm font-bold text-black">${u.name || 'Customer'}</strong>
+                      </div>
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${genderBadge}">
+                        ${u.gender || 'Unspecified'}
+                      </span>
+                    </div>
+
+                    <div class="text-xs space-y-1.5 pt-1.5 border-t border-[#E5E0D5]">
+                      <div class="flex items-center justify-between">
+                        <span class="text-[#777]">Mobile:</span>
+                        ${cleanPhone ? `
+                          <a href="https://wa.me/91${cleanPhone}" target="_blank" rel="noopener noreferrer" class="font-mono text-emerald-700 font-bold">
+                            +91 ${cleanPhone}
+                          </a>
+                        ` : '<span class="text-[#888]">-</span>'}
+                      </div>
+                      <div class="flex items-center justify-between">
+                        <span class="text-[#777]">Email:</span>
+                        <a href="mailto:${u.email}" class="text-blue-600 truncate max-w-[180px]">${u.email || '-'}</a>
+                      </div>
+                      <div class="flex items-center justify-between text-[11px]">
+                        <span class="text-[#777]">Last Active:</span>
+                        <span class="font-mono text-emerald-700 font-bold">${u.lastLogin ? new Date(u.lastLogin).toLocaleDateString('en-IN') : 'Recent'}</span>
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+
+          </div>
+        </div>
+
       </main>
 
       <!-- FIRST ADMIN SETUP MODAL -->
@@ -1067,6 +1246,38 @@ export function initAdminEvents() {
   }
   if (closeSetupBtn && setupModal) {
     closeSetupBtn.addEventListener('click', () => setupModal.classList.add('hidden'));
+  }
+
+  // Admin Delete Order (Globally removes from Admin and Customer views)
+  document.querySelectorAll('.admin-delete-order-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const orderId = btn.getAttribute('data-order-id');
+      if (!orderId) return;
+      if (confirm(`⚠️ Permanently delete Order #${orderId}?\n\nThis will remove it completely from both Admin and Customer views across all devices.`)) {
+        store.deleteOrder(orderId);
+        window._adminActiveTab = 'orders';
+        if (window.printoraApp) {
+          window.printoraApp.renderAdminOnly();
+        }
+      }
+    });
+  });
+
+  // Admin User Search Filter
+  const userSearch = document.getElementById('admin-user-search');
+  if (userSearch) {
+    userSearch.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      document.querySelectorAll('.admin-user-row').forEach(row => {
+        const text = row.getAttribute('data-search') || '';
+        row.style.display = text.includes(q) ? '' : 'none';
+      });
+      document.querySelectorAll('.admin-user-card').forEach(card => {
+        const text = card.getAttribute('data-search') || '';
+        card.style.display = text.includes(q) ? '' : 'none';
+      });
+    });
   }
 
   // 10-Status Lifecycle Dropdown

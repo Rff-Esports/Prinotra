@@ -258,6 +258,9 @@ export function initAuthModalEvents() {
       store.setUserGender(user.gender);
     }
 
+    // Record login for Admin Dashboard tracking & cross-device cloud sync
+    store.recordUserLogin(user);
+
     store.showToast(`Welcome ${firstName}!`, 'success');
     closeAuthModal();
 
