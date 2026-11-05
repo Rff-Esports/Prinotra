@@ -9,7 +9,6 @@ import { generateWhatsAppUrl, BUSINESS_WHATSAPP_NUMBER } from '../services/whats
 import { openAuthModal } from './AuthModal.js';
 import { sendBrevoOtpEmail, generate6DigitOtp } from '../services/brevo.js';
 
-let appliedCoupon = null;
 let checkoutOtpCode = null;
 let isCheckoutOtpVerified = false;
 let currentStep = 1; // 1: Items, 2: Address, 3: WhatsApp
@@ -18,9 +17,34 @@ let detectedVillages = [];
 export function renderCheckoutModal() {
   const cart = store.cart;
   const subtotal = store.getCartSubtotal();
-  const discount = appliedCoupon ? appliedCoupon.discount : 0;
-  const total = store.getCartTotal(discount);
+  const appliedCoupon = store.appliedCoupon;
+  const discount = store.getCouponDiscount();
+  const total = store.getCartTotal();
   const user = store.currentUser;
+  const activeCoupons = store.coupons || [];
+
+  const quickAddCandidates = [
+    { id: 'prn-gft-04', defaultName: 'Custom Keychain', defaultPrice: 199, icon: '🔑' },
+    { id: 'prn-drk-01', defaultName: 'Coffee Mug', defaultPrice: 299, icon: '☕' },
+    { id: 'prn-gft-05', defaultName: 'Custom Cushion', defaultPrice: 299, icon: '🛋️' },
+    { id: 'prn-gft-03', defaultName: 'Personalized Wallet', defaultPrice: 399, icon: '👛' }
+  ];
+
+  const quickAddProducts = quickAddCandidates.map(c => {
+    const found = store.products?.find(p => p.id === c.id);
+    return {
+      id: c.id,
+      name: found?.name || c.defaultName,
+      price: found?.price || c.defaultPrice,
+      icon: c.icon
+    };
+  });
+
+  const isBulk20Unlocked = subtotal >= 2499;
+  const isNearBulk20 = subtotal >= 1500 && subtotal < 2499;
+  const bulkNeeded = Math.max(0, 2499 - subtotal);
+  const progressPct = Math.min(100, Math.round((subtotal / 2499) * 100));
+  const potentialSavings = Math.round((Math.max(2499, subtotal)) * 0.20);
 
   return `
     <div id="checkout-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/80 backdrop-blur-sm overflow-hidden">
@@ -105,27 +129,143 @@ export function renderCheckoutModal() {
               `).join('')}
             </div>
 
-            <!-- Coupon Code Field -->
-            <div class="p-3 bg-white border border-[#DDD4C4] rounded-2xl space-y-2">
-              <span class="text-[11px] font-bold uppercase tracking-wider text-[#777] font-heading block">Apply Coupon Code</span>
-              <div class="flex items-center gap-2">
-                <input type="text" id="chk-coupon-input" value="${appliedCoupon ? appliedCoupon.code : ''}" placeholder="Coupon (e.g. PRINTORA 25)" 
-                       class="flex-1 bg-[#FAF8F5] border border-[#DDD4C4] focus:border-black rounded-xl px-3 py-2 text-xs uppercase font-mono font-bold outline-none">
-                <button type="button" id="chk-apply-coupon-btn" class="bg-[#111] hover:bg-[#FF6B35] text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer">
-                  ${appliedCoupon ? 'Applied ✓' : 'Apply'}
-                </button>
+            <!-- SMART 20% OFF BULK20 UPSELL RECOMMENDATION -->
+            ${isNearBulk20 ? `
+              <div class="bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100 border-2 border-dashed border-[#FF6B35] rounded-2xl p-3.5 space-y-2.5 shadow-sm">
+                <div class="flex items-start gap-2.5">
+                  <span class="text-2xl animate-bounce">🔥</span>
+                  <div>
+                    <div class="flex items-center gap-1.5">
+                      <strong class="text-xs sm:text-sm font-extrabold text-[#111] font-heading">
+                        Add ₹${bulkNeeded} more to get 20% OFF!
+                      </strong>
+                      <span class="text-[9px] bg-[#FF6B35] text-white font-mono font-bold px-1.5 py-0.2 rounded uppercase">BULK20</span>
+                    </div>
+                    <p class="text-[11px] text-[#666] mt-0.5">
+                      Cart value near ₹2,000+! Unlock <strong>FLAT 20% OFF</strong> (Save ₹${potentialSavings}+) on your order.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Progress towards ₹2,499 -->
+                <div class="space-y-1">
+                  <div class="flex justify-between text-[10px] font-bold text-[#666]">
+                    <span>Current: <strong class="text-black font-mono">₹${subtotal}</strong></span>
+                    <span class="text-[#FF6B35] font-mono">Target: ₹2,499 (${progressPct}%)</span>
+                  </div>
+                  <div class="w-full bg-white/80 border border-orange-200 h-2.5 rounded-full overflow-hidden">
+                    <div class="bg-gradient-to-r from-[#FF6B35] to-emerald-500 h-full rounded-full transition-all duration-500" style="width: ${progressPct}%"></div>
+                  </div>
+                </div>
+
+                <!-- Quick Add Options -->
+                <div class="pt-1 border-t border-orange-200/60">
+                  <span class="text-[10px] uppercase font-bold tracking-wider text-[#666] block mb-1.5 font-heading">
+                    ⚡ Quick Add to reach ₹2,499 & get 20% OFF:
+                  </span>
+                  <div class="grid grid-cols-2 gap-1.5">
+                    ${quickAddProducts.map(p => `
+                      <button type="button" class="chk-quick-add-btn text-left p-1.5 rounded-xl bg-white hover:bg-orange-50 border border-orange-200 transition-all flex items-center justify-between gap-1 group cursor-pointer shadow-xs" data-prod-id="${p.id}">
+                        <div class="truncate">
+                          <span class="text-[11px] font-bold text-black block truncate group-hover:text-[#FF6B35]">${p.icon} ${p.name}</span>
+                          <span class="text-[10px] font-mono text-[#666]">₹${p.price}</span>
+                        </div>
+                        <span class="text-[10px] bg-[#111] group-hover:bg-[#FF6B35] text-white font-bold px-1.5 py-0.5 rounded-md font-mono flex-shrink-0">
+                          + Add
+                        </span>
+                      </button>
+                    `).join('')}
+                  </div>
+                </div>
+              </div>
+            ` : isBulk20Unlocked ? `
+              <div class="bg-emerald-50 border-2 border-emerald-400 rounded-2xl p-3 flex items-center justify-between shadow-sm">
+                <div class="flex items-center gap-2.5">
+                  <span class="text-2xl">🎉</span>
+                  <div>
+                    <strong class="text-xs font-bold text-emerald-900 block font-heading">20% OFF UNLOCKED!</strong>
+                    <span class="text-[11px] text-emerald-700">Orders above ₹2,499 qualify for coupon <strong>BULK20</strong> (Save ₹${Math.round(subtotal * 0.20)})</span>
+                  </div>
+                </div>
+                ${appliedCoupon?.code === 'BULK20' ? `
+                  <span class="text-[10px] bg-emerald-600 text-white font-bold px-2.5 py-1.5 rounded-xl font-mono uppercase tracking-wider flex-shrink-0">
+                    APPLIED ✓
+                  </span>
+                ` : `
+                  <button type="button" class="chk-quick-apply-coupon-btn bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-bold font-mono px-3 py-1.5 rounded-xl transition-all cursor-pointer shadow flex-shrink-0" data-coupon="BULK20">
+                    Apply BULK20
+                  </button>
+                `}
+              </div>
+            ` : ''}
+
+            <!-- ACTIVE PROMO COUPONS SECTION -->
+            <div class="p-3.5 bg-white border border-[#DDD4C4] rounded-2xl space-y-2.5 shadow-sm">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-[#333] font-heading flex items-center gap-1.5">
+                  🏷️ Active Coupons (${activeCoupons.length})
+                </span>
+                ${appliedCoupon ? `
+                  <button type="button" class="chk-remove-coupon-btn text-[10px] font-bold text-rose-600 hover:text-rose-800 underline cursor-pointer">
+                    Remove (${appliedCoupon.code})
+                  </button>
+                ` : ''}
               </div>
 
-              <!-- Fast One-Click Apply Pill for PRINTORA 25 -->
-              <div class="flex items-center gap-1.5 text-[11px] pt-1">
-                <button type="button" id="quick-apply-printora25-btn" class="inline-flex items-center gap-1.5 bg-[#FAF7F2] hover:bg-[#FF6B35] hover:text-white border border-[#DDD4C4] text-black px-2.5 py-1 rounded-lg font-mono font-bold transition-all cursor-pointer shadow-sm">
-                  <span>🏷️ PRINTORA 25</span>
-                  <span class="text-[10px] text-[#FF6B35] font-sans font-semibold">• Flat ₹25 OFF</span>
-                </button>
+              <!-- Available Coupons List -->
+              <div class="space-y-1.5 max-h-40 overflow-y-auto pr-0.5">
+                ${activeCoupons.map(c => {
+                  const normInput = (c.code || '').toUpperCase().replace(/\s+/g, '');
+                  const normApplied = (appliedCoupon?.code || '').toUpperCase().replace(/\s+/g, '');
+                  const isApplied = appliedCoupon && normApplied === normInput;
+                  const isEligible = subtotal >= (c.minOrder || 0);
+                  const needed = (c.minOrder || 0) - subtotal;
+
+                  return `
+                    <div class="p-2 rounded-xl border transition-all flex items-center justify-between gap-2 text-xs ${isApplied ? 'bg-emerald-50 border-emerald-400' : 'bg-[#FAF8F5] border-[#E8E2D8] hover:border-black/30'}">
+                      <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-1.5">
+                          <span class="font-mono font-extrabold text-[10px] px-1.5 py-0.5 rounded tracking-wide ${isApplied ? 'bg-emerald-600 text-white' : 'bg-[#111] text-[#FF6B35]'}">
+                            ${c.code}
+                          </span>
+                          <span class="font-bold text-[11px] text-black">${c.discountType === 'percent' ? `${c.value}% OFF` : `₹${c.value} OFF`}</span>
+                        </div>
+                        <p class="text-[10px] text-[#666] truncate mt-0.5">${c.description || (c.minOrder > 0 ? `Min. order ₹${c.minOrder}` : 'No minimum order')}</p>
+                      </div>
+
+                      <div class="flex-shrink-0">
+                        ${isApplied ? `
+                          <span class="inline-flex items-center text-[10px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2.5 py-1 rounded-lg">
+                            Applied ✓
+                          </span>
+                        ` : isEligible ? `
+                          <button type="button" class="chk-quick-apply-coupon-btn bg-[#111] hover:bg-[#FF6B35] text-white text-[10px] font-bold font-mono px-2.5 py-1 rounded-lg transition-colors cursor-pointer shadow-xs" data-coupon="${c.code}">
+                            Apply
+                          </button>
+                        ` : `
+                          <span class="text-[9px] font-bold text-[#888] bg-[#EFECE4] px-1.5 py-0.5 rounded block text-center" title="Add ₹${needed} more to qualify">
+                            Add ₹${needed}
+                          </span>
+                        `}
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
               </div>
 
-              <div id="chk-coupon-msg" class="text-[11px] font-semibold mt-1 ${appliedCoupon ? 'text-emerald-700' : 'hidden'}">
-                ${appliedCoupon ? appliedCoupon.message : ''}
+              <!-- Manual Code Entry Box -->
+              <div class="pt-2 border-t border-[#EFECE4]">
+                <label for="chk-coupon-input" class="block text-[10px] uppercase font-bold text-[#777] mb-1 font-heading">Or enter custom promo code</label>
+                <div class="flex items-center gap-2">
+                  <input type="text" id="chk-coupon-input" value="${appliedCoupon ? appliedCoupon.code : ''}" placeholder="Coupon code" 
+                         class="flex-1 bg-[#FAF8F5] border border-[#DDD4C4] focus:border-black rounded-xl px-3 py-2 text-xs uppercase font-mono font-bold outline-none">
+                  <button type="button" id="chk-apply-coupon-btn" class="bg-[#111] hover:bg-[#FF6B35] text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer">
+                    ${appliedCoupon ? 'Applied ✓' : 'Apply'}
+                  </button>
+                </div>
+                <div id="chk-coupon-msg" class="text-[11px] font-semibold mt-1 ${appliedCoupon ? 'text-emerald-700' : 'hidden'}">
+                  ${appliedCoupon ? appliedCoupon.message : ''}
+                </div>
               </div>
             </div>
 
@@ -617,35 +757,70 @@ export function initCheckoutModalEvents() {
     });
   }
 
-  // Coupon Code
-  const couponInput = document.getElementById('chk-coupon-input');
-  const applyCouponBtn = document.getElementById('chk-apply-coupon-btn');
-  const couponMsg = document.getElementById('chk-coupon-msg');
-  const quickApplyBtn = document.getElementById('quick-apply-printora25-btn');
+  // Delegated Event Listeners for Step 1 (Quick-Add, 1-Click Coupon Apply, Remove, and Manual Apply)
+  const step1Container = document.getElementById('checkout-step-1');
+  const refreshCheckoutStep1 = () => {
+    const s1 = document.getElementById('checkout-step-1');
+    if (s1) {
+      const temp = document.createElement('div');
+      temp.innerHTML = renderCheckoutModal();
+      const newS1 = temp.querySelector('#checkout-step-1');
+      if (newS1) {
+        s1.innerHTML = newS1.innerHTML;
+      }
+    }
+  };
 
-  if (quickApplyBtn && couponInput) {
-    quickApplyBtn.addEventListener('click', () => {
-      couponInput.value = 'PRINTORA 25';
-      if (applyCouponBtn) applyCouponBtn.click();
-    });
-  }
-
-  if (applyCouponBtn && couponInput) {
-    applyCouponBtn.addEventListener('click', () => {
-      const code = couponInput.value.trim();
-      const subtotal = store.getCartSubtotal();
-      const res = store.validateCoupon(code, subtotal);
-
-      if (couponMsg) {
-        couponMsg.textContent = res.message;
-        couponMsg.classList.remove('hidden');
-        couponMsg.className = `text-[11px] font-semibold mt-1 ${res.valid ? 'text-emerald-700' : 'text-rose-600'}`;
+  if (step1Container) {
+    step1Container.addEventListener('click', (e) => {
+      // 1. Quick add merchandise to reach 20% off
+      const quickAddBtn = e.target.closest('.chk-quick-add-btn');
+      if (quickAddBtn) {
+        const prodId = quickAddBtn.getAttribute('data-prod-id');
+        const prod = store.products?.find(p => p.id === prodId) || store.products?.[0];
+        if (prod) {
+          store.addToCart(prod, {
+            size: prod.sizes?.[0] || 'Standard',
+            color: prod.colors?.[0]?.name || 'Standard',
+            quantity: 1
+          });
+          store.showToast(`Added ${prod.name} (+₹${prod.price}) to bag!`, 'success');
+          refreshCheckoutStep1();
+        }
+        return;
       }
 
-      if (res.valid) {
-        appliedCoupon = res;
-        openCheckoutModal();
-        store.showToast(`Coupon applied! Saved ₹${res.discount}`, 'success');
+      // 2. Quick 1-click apply coupon from active list or celebration
+      const applyCouponBtn = e.target.closest('.chk-quick-apply-coupon-btn');
+      if (applyCouponBtn) {
+        const code = applyCouponBtn.getAttribute('data-coupon');
+        if (code) {
+          store.applyCoupon(code);
+          refreshCheckoutStep1();
+        }
+        return;
+      }
+
+      // 3. Remove coupon
+      const removeCouponBtn = e.target.closest('.chk-remove-coupon-btn');
+      if (removeCouponBtn) {
+        store.removeCoupon();
+        refreshCheckoutStep1();
+        return;
+      }
+
+      // 4. Manual apply button
+      const manualApplyBtn = e.target.closest('#chk-apply-coupon-btn');
+      if (manualApplyBtn) {
+        const input = document.getElementById('chk-coupon-input');
+        const code = input?.value.trim();
+        if (!code) {
+          store.showToast("Please enter a coupon code", "info");
+          return;
+        }
+        store.applyCoupon(code);
+        refreshCheckoutStep1();
+        return;
       }
     });
   }
@@ -701,7 +876,7 @@ export function initCheckoutModalEvents() {
           specialInstructions: instructions,
           paymentMethod: 'WhatsApp Order Desk (+91 8106992102)',
           paymentStatus: 'Payment Pending',
-          discount: appliedCoupon ? appliedCoupon.discount : 0
+          discount: store.getCouponDiscount()
         });
 
         // Trigger confetti

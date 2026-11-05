@@ -6,6 +6,7 @@ import { store } from '../services/store.js';
 import { isSupabaseConfigured, updateSupabaseCredentials } from '../services/supabase.js';
 import { sendBrevoOtpEmail, sendPaymentConfirmedEmail, generate6DigitOtp } from '../services/brevo.js';
 import { compressImageFile } from '../services/cloudSync.js';
+import { INITIAL_PRODUCTS } from '../data/products.js';
 
 
 export const ADMIN_ORDER_STATUSES = [
@@ -440,7 +441,10 @@ export function renderAdminDashboard() {
                 <h3 class="font-heading text-xl font-bold text-black">Product Catalogue & Exact Pricing</h3>
                 <p class="text-xs text-[#777]">Strict pricing compliance: Prices can only be changed by authorized administrators.</p>
               </div>
-              <div class="flex items-center gap-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <button id="admin-restore-all-images-btn" type="button" class="bg-[#FAF7F2] hover:bg-[#F0EAE1] text-black border border-[#DDD4C4] px-3.5 py-2 text-xs font-bold rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer" title="Revert all default products back to original official mockups">
+                  <span>↺ Restore Official Images</span>
+                </button>
                 <button id="admin-sync-all-cloud-btn" type="button" class="bg-[#111] hover:bg-[#FF6B35] text-white px-3.5 py-2 text-xs font-bold rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer">
                   <span>🚀 Publish All Live</span>
                 </button>
@@ -498,10 +502,10 @@ export function renderAdminDashboard() {
                         </span>
                       </td>
                       <td class="py-3 px-4 text-right space-x-2 whitespace-nowrap">
-                        <button class="admin-edit-prod-btn text-[#FF6B35] hover:text-black font-bold px-2.5 py-1 rounded-lg bg-[#FF6B35]/10 hover:bg-[#FF6B35]/20 transition-colors cursor-pointer" data-prod-id="${p.id}">
+                        <button class="admin-edit-prod-btn text-[#FF6B35] hover:text-black font-bold px-2.5 py-1 rounded-lg bg-[#FF6B35]/10 hover:bg-[#FF6B35]/20 transition-colors cursor-pointer" data-prod-id="${p.id}" data-prod-name="${p.name.replace(/"/g, '&quot;')}">
                           ✏️ Edit Price & Images
                         </button>
-                        <button class="admin-delete-prod-btn text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-200 font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer" data-prod-id="${p.id}">
+                        <button class="admin-delete-prod-btn text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-200 font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer" data-prod-id="${p.id}" data-prod-name="${p.name.replace(/"/g, '&quot;')}">
                           Delete
                         </button>
                       </td>
@@ -1042,9 +1046,24 @@ ON CONFLICT (user_id) DO UPDATE SET role = 'admin';</pre>
           <form id="admin-edit-prod-form" class="space-y-4 text-xs">
             <input type="hidden" id="edit-prod-id">
 
-            <div>
-              <label class="block text-[11px] font-bold text-[#555] mb-1">Product Title / Name *</label>
-              <input type="text" id="edit-prod-name" required class="w-full bg-white border border-[#DDD4C4] rounded-xl px-3.5 py-2.5 font-bold outline-none focus:border-[#FF6B35]">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label class="block text-[11px] font-bold text-[#555] mb-1">Product Title / Name *</label>
+                <input type="text" id="edit-prod-name" required class="w-full bg-white border border-[#DDD4C4] rounded-xl px-3.5 py-2.5 font-bold outline-none focus:border-[#FF6B35]">
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-[#555] mb-1">Category *</label>
+                <select id="edit-prod-category" class="w-full bg-white border border-[#DDD4C4] rounded-xl px-3.5 py-2.5 font-bold outline-none focus:border-[#FF6B35]">
+                  <option value="apparel">Apparel</option>
+                  <option value="sportswear">Sportswear</option>
+                  <option value="bags">Bags</option>
+                  <option value="drinkware">Drinkware</option>
+                  <option value="personalized-gifts">Personalized Gifts</option>
+                  <option value="stationery">Stationery</option>
+                  <option value="corporate-merchandise">Corporate & Business</option>
+                  <option value="tech-accessories">Tech Accessories</option>
+                </select>
+              </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -1078,12 +1097,17 @@ ON CONFLICT (user_id) DO UPDATE SET role = 'admin';</pre>
               <input type="text" id="edit-prod-image" required placeholder="Image URL or loaded from gallery above" class="w-full bg-white border border-[#DDD4C4] rounded-xl px-3.5 py-2.5 font-mono text-[11px] outline-none focus:border-[#FF6B35]">
               
               <!-- Real-time Image Preview -->
-              <div class="mt-2.5 flex items-center gap-3 p-2.5 bg-[#FAF7F2] rounded-xl border border-[#DDD4C4]">
-                <img id="edit-prod-img-preview" src="" alt="Preview" class="w-14 h-14 rounded-lg object-cover border border-[#CCC] bg-white">
-                <div class="text-[11px] text-[#666]">
-                  <strong class="text-black block font-heading">Live Image Preview</strong>
-                  <span class="text-[10px]">Photo loaded from gallery or URL</span>
+              <div class="mt-2.5 flex items-center justify-between p-2.5 bg-[#FAF7F2] rounded-xl border border-[#DDD4C4]">
+                <div class="flex items-center gap-3">
+                  <img id="edit-prod-img-preview" src="" alt="Preview" class="w-14 h-14 rounded-lg object-cover border border-[#CCC] bg-white">
+                  <div class="text-[11px] text-[#666]">
+                    <strong class="text-black block font-heading">Live Image Preview</strong>
+                    <span class="text-[10px]">Photo loaded from gallery or URL</span>
+                  </div>
                 </div>
+                <button type="button" id="restore-default-prod-img-btn" class="text-[11px] text-[#FF6B35] hover:text-[#111] font-bold underline cursor-pointer p-1">
+                  ↺ Revert to Official Image
+                </button>
               </div>
             </div>
 
@@ -1189,21 +1213,6 @@ export function initAdminEvents() {
     });
   });
 
-  // Admin Quick Add Product Triggers
-  document.querySelectorAll('.admin-quick-add-trigger').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const prodTabBtn = document.querySelector('.admin-tab-btn[data-tab="products"]');
-      if (prodTabBtn) prodTabBtn.click();
-      const nameInput = document.getElementById('edit-prod-name');
-      const modalEl = document.getElementById('admin-edit-product-modal');
-      const idIn = document.getElementById('edit-prod-id');
-      const titleEl = document.getElementById('edit-prod-modal-title');
-      if (idIn) idIn.value = `custom-item-${Date.now()}`;
-      if (nameInput) nameInput.value = '';
-      if (titleEl) titleEl.textContent = 'Add New Product to Catalogue';
-      if (modalEl) modalEl.classList.remove('hidden');
-    });
-  });
 
   // Tab Switching
   const tabBtns = document.querySelectorAll('.admin-tab-btn');
@@ -1534,182 +1543,289 @@ export function initAdminEvents() {
     });
   }
 
-  // Device Gallery & File Manager Image Reader with Automatic Web Optimization
-  document.addEventListener('change', async (e) => {
-    if (e.target && e.target.id === 'edit-prod-file-input') {
-      const file = e.target.files?.[0];
-      if (file) {
-        const submitBtn = document.getElementById('save-prod-changes-btn');
-        const btnText = document.getElementById('save-prod-btn-text');
-        if (submitBtn) {
-          submitBtn.disabled = true;
-          if (btnText) btnText.textContent = '⏳ Processing Photo...';
-        }
+  // Register Delegated Global Admin Handlers EXACTLY ONCE to prevent duplicate popups/listeners
+  if (!window.__adminGlobalListenersInitialized) {
+    window.__adminGlobalListenersInitialized = true;
 
-        try {
-          store.showToast('Optimizing photo for fast global sync...', 'info');
-          const dataUrl = await compressImageFile(file, 500, 500, 0.68);
-          const imgIn = document.getElementById('edit-prod-image');
-          const imgPrev = document.getElementById('edit-prod-img-preview');
-          if (imgIn) imgIn.value = dataUrl;
-          if (imgPrev) imgPrev.src = dataUrl;
-          store.showToast('✓ Photo ready! Click "Save Product Changes" to publish across all devices.', 'success');
-        } catch (err) {
-          console.error('Image optimization failed:', err);
-          store.showToast('Failed to process image: ' + err.message, 'warning');
-        } finally {
+    // Device Gallery & File Manager Image Reader with Automatic Web Optimization
+    document.addEventListener('change', async (e) => {
+      if (e.target && e.target.id === 'edit-prod-file-input') {
+        const file = e.target.files?.[0];
+        if (file) {
+          const submitBtn = document.getElementById('save-prod-changes-btn');
+          const btnText = document.getElementById('save-prod-btn-text');
           if (submitBtn) {
-            submitBtn.disabled = false;
-            if (btnText) btnText.textContent = 'Save Product Changes';
+            submitBtn.disabled = true;
+            if (btnText) btnText.textContent = '⏳ Processing Photo...';
+          }
+
+          try {
+            store.showToast('Optimizing photo for fast global sync...', 'info');
+            const dataUrl = await compressImageFile(file, 500, 500, 0.68);
+            const imgIn = document.getElementById('edit-prod-image');
+            const imgPrev = document.getElementById('edit-prod-img-preview');
+            if (imgIn) imgIn.value = dataUrl;
+            if (imgPrev) imgPrev.src = dataUrl;
+            store.showToast('✓ Photo ready! Click "Save Product Changes" to publish across all devices.', 'success');
+          } catch (err) {
+            console.error('Image optimization failed:', err);
+            store.showToast('Failed to process image: ' + err.message, 'warning');
+          } finally {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              if (btnText) btnText.textContent = 'Save Product Changes';
+            }
           }
         }
       }
-    }
-  });
+    });
 
-  // Force Sync All Products to Netlify Cloud Button
-  const syncAllBtn = document.getElementById('admin-sync-all-cloud-btn');
-  if (syncAllBtn) {
-    syncAllBtn.addEventListener('click', async () => {
+    // Force Sync All Products to Netlify Cloud Button
+    document.addEventListener('click', async (e) => {
+      const syncAllBtn = e.target.closest('#admin-sync-all-cloud-btn');
+      if (!syncAllBtn) return;
       syncAllBtn.disabled = true;
       syncAllBtn.textContent = '⏳ Syncing to All Devices...';
       await store.publishAllProductsLive();
       syncAllBtn.disabled = false;
       syncAllBtn.textContent = '🚀 Publish All Live';
     });
-  }
 
-  // Delegated Open Edit Product Modal on button click (100% reliable across tab switches)
-  document.addEventListener('click', (e) => {
-    const btn = e.target.closest('.admin-edit-prod-btn');
-    if (!btn) return;
+    // Delegated Open Edit Product Modal on button click (100% reliable across tab switches)
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.admin-edit-prod-btn');
+      if (!btn) return;
 
-    const prodId = btn.getAttribute('data-prod-id');
-    const prod = store.products.find(p => p.id === prodId);
-    if (!prod) return;
-
-    const modalEl = document.getElementById('admin-edit-product-modal');
-    const idIn = document.getElementById('edit-prod-id');
-    const nameIn = document.getElementById('edit-prod-name');
-    const priceIn = document.getElementById('edit-prod-price');
-    const origPriceIn = document.getElementById('edit-prod-orig-price');
-    const imgIn = document.getElementById('edit-prod-image');
-    const imgPrev = document.getElementById('edit-prod-img-preview');
-    const extraImgsIn = document.getElementById('edit-prod-extra-images');
-    const availIn = document.getElementById('edit-prod-available');
-    const titleEl = document.getElementById('edit-prod-modal-title');
-    const submitBtn = document.getElementById('save-prod-changes-btn');
-    const btnText = document.getElementById('save-prod-btn-text');
-
-    if (idIn) idIn.value = prod.id;
-    if (nameIn) nameIn.value = prod.name;
-    if (priceIn) priceIn.value = prod.price !== null ? prod.price : '';
-    if (origPriceIn) origPriceIn.value = prod.originalPrice !== null ? prod.originalPrice : '';
-    
-    const primaryImg = prod.images?.[0] || '';
-    if (imgIn) imgIn.value = primaryImg;
-    if (imgPrev) imgPrev.src = primaryImg;
-
-    const extraImgs = prod.images && prod.images.length > 1 ? prod.images.slice(1).join(', ') : '';
-    if (extraImgsIn) extraImgsIn.value = extraImgs;
-
-    if (availIn) availIn.checked = prod.isAvailable !== false;
-    if (titleEl) titleEl.textContent = `Edit Product: ${prod.name}`;
-
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      if (btnText) btnText.textContent = 'Save Product Changes';
-    }
-
-    if (modalEl) modalEl.classList.remove('hidden');
-  });
-
-  // Handle Edit Product Form Submission (Delegated to guarantee 100% execution)
-  document.addEventListener('submit', async (e) => {
-    const form = e.target.closest('#admin-edit-prod-form');
-    if (!form) return;
-    e.preventDefault();
-
-    const submitBtn = form.querySelector('#save-prod-changes-btn') || form.querySelector('button[type="submit"]');
-    const btnText = form.querySelector('#save-prod-btn-text');
-    const idInput = form.querySelector('#edit-prod-id');
-    const id = idInput?.value;
-    if (!id) {
-      store.showToast('Product ID missing', 'warning');
-      return;
-    }
-
-    if (submitBtn) {
-      submitBtn.disabled = true;
-      if (btnText) btnText.textContent = '⏳ Publishing Globally...';
-    }
-
-    try {
-      const name = form.querySelector('#edit-prod-name')?.value.trim();
-      const priceVal = form.querySelector('#edit-prod-price')?.value.trim();
-      const origPriceVal = form.querySelector('#edit-prod-orig-price')?.value.trim();
-      const primaryImg = form.querySelector('#edit-prod-image')?.value.trim();
-      const extraImgsStr = form.querySelector('#edit-prod-extra-images')?.value.trim();
-      const isAvailable = form.querySelector('#edit-prod-available')?.checked !== false;
-
-      const price = priceVal !== '' ? Number(priceVal) : null;
-      const originalPrice = origPriceVal !== '' ? Number(origPriceVal) : null;
-
-      let images = [primaryImg];
-      if (extraImgsStr) {
-        const extras = extraImgsStr.split(/[,\n]/).map(s => s.trim()).filter(Boolean);
-        images = [...images, ...extras];
-      }
-
-      store.showToast(`Publishing "${name}" live across all devices...`, 'info');
-
-      await store.updateProduct(id, {
-        name,
-        price,
-        originalPrice,
-        images,
-        isAvailable,
-        isQuoteOnly: price === null
-      });
-
-      if (btnText) btnText.textContent = '✓ Saved Live Globally!';
-      store.showToast(`✓ Product "${name}" updated & published globally!`, 'success');
-
-      setTimeout(() => {
-        const modal = document.getElementById('admin-edit-product-modal');
-        if (modal) modal.classList.add('hidden');
-        window._adminActiveTab = 'products';
-        if (window.printoraApp) {
-          window.printoraApp.renderAdminOnly();
-        }
-      }, 500);
-
-    } catch (err) {
-      console.error('Update product error:', err);
-      store.showToast('Save failed: ' + err.message, 'warning');
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        if (btnText) btnText.textContent = 'Save Product Changes';
-      }
-    }
-  });
-
-  // Handle Delete Product Button
-  document.querySelectorAll('.admin-delete-prod-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
       const prodId = btn.getAttribute('data-prod-id');
       const prod = store.products.find(p => p.id === prodId);
       if (!prod) return;
 
-      if (confirm(`Are you sure you want to delete / hide "${prod.name}" from active catalogue?`)) {
-        store.updateProduct(prodId, { isAvailable: false });
-        store.showToast(`Product "${prod.name}" marked as hidden`, 'info');
+      const modalEl = document.getElementById('admin-edit-product-modal');
+      const idIn = document.getElementById('edit-prod-id');
+      const nameIn = document.getElementById('edit-prod-name');
+      const catIn = document.getElementById('edit-prod-category');
+      const priceIn = document.getElementById('edit-prod-price');
+      const origPriceIn = document.getElementById('edit-prod-orig-price');
+      const imgIn = document.getElementById('edit-prod-image');
+      const imgPrev = document.getElementById('edit-prod-img-preview');
+      const extraImgsIn = document.getElementById('edit-prod-extra-images');
+      const availIn = document.getElementById('edit-prod-available');
+      const titleEl = document.getElementById('edit-prod-modal-title');
+      const submitBtn = document.getElementById('save-prod-changes-btn');
+      const btnText = document.getElementById('save-prod-btn-text');
+
+      if (idIn) idIn.value = prod.id;
+      if (nameIn) nameIn.value = prod.name;
+      if (catIn) catIn.value = prod.categoryId || 'apparel';
+      if (priceIn) priceIn.value = prod.price !== null && prod.price !== undefined ? prod.price : '';
+      if (origPriceIn) origPriceIn.value = prod.originalPrice !== null && prod.originalPrice !== undefined ? prod.originalPrice : '';
+      
+      const primaryImg = prod.images?.[0] || '';
+      if (imgIn) imgIn.value = primaryImg;
+      if (imgPrev) imgPrev.src = primaryImg;
+
+      const extraImgs = prod.images && prod.images.length > 1 ? prod.images.slice(1).join(', ') : '';
+      if (extraImgsIn) extraImgsIn.value = extraImgs;
+
+      if (availIn) availIn.checked = prod.isAvailable !== false;
+      if (titleEl) titleEl.textContent = `Edit Product: ${prod.name}`;
+
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        if (btnText) btnText.textContent = 'Save Product Changes';
+      }
+
+      if (modalEl) modalEl.classList.remove('hidden');
+    });
+
+    // Delegated Open Add Product Modal on button click (100% reliable across tab switches)
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.admin-quick-add-trigger');
+      if (!btn) return;
+      const prodTabBtn = document.querySelector('.admin-tab-btn[data-tab="products"]');
+      if (prodTabBtn) prodTabBtn.click();
+
+      const modalEl = document.getElementById('admin-edit-product-modal');
+      const idIn = document.getElementById('edit-prod-id');
+      const nameIn = document.getElementById('edit-prod-name');
+      const catIn = document.getElementById('edit-prod-category');
+      const priceIn = document.getElementById('edit-prod-price');
+      const origPriceIn = document.getElementById('edit-prod-orig-price');
+      const imgIn = document.getElementById('edit-prod-image');
+      const imgPrev = document.getElementById('edit-prod-img-preview');
+      const extraImgsIn = document.getElementById('edit-prod-extra-images');
+      const availIn = document.getElementById('edit-prod-available');
+      const titleEl = document.getElementById('edit-prod-modal-title');
+      const submitBtn = document.getElementById('save-prod-changes-btn');
+      const btnText = document.getElementById('save-prod-btn-text');
+      const fileIn = document.getElementById('edit-prod-file-input');
+
+      if (idIn) idIn.value = `prn-custom-${Date.now()}`;
+      if (nameIn) nameIn.value = '';
+      if (catIn) catIn.value = 'apparel';
+      if (priceIn) priceIn.value = '';
+      if (origPriceIn) origPriceIn.value = '';
+      if (imgIn) imgIn.value = '';
+      if (imgPrev) imgPrev.src = '';
+      if (extraImgsIn) extraImgsIn.value = '';
+      if (fileIn) fileIn.value = '';
+      if (availIn) availIn.checked = true;
+      if (titleEl) titleEl.textContent = 'Add New Product to Catalogue';
+
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        if (btnText) btnText.textContent = '+ Add Product to Catalogue';
+      }
+
+      if (modalEl) modalEl.classList.remove('hidden');
+    });
+
+    // Handle Edit/Add Product Form Submission (Delegated to guarantee 100% execution)
+    document.addEventListener('submit', async (e) => {
+      const form = e.target.closest('#admin-edit-prod-form');
+      if (!form) return;
+      e.preventDefault();
+
+      const submitBtn = form.querySelector('#save-prod-changes-btn') || form.querySelector('button[type="submit"]');
+      const btnText = form.querySelector('#save-prod-btn-text');
+      const idInput = form.querySelector('#edit-prod-id');
+      const id = idInput?.value || `prn-custom-${Date.now()}`;
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        if (btnText) btnText.textContent = '⏳ Publishing Globally...';
+      }
+
+      try {
+        const name = form.querySelector('#edit-prod-name')?.value.trim();
+        const categoryId = form.querySelector('#edit-prod-category')?.value || 'apparel';
+        const catMap = {
+          'apparel': 'Apparel',
+          'sportswear': 'Sportswear',
+          'bags': 'Bags',
+          'drinkware': 'Drinkware',
+          'personalized-gifts': 'Personalized Gifts',
+          'stationery': 'Stationery',
+          'corporate-merchandise': 'Corporate & Business',
+          'tech-accessories': 'Tech Accessories'
+        };
+        const categoryName = catMap[categoryId] || 'Apparel';
+        const priceVal = form.querySelector('#edit-prod-price')?.value.trim();
+        const origPriceVal = form.querySelector('#edit-prod-orig-price')?.value.trim();
+        const primaryImg = form.querySelector('#edit-prod-image')?.value.trim();
+        const extraImgsStr = form.querySelector('#edit-prod-extra-images')?.value.trim();
+        const isAvailable = form.querySelector('#edit-prod-available')?.checked !== false;
+
+        const price = priceVal !== '' ? Number(priceVal) : null;
+        const originalPrice = origPriceVal !== '' ? Number(origPriceVal) : null;
+
+        let images = primaryImg ? [primaryImg] : [];
+        if (extraImgsStr) {
+          const extras = extraImgsStr.split(/[,\n]/).map(s => s.trim()).filter(Boolean);
+          images = [...images, ...extras];
+        }
+        if (images.length === 0) {
+          images = ['https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1000&q=80'];
+        }
+
+        store.showToast(`Publishing "${name}" live across all devices...`, 'info');
+
+        await store.updateProduct(id, {
+          name,
+          categoryId,
+          categoryName,
+          price,
+          originalPrice,
+          images,
+          isAvailable,
+          isQuoteOnly: price === null
+        });
+
+        if (btnText) btnText.textContent = '✓ Saved Live Globally!';
+        store.showToast(`✓ Product "${name}" saved & published globally!`, 'success');
+
+        setTimeout(() => {
+          const modal = document.getElementById('admin-edit-product-modal');
+          if (modal) modal.classList.add('hidden');
+          window._adminActiveTab = 'products';
+          if (window.printoraApp) {
+            window.printoraApp.renderAdminOnly();
+          }
+        }, 400);
+
+      } catch (err) {
+        console.error('Update/add product error:', err);
+        store.showToast('Save failed: ' + err.message, 'warning');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          if (btnText) btnText.textContent = 'Save Product Changes';
+        }
+      }
+    });
+
+    // Handle Delete Product Button (Delegated listener registered ONCE, prevents multiple confirms)
+    document.addEventListener('click', async (e) => {
+      const btn = e.target.closest('.admin-delete-prod-btn');
+      if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (btn.dataset.deleting === 'true') return;
+
+      const prodId = btn.getAttribute('data-prod-id');
+      const prodName = btn.getAttribute('data-prod-name') || store.products.find(p => p.id === prodId)?.name || 'this product';
+
+      if (confirm(`🗑️ Delete "${prodName}" from catalogue?\n\nThis will permanently remove it from both User Storefront and Admin Dashboard across all devices.`)) {
+        btn.dataset.deleting = 'true';
+        btn.disabled = true;
+        btn.textContent = '⏳ Deleting...';
+        await store.deleteProduct(prodId);
         window._adminActiveTab = 'products';
         if (window.printoraApp) {
           window.printoraApp.renderAdminOnly();
         }
       }
     });
-  });
+
+    // Revert Single Product to Official Image (in Edit Modal)
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('#restore-default-prod-img-btn');
+      if (!btn) return;
+      e.preventDefault();
+      const idIn = document.getElementById('edit-prod-id');
+      const prodId = idIn?.value;
+      if (!prodId) return;
+
+      const orig = INITIAL_PRODUCTS.find(p => p.id === prodId);
+      if (orig && orig.images && orig.images.length > 0) {
+        const imgIn = document.getElementById('edit-prod-image');
+        const imgPrev = document.getElementById('edit-prod-img-preview');
+        const extraImgsIn = document.getElementById('edit-prod-extra-images');
+        if (imgIn) imgIn.value = orig.images[0];
+        if (imgPrev) imgPrev.src = orig.images[0];
+        if (extraImgsIn) extraImgsIn.value = orig.images.slice(1).join(', ');
+        store.showToast(`Reverted to official photo for "${orig.name}"!`, 'info');
+      } else {
+        store.showToast('No official default image found for this custom item', 'warning');
+      }
+    });
+
+    // Restore All Official Images button
+    document.addEventListener('click', async (e) => {
+      const btn = e.target.closest('#admin-restore-all-images-btn');
+      if (!btn) return;
+      e.preventDefault();
+
+      if (confirm('↺ Restore all standard products back to original official mockups & photos across all devices?')) {
+        btn.disabled = true;
+        btn.textContent = '⏳ Restoring...';
+        await store.restoreAllOfficialImages();
+        window._adminActiveTab = 'products';
+        if (window.printoraApp) {
+          window.printoraApp.renderAdminOnly();
+        }
+      }
+    });
+  }
 }
 

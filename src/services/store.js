@@ -40,6 +40,7 @@ class PrintoraStore {
     this.wishlist = this.loadWishlist();
     this.savedDesigns = this.loadSavedDesigns();
     this.coupons = this.loadCoupons();
+    this.appliedCoupon = this.loadAppliedCoupon();
     this.orders = this.loadOrders();
     this.registeredUsers = this.loadRegisteredUsers();
     this.bulkEnquiries = this.loadBulkEnquiries();
@@ -84,6 +85,21 @@ class PrintoraStore {
   }
 
   // Persistence helpers with Global Cross-Device Cloud Synchronization
+  loadDeletedProducts() {
+    const cloudDeleted = getGlobalCloudState()?.deletedProducts || [];
+    const saved = safeGetItem('printora_deleted_products');
+    let localDeleted = [];
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) localDeleted = parsed;
+      } catch (e) {
+        localDeleted = [];
+      }
+    }
+    return Array.from(new Set([...cloudDeleted, ...localDeleted]));
+  }
+
   loadInitialProducts() {
     const cloudOverrides = getCloudOverrides() || {};
     const saved = safeGetItem('printora_custom_products');
@@ -100,33 +116,66 @@ class PrintoraStore {
       }
     }
 
-    const mergedProducts = INITIAL_PRODUCTS.map(p => {
-      // Cloud overrides have top priority so any update made on laptop/mobile reflects on ALL devices
-      const ed = cloudOverrides[p.id] || localSavedMap.get(p.id);
-      if (ed) {
-        return {
-          ...p,
-          name: ed.name || p.name,
-          price: ed.price !== undefined ? ed.price : p.price,
-          originalPrice: ed.originalPrice !== undefined ? ed.originalPrice : p.originalPrice,
-          images: (ed.images && ed.images.length > 0) ? ed.images : p.images,
-          isAvailable: ed.isAvailable !== undefined ? ed.isAvailable : p.isAvailable,
-          isQuoteOnly: ed.isQuoteOnly !== undefined ? ed.isQuoteOnly : p.isQuoteOnly
-        };
-      }
-      return { ...p };
-    });
+    const deletedSet = new Set(this.loadDeletedProducts());
 
-    // Also include any custom items added by admin that are not in INITIAL_PRODUCTS
+    const mergedProducts = INITIAL_PRODUCTS
+      .filter(p => !deletedSet.has(p.id))
+      .map(p => {
+        // Cloud overrides have top priority so any update made on laptop/mobile reflects on ALL devices
+        const ed = cloudOverrides[p.id] || localSavedMap.get(p.id);
+        if (ed) {
+          return {
+            ...p,
+            name: ed.name || p.name,
+            price: ed.price !== undefined ? ed.price : p.price,
+            originalPrice: ed.originalPrice !== undefined ? ed.originalPrice : p.originalPrice,
+            images: (ed.images && ed.images.length > 0) ? ed.images : p.images,
+            isAvailable: ed.isAvailable !== undefined ? ed.isAvailable : p.isAvailable,
+            isQuoteOnly: ed.isQuoteOnly !== undefined ? ed.isQuoteOnly : p.isQuoteOnly,
+            categoryId: ed.categoryId || p.categoryId,
+            categoryName: ed.categoryName || p.categoryName,
+            subtitle: ed.subtitle || p.subtitle,
+            description: ed.description || p.description
+          };
+        }
+        return { ...p };
+      })
+      .filter(p => p.isAvailable !== false);
+
+    // Also include any custom items added by admin that are not in INITIAL_PRODUCTS and not deleted
     const initialIdSet = new Set(INITIAL_PRODUCTS.map(p => p.id));
     for (const [id, prod] of localSavedMap.entries()) {
-      if (!initialIdSet.has(id) && !mergedProducts.some(p => p.id === id)) {
+      if (!initialIdSet.has(id) && !deletedSet.has(id) && prod.isAvailable !== false && !mergedProducts.some(p => p.id === id)) {
         mergedProducts.push(prod);
       }
     }
     for (const [id, ov] of Object.entries(cloudOverrides)) {
-      if (!initialIdSet.has(id) && !mergedProducts.some(p => p.id === id)) {
-        mergedProducts.push(ov);
+      if (!initialIdSet.has(id) && !deletedSet.has(id) && ov.isAvailable !== false && !mergedProducts.some(p => p.id === id)) {
+        mergedProducts.push({
+          id: ov.id || id,
+          slug: (ov.name || 'custom-item').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+          categoryId: ov.categoryId || 'apparel',
+          categoryName: ov.categoryName || 'Apparel',
+          name: ov.name || 'Custom Product',
+          subtitle: ov.subtitle || 'Custom Merchandise',
+          description: ov.description || 'Crafted with premium materials by Printora.',
+          price: ov.price,
+          originalPrice: ov.originalPrice,
+          isQuoteOnly: ov.price === null || ov.price === undefined,
+          isOnwards: false,
+          images: (ov.images && ov.images.length > 0) ? ov.images : ['https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1000&q=80'],
+          sizes: ov.sizes || ["S", "M", "L", "XL", "XXL"],
+          colors: ov.colors || [{ name: "Black", hex: "#111111" }, { name: "White", hex: "#FFFFFF" }],
+          isFeatured: false,
+          isAvailable: true,
+          customization: {
+            allowName: true,
+            allowNumber: false,
+            allowLogo: true,
+            allowNotes: true,
+            placementOptions: ["Center Chest", "Left Chest", "Back Print"]
+          }
+        });
       }
     }
 
@@ -139,30 +188,150 @@ class PrintoraStore {
   }
 
   async updateProduct(productId, updates) {
-    const idx = this.products.findIndex(p => p.id === productId);
+    let idx = this.products.findIndex(p => p.id === productId);
+    let targetProduct;
+
     if (idx !== -1) {
       this.products[idx] = { ...this.products[idx], ...updates };
-      this.saveProducts();
+      targetProduct = this.products[idx];
+    } else {
+      // NEW PRODUCT CREATION: Add to catalogue!
+      const catMap = {
+        'apparel': 'Apparel',
+        'sportswear': 'Sportswear',
+        'bags': 'Bags',
+        'drinkware': 'Drinkware',
+        'personalized-gifts': 'Personalized Gifts',
+        'stationery': 'Stationery',
+        'corporate-merchandise': 'Corporate & Business',
+        'tech-accessories': 'Tech Accessories'
+      };
+      const catId = updates.categoryId || 'apparel';
+      const catName = updates.categoryName || catMap[catId] || 'Apparel';
+      const prodName = updates.name || 'New Custom Product';
 
-      // Dual-sync to global Netlify cloud store for ALL devices worldwide
-      const currentOverrides = { ...getCloudOverrides() };
-      currentOverrides[productId] = {
-        id: productId,
-        name: this.products[idx].name,
-        price: this.products[idx].price,
-        originalPrice: this.products[idx].originalPrice,
-        images: this.products[idx].images,
-        isAvailable: this.products[idx].isAvailable,
-        isQuoteOnly: this.products[idx].isQuoteOnly
+      targetProduct = {
+        id: productId || `prn-custom-${Date.now()}`,
+        slug: prodName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+        categoryId: catId,
+        categoryName: catName,
+        name: prodName,
+        subtitle: updates.subtitle || `${catName} Staple • Premium Printora Finish`,
+        description: updates.description || 'Crafted with premium materials and high-precision custom printing by Printora.',
+        price: updates.price !== undefined ? updates.price : null,
+        originalPrice: updates.originalPrice !== undefined ? updates.originalPrice : (updates.price ? Math.round(updates.price * 1.3) : null),
+        isQuoteOnly: updates.price === null || updates.price === undefined,
+        isOnwards: false,
+        images: (updates.images && updates.images.length > 0) ? updates.images : ['https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1000&q=80'],
+        sizes: updates.sizes || ["S", "M", "L", "XL", "XXL"],
+        colors: updates.colors || [
+          { name: "Onyx Black", hex: "#111111" },
+          { name: "Pure White", hex: "#FFFFFF" }
+        ],
+        isFeatured: false,
+        isAvailable: updates.isAvailable !== undefined ? updates.isAvailable : true,
+        customization: {
+          allowName: true,
+          allowNumber: false,
+          allowLogo: true,
+          allowNotes: true,
+          placementOptions: ["Center Chest", "Left Chest", "Back Print"]
+        },
+        ...updates
       };
 
-      const success = await pushOverridesToCloud(currentOverrides);
-      if (success) {
-        console.log(`✅ [PRINTORA CLOUD] Product "${this.products[idx].name}" synced live for ALL devices!`);
-      }
-      return { success, product: this.products[idx] };
+      this.products.unshift(targetProduct);
+      idx = 0;
+
+      // Remove from deleted list if it was previously deleted
+      const delList = this.loadDeletedProducts().filter(id => id !== targetProduct.id);
+      safeSetItem('printora_deleted_products', JSON.stringify(delList));
     }
-    return { success: false, product: null };
+
+    this.saveProducts();
+
+    // Dual-sync to global Netlify cloud store for ALL devices worldwide
+    const currentOverrides = { ...(getCloudOverrides() || {}) };
+    currentOverrides[targetProduct.id] = {
+      id: targetProduct.id,
+      name: targetProduct.name,
+      price: targetProduct.price,
+      originalPrice: targetProduct.originalPrice,
+      images: targetProduct.images,
+      categoryId: targetProduct.categoryId,
+      categoryName: targetProduct.categoryName,
+      subtitle: targetProduct.subtitle,
+      description: targetProduct.description,
+      isAvailable: targetProduct.isAvailable,
+      isQuoteOnly: targetProduct.isQuoteOnly
+    };
+
+    const deletedList = this.loadDeletedProducts();
+    const success = await pushGlobalCloudState({
+      products: currentOverrides,
+      deletedProducts: deletedList
+    });
+
+    if (success) {
+      console.log(`✅ [PRINTORA CLOUD] Product "${targetProduct.name}" synced live for ALL devices!`);
+    }
+    this.notify();
+    return { success, product: targetProduct };
+  }
+
+  async deleteProduct(productId) {
+    if (!productId) return { success: false };
+    const prod = this.products.find(p => p.id === productId);
+    const prodName = prod ? prod.name : productId;
+
+    // 1. Add to deletedProducts tracking list locally
+    const deletedList = this.loadDeletedProducts();
+    if (!deletedList.includes(productId)) {
+      deletedList.push(productId);
+      safeSetItem('printora_deleted_products', JSON.stringify(deletedList));
+    }
+
+    // 2. Remove product completely from this.products
+    this.products = this.products.filter(p => p.id !== productId);
+    this.saveProducts();
+
+    // 3. Remove from cloud overrides if present & push deletedProducts to Netlify cloud state
+    const currentOverrides = { ...(getCloudOverrides() || {}) };
+    delete currentOverrides[productId];
+
+    const success = await pushGlobalCloudState({
+      products: currentOverrides,
+      deletedProducts: deletedList
+    });
+
+    this.notify();
+    this.showToast(`Product "${prodName}" permanently deleted from catalogue & all devices`, 'info');
+    return { success: true };
+  }
+
+  async restoreAllOfficialImages() {
+    let changedCount = 0;
+    const initialMap = new Map(INITIAL_PRODUCTS.map(p => [p.id, p]));
+    const currentOverrides = { ...(getCloudOverrides() || {}) };
+
+    this.products.forEach(p => {
+      const orig = initialMap.get(p.id);
+      if (orig && orig.images && orig.images.length > 0) {
+        p.images = [...orig.images];
+        if (currentOverrides[p.id]) {
+          currentOverrides[p.id].images = [...orig.images];
+        }
+        changedCount++;
+      }
+    });
+
+    this.saveProducts();
+    const success = await pushGlobalCloudState({
+      products: currentOverrides
+    });
+    this.notify();
+    this.showToast(`Official product images restored for ${changedCount} items across all devices!`, 'success');
+    return { success, changedCount };
   }
 
   // Publish all current products, orders & coupons live to Netlify Cloud for all devices
@@ -272,23 +441,76 @@ class PrintoraStore {
           }
         }
 
+        // -1. Synchronize Deleted Products across devices
+        if (Array.isArray(liveCloud.deletedProducts) && liveCloud.deletedProducts.length > 0) {
+          const localDeleted = this.loadDeletedProducts();
+          const mergedDeleted = Array.from(new Set([...localDeleted, ...liveCloud.deletedProducts]));
+          safeSetItem('printora_deleted_products', JSON.stringify(mergedDeleted));
+          const deletedSet = new Set(mergedDeleted);
+          const initialLen = this.products.length;
+          this.products = this.products.filter(p => !deletedSet.has(p.id));
+          if (this.products.length !== initialLen) {
+            safeSetItem('printora_custom_products', JSON.stringify(this.products));
+            hasChanges = true;
+          }
+        }
+
         // 3. Synchronize Products across devices
         if (liveCloud.products && Object.keys(liveCloud.products).length > 0) {
-          this.products = this.products.map(p => {
-            if (liveCloud.products[p.id]) {
-              const ov = liveCloud.products[p.id];
+          const deletedSet = new Set(this.loadDeletedProducts());
+          const existingMap = new Map(this.products.map(p => [p.id, p]));
+
+          Object.entries(liveCloud.products).forEach(([id, ov]) => {
+            if (deletedSet.has(id)) return; // Never restore deleted products
+
+            if (existingMap.has(id)) {
+              const existing = existingMap.get(id);
+              if (
+                existing.name !== ov.name ||
+                existing.price !== ov.price ||
+                existing.originalPrice !== ov.originalPrice ||
+                existing.isAvailable !== ov.isAvailable ||
+                JSON.stringify(existing.images) !== JSON.stringify(ov.images)
+              ) {
+                Object.assign(existing, {
+                  name: ov.name || existing.name,
+                  price: ov.price !== undefined ? ov.price : existing.price,
+                  originalPrice: ov.originalPrice !== undefined ? ov.originalPrice : existing.originalPrice,
+                  images: (ov.images && ov.images.length > 0) ? ov.images : existing.images,
+                  isAvailable: ov.isAvailable !== undefined ? ov.isAvailable : existing.isAvailable,
+                  isQuoteOnly: ov.isQuoteOnly !== undefined ? ov.isQuoteOnly : existing.isQuoteOnly
+                });
+                hasChanges = true;
+              }
+            } else if (ov.isAvailable !== false) {
+              // New product added on another device!
+              this.products.unshift({
+                id: ov.id || id,
+                slug: (ov.name || 'custom-item').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+                name: ov.name || 'Custom Product',
+                categoryId: ov.categoryId || 'apparel',
+                categoryName: ov.categoryName || 'Apparel',
+                subtitle: ov.subtitle || 'Custom Merchandise • Premium Printora Finish',
+                description: ov.description || 'Crafted with premium materials and high-precision custom printing by Printora.',
+                price: ov.price !== undefined ? ov.price : null,
+                originalPrice: ov.originalPrice,
+                isQuoteOnly: ov.price === null || ov.price === undefined,
+                isOnwards: false,
+                images: (ov.images && ov.images.length > 0) ? ov.images : ['https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1000&q=80'],
+                sizes: ov.sizes || ["S", "M", "L", "XL", "XXL"],
+                colors: ov.colors || [{ name: "Black", hex: "#111111" }, { name: "White", hex: "#FFFFFF" }],
+                isFeatured: false,
+                isAvailable: true,
+                customization: {
+                  allowName: true,
+                  allowNumber: false,
+                  allowLogo: true,
+                  allowNotes: true,
+                  placementOptions: ["Center Chest", "Left Chest", "Back Print"]
+                }
+              });
               hasChanges = true;
-              return {
-                ...p,
-                name: ov.name || p.name,
-                price: ov.price !== undefined ? ov.price : p.price,
-                originalPrice: ov.originalPrice !== undefined ? ov.originalPrice : p.originalPrice,
-                images: (ov.images && ov.images.length > 0) ? ov.images : p.images,
-                isAvailable: ov.isAvailable !== undefined ? ov.isAvailable : p.isAvailable,
-                isQuoteOnly: ov.isQuoteOnly !== undefined ? ov.isQuoteOnly : p.isQuoteOnly
-              };
             }
-            return p;
           });
 
           if (hasChanges) {
@@ -313,6 +535,17 @@ class PrintoraStore {
 
   saveCart() {
     safeSetItem('printora_cart', JSON.stringify(this.cart));
+    if (this.appliedCoupon) {
+      const subtotal = this.getCartSubtotal();
+      const res = this.validateCoupon(this.appliedCoupon.code, subtotal);
+      if (res.valid) {
+        this.appliedCoupon.discount = res.discount;
+        this.saveAppliedCoupon();
+      } else {
+        this.appliedCoupon = null;
+        this.saveAppliedCoupon();
+      }
+    }
     this.notify();
   }
 
@@ -478,6 +711,61 @@ class PrintoraStore {
       discount: Math.min(discount, subtotal),
       message: `🎉 Coupon "${coupon.code}" applied! Saved ₹${Math.min(discount, subtotal)} on MRP.`
     };
+  }
+
+  loadAppliedCoupon() {
+    const saved = safeGetItem('printora_applied_coupon');
+    if (!saved) return null;
+    try { return JSON.parse(saved); } catch (e) { return null; }
+  }
+
+  saveAppliedCoupon() {
+    if (this.appliedCoupon) {
+      safeSetItem('printora_applied_coupon', JSON.stringify(this.appliedCoupon));
+    } else {
+      safeRemoveItem('printora_applied_coupon');
+    }
+  }
+
+  applyCoupon(code) {
+    const subtotal = this.getCartSubtotal();
+    const res = this.validateCoupon(code, subtotal);
+    if (res.valid) {
+      this.appliedCoupon = res;
+      this.saveAppliedCoupon();
+      this.notify();
+      this.showToast(res.message, 'success');
+    } else {
+      this.showToast(res.message, 'error');
+    }
+    return res;
+  }
+
+  removeCoupon() {
+    const prev = this.appliedCoupon?.code;
+    this.appliedCoupon = null;
+    this.saveAppliedCoupon();
+    this.notify();
+    if (prev) {
+      this.showToast(`Coupon "${prev}" removed`, 'info');
+    }
+  }
+
+  getCouponDiscount() {
+    if (!this.appliedCoupon) return 0;
+    const subtotal = this.getCartSubtotal();
+    const res = this.validateCoupon(this.appliedCoupon.code, subtotal);
+    if (res.valid) {
+      if (this.appliedCoupon.discount !== res.discount) {
+        this.appliedCoupon.discount = res.discount;
+        this.saveAppliedCoupon();
+      }
+      return res.discount;
+    } else {
+      this.appliedCoupon = null;
+      this.saveAppliedCoupon();
+      return 0;
+    }
   }
 
   loadDeletedOrders() {
@@ -1028,6 +1316,8 @@ class PrintoraStore {
 
   clearCart() {
     this.cart = [];
+    this.appliedCoupon = null;
+    this.saveAppliedCoupon();
     this.saveCart();
   }
 
@@ -1044,8 +1334,9 @@ class PrintoraStore {
     return 0;
   }
 
-  getCartTotal(discount = 0) {
-    return Math.max(0, this.getCartSubtotal() - discount);
+  getCartTotal(discount = null) {
+    const disc = discount !== null ? discount : this.getCouponDiscount();
+    return Math.max(0, this.getCartSubtotal() - disc);
   }
 
   // ==========================================
@@ -1225,33 +1516,10 @@ class PrintoraStore {
     this.showToast(`Order assigned to ${assignmentData.supplierName}`, 'success');
   }
 
-  saveProduct(productData) {
-    const existingIndex = this.products.findIndex(p => p.id === productData.id);
-    if (existingIndex >= 0) {
-      this.products[existingIndex] = { ...this.products[existingIndex], ...productData };
-      this.showToast(`Product "${productData.name}" updated`, 'success');
-    } else {
-      const newProduct = {
-        ...productData,
-        id: `prn-custom-${Date.now()}`,
-        slug: productData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
-        isAvailable: true
-      };
-      this.products.unshift(newProduct);
-      this.showToast(`Product "${productData.name}" created`, 'success');
-    }
-    this.saveProducts();
-  }
-
-  deleteProduct(productId) {
-    this.products = this.products.filter(p => p.id !== productId);
-    this.saveProducts();
-    this.showToast("Product deleted", 'info');
-  }
-
   // Filtered and sorted products
   getFilteredProducts() {
     return this.products.filter(prod => {
+      if (prod.isAvailable === false) return false;
       const matchesCategory = this.activeCategory === 'all' || prod.categoryId === this.activeCategory;
       const q = this.searchQuery.toLowerCase().trim();
       const matchesSearch = !q ||

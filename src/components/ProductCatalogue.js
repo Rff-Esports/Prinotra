@@ -9,19 +9,20 @@ import { CATEGORIES } from '../data/products.js';
 export function renderGenderRecommendations(gender) {
   const userGender = gender || store.getUserGender() || 'Unisex';
 
+  const activeProducts = store.products.filter(p => p.isAvailable !== false);
   let recommendedProducts = [];
   if (userGender === 'Male') {
     const maleIds = ['prn-app-03', 'prn-spt-01', 'prn-bag-02', 'prn-gft-03', 'prn-app-05', 'prn-spt-02', 'prn-drk-04', 'prn-app-01'];
-    recommendedProducts = store.products.filter(p => maleIds.includes(p.id));
+    recommendedProducts = activeProducts.filter(p => maleIds.includes(p.id));
   } else if (userGender === 'Female') {
     const femaleIds = ['prn-bag-01', 'prn-gft-06', 'prn-drk-02', 'prn-gft-07', 'prn-app-03', 'prn-drk-03', 'prn-stn-02', 'prn-gft-01'];
-    recommendedProducts = store.products.filter(p => femaleIds.includes(p.id));
+    recommendedProducts = activeProducts.filter(p => femaleIds.includes(p.id));
   } else {
     const unisexIds = ['prn-app-01', 'prn-spt-01', 'prn-bag-01', 'prn-drk-01', 'prn-gft-01', 'prn-app-05', 'prn-drk-03', 'prn-stn-03'];
-    recommendedProducts = store.products.filter(p => unisexIds.includes(p.id));
+    recommendedProducts = activeProducts.filter(p => unisexIds.includes(p.id));
   }
   if (recommendedProducts.length === 0) {
-    recommendedProducts = store.products.slice(0, 4);
+    recommendedProducts = activeProducts.slice(0, 4);
   }
 
   return `
@@ -60,7 +61,7 @@ export function renderGenderRecommendations(gender) {
 
 export function renderProductCatalogue() {
   const filteredProducts = store.getFilteredProducts();
-  const totalCount = store.products.length;
+  const totalCount = store.products.filter(p => p.isAvailable !== false).length;
   const userGender = store.getUserGender() || 'Unisex';
 
   if (typeof window !== 'undefined') {

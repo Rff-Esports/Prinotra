@@ -89,7 +89,7 @@ export const INITIAL_PRODUCTS = [
       "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1000&q=80",
       "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=1000&q=80"
     ],
-    sizes: ["S", "M", "L", "XL", "XXL"],
+    sizes: ["XS", "S", "M", "L", "XL", "XXL", "3XL"],
     colors: [
       { name: "Onyx Black", hex: "#111111" },
       { name: "Pure White", hex: "#FFFFFF" },
@@ -103,7 +103,6 @@ export const INITIAL_PRODUCTS = [
       allowNumber: false,
       allowLogo: true,
       allowNotes: true,
-      allowModel: true,
       allowUpload: true,
       placementOptions: ["Left Chest", "Center Chest", "Full Back", "Sleeve Print"]
     }
@@ -124,7 +123,7 @@ export const INITIAL_PRODUCTS = [
       "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?auto=format&fit=crop&w=1000&q=80",
       "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=1000&q=80"
     ],
-    sizes: ["S", "M", "L", "XL", "XXL"],
+    sizes: ["XS", "S", "M", "L", "XL", "XXL", "3XL"],
     colors: [
       { name: "Obsidian Black", hex: "#0D0D0D" },
       { name: "Off White", hex: "#F5F3EF" },
@@ -157,7 +156,7 @@ export const INITIAL_PRODUCTS = [
       "/assets/mockups/tshirt_oversized.png",
       "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=1000&q=80"
     ],
-    sizes: ["S", "M", "L", "XL", "XXL"],
+    sizes: ["XS", "S", "M", "L", "XL", "XXL", "3XL"],
     colors: [
       { name: "Washed Charcoal", hex: "#2B2B2B" },
       { name: "Bone White", hex: "#EAE7DF" },
@@ -189,7 +188,7 @@ export const INITIAL_PRODUCTS = [
       "https://images.unsplash.com/photo-1586363104862-3a5e2ab60d99?auto=format&fit=crop&w=1000&q=80",
       "https://images.unsplash.com/photo-1625910513413-5963957f83fb?auto=format&fit=crop&w=1000&q=80"
     ],
-    sizes: ["S", "M", "L", "XL", "XXL"],
+    sizes: ["XS", "S", "M", "L", "XL", "XXL", "3XL"],
     colors: [
       { name: "Jet Black", hex: "#121212" },
       { name: "Royal Navy", hex: "#152238" },
@@ -222,7 +221,7 @@ export const INITIAL_PRODUCTS = [
       "/assets/mockups/hoodie.png",
       "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=1000&q=80"
     ],
-    sizes: ["S", "M", "L", "XL", "XXL"],
+    sizes: ["XS", "S", "M", "L", "XL", "XXL", "3XL"],
     colors: [
       { name: "Pitch Black", hex: "#0E0E0E" },
       { name: "Desert Sand", hex: "#D4C7B5" },
@@ -256,7 +255,7 @@ export const INITIAL_PRODUCTS = [
       "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=1000&q=80",
       "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&w=1000&q=80"
     ],
-    sizes: ["S", "M", "L", "XL", "XXL"],
+    sizes: ["XS", "S", "M", "L", "XL", "XXL", "3XL"],
     colors: [
       { name: "Classic Black", hex: "#111111" },
       { name: "Beige Cream", hex: "#EBE5D8" },
@@ -287,7 +286,7 @@ export const INITIAL_PRODUCTS = [
     images: [
       "https://images.unsplash.com/photo-1618354691438-25bc04584c23?auto=format&fit=crop&w=1000&q=80"
     ],
-    sizes: ["S", "M", "L", "XL", "XXL"],
+    sizes: ["XS", "S", "M", "L", "XL", "XXL", "3XL"],
     colors: [
       { name: "Midnight Black", hex: "#111111" },
       { name: "Bright White", hex: "#FFFFFF" },
@@ -355,7 +354,7 @@ export const INITIAL_PRODUCTS = [
       "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1000&q=80",
       "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1000&q=80"
     ],
-    sizes: ["S", "M", "L", "XL", "XXL"],
+    sizes: ["XS", "S", "M", "L", "XL", "XXL", "3XL"],
     colors: [
       { name: "Stealth Black & Gold", hex: "#151515" },
       { name: "Royal Blue & White", hex: "#0047AB" },
@@ -390,7 +389,7 @@ export const INITIAL_PRODUCTS = [
       "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1000&q=80",
       "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?auto=format&fit=crop&w=1000&q=80"
     ],
-    sizes: ["S", "M", "L", "XL", "XXL"],
+    sizes: ["XS", "S", "M", "L", "XL", "XXL", "3XL"],
     colors: [
       { name: "Navy & Neon", hex: "#0C1B33" },
       { name: "Black & Scarlet", hex: "#1E1E1E" },
@@ -421,7 +420,7 @@ export const INITIAL_PRODUCTS = [
     images: [
       "https://images.unsplash.com/photo-1581655353564-df123a1eb820?auto=format&fit=crop&w=1000&q=80"
     ],
-    sizes: ["S", "M", "L", "XL", "XXL"],
+    sizes: ["XS", "S", "M", "L", "XL", "XXL", "3XL"],
     colors: [
       { name: "Carbon Grey", hex: "#333333" },
       { name: "Active Navy", hex: "#1C3144" },
@@ -452,7 +451,7 @@ export const INITIAL_PRODUCTS = [
     images: [
       "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1000&q=80"
     ],
-    sizes: ["S", "M", "L", "XL", "XXL"],
+    sizes: ["XS", "S", "M", "L", "XL", "XXL", "3XL"],
     colors: [
       { name: "Full Custom Colorway", hex: "#111111" }
     ],
@@ -1345,7 +1344,7 @@ export const INITIAL_PRODUCTS = [
     images: [
       "https://images.unsplash.com/photo-1527719327859-c6ce80353573?auto=format&fit=crop&w=1000&q=80"
     ],
-    sizes: ["S", "M", "L", "XL", "XXL"],
+    sizes: ["XS", "S", "M", "L", "XL", "XXL", "3XL"],
     colors: [
       { name: "Corporate Black", hex: "#121212" },
       { name: "White", hex: "#FFFFFF" },

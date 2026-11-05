@@ -78,7 +78,12 @@ export function renderProductDetailModal() {
 
             <!-- Size Selector -->
             <div id="prod-modal-size-box">
-              <label class="block text-[11px] uppercase tracking-wider font-bold text-[#444] mb-2 font-heading">Select Size</label>
+              <div class="flex items-center justify-between mb-2">
+                <label class="block text-[11px] uppercase tracking-wider font-bold text-[#444] font-heading">Select Size</label>
+                <button type="button" id="open-size-chart-btn" class="text-[11px] font-bold text-[#FF6B35] hover:text-black hover:underline flex items-center gap-1 cursor-pointer">
+                  <span>📏 Size Chart & Guide</span>
+                </button>
+              </div>
               <div class="flex flex-wrap gap-2" id="prod-modal-sizes">
                 <!-- Size pills dynamically rendered -->
               </div>
@@ -192,6 +197,113 @@ export function renderProductDetailModal() {
 
       </div>
     </div>
+
+    <!-- Size Chart Modal Popup -->
+    <div id="printora-size-chart-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto animate-fade-in">
+      <div class="relative w-full max-w-lg bg-white border border-[#DDD4C4] rounded-3xl shadow-2xl p-6 sm:p-7 space-y-5 text-[#111] my-8">
+        <div class="flex items-center justify-between pb-3 border-b border-[#EFECE4]">
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-[#FF6B35] bg-[#FF6B35]/10 px-2 py-0.5 rounded-full font-heading">Fit & Measurement Guide</span>
+            <h3 class="font-heading text-xl font-bold text-black mt-1">Garment Size Chart (Inches)</h3>
+          </div>
+          <button id="close-size-chart-btn" type="button" class="text-[#888] hover:text-black p-1.5 rounded-full hover:bg-[#F0EAE1] text-lg cursor-pointer">✕</button>
+        </div>
+
+        <!-- Size Table -->
+        <div class="overflow-x-auto rounded-2xl border border-[#DDD4C4]">
+          <table class="w-full text-center text-xs">
+            <thead class="bg-[#FAF7F2] font-bold text-[#444] border-b border-[#DDD4C4]">
+              <tr>
+                <th class="py-2.5 px-3">Size</th>
+                <th class="py-2.5 px-3">Chest</th>
+                <th class="py-2.5 px-3">Length</th>
+                <th class="py-2.5 px-3">Shoulder</th>
+                <th class="py-2.5 px-3 text-right pr-4">Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#EFECE4] font-medium">
+              <tr class="hover:bg-[#FAF9F5]">
+                <td class="py-2.5 px-3 font-bold text-black font-mono">XS</td>
+                <td class="py-2.5 px-3 font-mono">36"</td>
+                <td class="py-2.5 px-3 font-mono">26"</td>
+                <td class="py-2.5 px-3 font-mono">16.5"</td>
+                <td class="py-2.5 px-3 text-right pr-4">
+                  <button type="button" class="quick-select-size-btn text-[11px] font-bold text-[#FF6B35] hover:underline cursor-pointer" data-size="XS">Select XS</button>
+                </td>
+              </tr>
+              <tr class="hover:bg-[#FAF9F5]">
+                <td class="py-2.5 px-3 font-bold text-black font-mono">S</td>
+                <td class="py-2.5 px-3 font-mono">38"</td>
+                <td class="py-2.5 px-3 font-mono">27"</td>
+                <td class="py-2.5 px-3 font-mono">17.5"</td>
+                <td class="py-2.5 px-3 text-right pr-4">
+                  <button type="button" class="quick-select-size-btn text-[11px] font-bold text-[#FF6B35] hover:underline cursor-pointer" data-size="S">Select S</button>
+                </td>
+              </tr>
+              <tr class="hover:bg-[#FAF9F5]">
+                <td class="py-2.5 px-3 font-bold text-black font-mono">M</td>
+                <td class="py-2.5 px-3 font-mono">40"</td>
+                <td class="py-2.5 px-3 font-mono">28"</td>
+                <td class="py-2.5 px-3 font-mono">18.5"</td>
+                <td class="py-2.5 px-3 text-right pr-4">
+                  <button type="button" class="quick-select-size-btn text-[11px] font-bold text-[#FF6B35] hover:underline cursor-pointer" data-size="M">Select M</button>
+                </td>
+              </tr>
+              <tr class="hover:bg-[#FAF9F5]">
+                <td class="py-2.5 px-3 font-bold text-black font-mono">L</td>
+                <td class="py-2.5 px-3 font-mono">42"</td>
+                <td class="py-2.5 px-3 font-mono">29"</td>
+                <td class="py-2.5 px-3 font-mono">19.5"</td>
+                <td class="py-2.5 px-3 text-right pr-4">
+                  <button type="button" class="quick-select-size-btn text-[11px] font-bold text-[#FF6B35] hover:underline cursor-pointer" data-size="L">Select L</button>
+                </td>
+              </tr>
+              <tr class="hover:bg-[#FAF9F5]">
+                <td class="py-2.5 px-3 font-bold text-black font-mono">XL</td>
+                <td class="py-2.5 px-3 font-mono">44"</td>
+                <td class="py-2.5 px-3 font-mono">30"</td>
+                <td class="py-2.5 px-3 font-mono">20.5"</td>
+                <td class="py-2.5 px-3 text-right pr-4">
+                  <button type="button" class="quick-select-size-btn text-[11px] font-bold text-[#FF6B35] hover:underline cursor-pointer" data-size="XL">Select XL</button>
+                </td>
+              </tr>
+              <tr class="hover:bg-[#FAF9F5]">
+                <td class="py-2.5 px-3 font-bold text-black font-mono">XXL</td>
+                <td class="py-2.5 px-3 font-mono">46"</td>
+                <td class="py-2.5 px-3 font-mono">31"</td>
+                <td class="py-2.5 px-3 font-mono">21.5"</td>
+                <td class="py-2.5 px-3 text-right pr-4">
+                  <button type="button" class="quick-select-size-btn text-[11px] font-bold text-[#FF6B35] hover:underline cursor-pointer" data-size="XXL">Select XXL</button>
+                </td>
+              </tr>
+              <tr class="hover:bg-[#FAF9F5]">
+                <td class="py-2.5 px-3 font-bold text-black font-mono">XXXL (3XL)</td>
+                <td class="py-2.5 px-3 font-mono">48"</td>
+                <td class="py-2.5 px-3 font-mono">32"</td>
+                <td class="py-2.5 px-3 font-mono">22.5"</td>
+                <td class="py-2.5 px-3 text-right pr-4">
+                  <button type="button" class="quick-select-size-btn text-[11px] font-bold text-[#FF6B35] hover:underline cursor-pointer" data-size="3XL">Select 3XL</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Fitting Tips -->
+        <div class="p-3 bg-[#FAF8F5] rounded-xl border border-[#DDD4C4] text-[11px] text-[#666] space-y-1">
+          <strong class="text-black block font-heading">💡 Pro Tip for Best Fit:</strong>
+          <p>• <strong>Classic / Regular Fit:</strong> Order your exact chest measurement.</p>
+          <p>• <strong>Oversized Streetwear Fit:</strong> Order your normal size (our oversized tees are already tailored with a 4-inch relaxed chest drop).</p>
+          <p>• All garments are 100% bio-washed pre-shrunk cotton, zero shrinkage after washing.</p>
+        </div>
+
+        <div class="flex justify-end pt-1">
+          <button type="button" id="size-chart-got-it-btn" class="bg-[#111] hover:bg-[#FF6B35] text-white px-5 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer">
+            Got it!
+          </button>
+        </div>
+      </div>
+    </div>
   `;
 }
 
@@ -205,8 +317,13 @@ export function openProductDetail(productId) {
   const product = store.products.find(p => p.id === productId || p.slug === productId);
   if (!product) return;
 
+  const isGarment = product.categoryId === 'apparel' || product.categoryId === 'sportswear' || 
+    product.name.toLowerCase().includes('shirt') || product.name.toLowerCase().includes('hoodie') || 
+    product.name.toLowerCase().includes('sweatshirt') || product.name.toLowerCase().includes('jersey') ||
+    product.name.toLowerCase().includes('top') || product.name.toLowerCase().includes('uniform');
+
   currentSelectedProduct = product;
-  currentSelectedSize = product.sizes?.[0] || 'Standard';
+  currentSelectedSize = isGarment ? 'M' : (product.sizes?.[0] || 'Standard');
   currentSelectedColor = product.colors?.[0]?.name || 'Standard';
   currentModalQty = 1;
   currentUploadedFile = null;
@@ -221,6 +338,7 @@ export function openProductDetail(productId) {
   const descEl = document.getElementById('prod-modal-desc');
   const mainImg = document.getElementById('prod-modal-main-img');
   const thumbsContainer = document.getElementById('prod-modal-thumbnails');
+  const sizeBox = document.getElementById('prod-modal-size-box');
   const sizesContainer = document.getElementById('prod-modal-sizes');
   const colorsContainer = document.getElementById('prod-modal-colors');
   const qtyVal = document.getElementById('prod-modal-qty-val');
@@ -237,12 +355,12 @@ export function openProductDetail(productId) {
   if (qtyVal) qtyVal.textContent = '1';
   if (fileText) fileText.innerHTML = `${renderIcon('upload', 'w-3 h-3 text-[#FF6B35]')} Select Graphic / Artwork`;
 
-  // Phone model input visibility
+  // Phone model input visibility: Strictly ONLY for phone cases, completely removed for all other products!
   const modelGroup = document.getElementById('prod-modal-model-group');
   const modelInput = document.getElementById('prod-modal-input-model');
   if (modelInput) modelInput.value = '';
   if (modelGroup) {
-    if (product.customization?.allowModel || product.id === 'prn-tch-01' || product.categoryId === 'tech-accessories') {
+    if (product.id === 'prn-tch-01' && (product.slug?.includes('phone') || product.name?.toLowerCase().includes('phone'))) {
       modelGroup.classList.remove('hidden');
     } else {
       modelGroup.classList.add('hidden');
@@ -283,7 +401,7 @@ export function openProductDetail(productId) {
   if (thumbsContainer) {
     if (product.images && product.images.length > 1) {
       thumbsContainer.innerHTML = product.images.map((img, i) => `
-        <button type="button" class="w-14 h-14 rounded-xl overflow-hidden border-2 ${i === 0 ? 'border-black' : 'border-[#DDD4C4]'} flex-shrink-0 transition-all hover:border-black" onclick="document.getElementById('prod-modal-main-img').src='${img}';">
+        <button type="button" class="w-14 h-14 rounded-xl overflow-hidden border-2 ${i === 0 ? 'border-black' : 'border-[#DDD4C4]'} flex-shrink-0 transition-all hover:border-black cursor-pointer" onclick="document.getElementById('prod-modal-main-img').src='${img}';">
           <img src="${img}" class="w-full h-full object-cover">
         </button>
       `).join('');
@@ -292,16 +410,32 @@ export function openProductDetail(productId) {
     }
   }
 
-  // Sizes
+  // Sizes rendering with full XS to 3XL support
   if (sizesContainer) {
-    if (product.sizes && product.sizes.length > 0) {
-      sizesContainer.innerHTML = product.sizes.map((s, i) => `
-        <button type="button" class="prod-modal-size-btn px-3.5 py-1.5 rounded-xl border text-xs font-bold ${i === 0 ? 'border-black bg-[#111] text-white' : 'border-[#DDD4C4] bg-white text-[#444]'} transition-all" data-size="${s}">
+    let displaySizes = product.sizes;
+    if (isGarment) {
+      displaySizes = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
+    }
+
+    if (displaySizes && displaySizes.length > 0) {
+      if (sizeBox) sizeBox.classList.remove('hidden');
+      sizesContainer.innerHTML = displaySizes.map((s) => `
+        <button type="button" class="prod-modal-size-btn px-3.5 py-1.5 rounded-xl border text-xs font-bold ${s === currentSelectedSize ? 'border-black bg-[#111] text-white shadow-sm' : 'border-[#DDD4C4] bg-white text-[#444] hover:border-black'} transition-all cursor-pointer" data-size="${s}">
           ${s}
         </button>
       `).join('');
     } else {
-      sizesContainer.innerHTML = '<span class="text-xs text-[#777]">Standard Size</span>';
+      if (sizeBox) sizeBox.classList.add('hidden');
+    }
+  }
+
+  // Size Chart Button visibility: Show on garments
+  const sizeChartBtn = document.getElementById('open-size-chart-btn');
+  if (sizeChartBtn) {
+    if (isGarment) {
+      sizeChartBtn.classList.remove('hidden');
+    } else {
+      sizeChartBtn.classList.add('hidden');
     }
   }
 
@@ -309,7 +443,7 @@ export function openProductDetail(productId) {
   if (colorsContainer) {
     if (product.colors && product.colors.length > 0) {
       colorsContainer.innerHTML = product.colors.map((c, i) => `
-        <button type="button" class="prod-modal-color-btn w-7 h-7 rounded-full border-2 ${i === 0 ? 'border-black' : 'border-transparent'} shadow-sm transition-transform hover:scale-110" style="background-color: ${c.hex || '#111'};" title="${c.name}" data-color="${c.name}">
+        <button type="button" class="prod-modal-color-btn w-7 h-7 rounded-full border-2 ${i === 0 ? 'border-black' : 'border-transparent'} shadow-sm transition-transform hover:scale-110 cursor-pointer" style="background-color: ${c.hex || '#111'};" title="${c.name}" data-color="${c.name}">
         </button>
       `).join('');
     } else {
@@ -349,136 +483,199 @@ export function openProductDetail(productId) {
 
 
 export function initProductDetailModalEvents() {
+  if (window.__prodDetailModalListenersInitialized) return;
+  window.__prodDetailModalListenersInitialized = true;
+
   const modal = document.getElementById('product-detail-modal');
-  const closeBtn = document.getElementById('prod-modal-close-btn');
-  const qtyMinus = document.getElementById('prod-modal-qty-minus');
-  const qtyPlus = document.getElementById('prod-modal-qty-plus');
-  const qtyVal = document.getElementById('prod-modal-qty-val');
-  const addBagBtn = document.getElementById('prod-modal-add-bag-btn');
-  const buyNowBtn = document.getElementById('prod-modal-buy-now-btn');
-  const fileInput = document.getElementById('prod-modal-file-upload');
-  const fileText = document.getElementById('prod-modal-file-text');
-  const pincodeBtn = document.getElementById('prod-modal-pincode-check-btn');
-  const pincodeResult = document.getElementById('prod-modal-pincode-result');
 
-  if (closeBtn && modal) {
-    closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
-  }
+  // Delegated close product detail modal
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#prod-modal-close-btn') || e.target === modal) {
+      if (modal) modal.classList.add('hidden');
+    }
+  });
 
-  if (modal) {
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) modal.classList.add('hidden');
+  // Delegated Size Selection Click (100% Guaranteed to work for XS, S, M, L, XL, XXL, 3XL)
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.prod-modal-size-btn');
+    if (!btn) return;
+    e.preventDefault();
+    const size = btn.getAttribute('data-size');
+    if (!size) return;
+    currentSelectedSize = size;
+    document.querySelectorAll('.prod-modal-size-btn').forEach(b => {
+      b.className = 'prod-modal-size-btn px-3.5 py-1.5 rounded-xl border text-xs font-bold border-[#DDD4C4] bg-white text-[#444] hover:border-black transition-all cursor-pointer';
     });
-  }
+    btn.className = 'prod-modal-size-btn px-3.5 py-1.5 rounded-xl border text-xs font-bold border-black bg-[#111] text-white shadow-sm transition-all cursor-pointer';
+    store.showToast(`Selected size: ${size}`, 'info');
+  });
+
+  // Delegated Color Selection Click
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.prod-modal-color-btn');
+    if (!btn) return;
+    e.preventDefault();
+    const color = btn.getAttribute('data-color');
+    if (!color) return;
+    currentSelectedColor = color;
+    document.querySelectorAll('.prod-modal-color-btn').forEach(b => {
+      b.classList.remove('border-black', 'scale-110');
+      b.classList.add('border-transparent');
+    });
+    btn.classList.remove('border-transparent');
+    btn.classList.add('border-black', 'scale-110');
+    store.showToast(`Selected color: ${color}`, 'info');
+  });
+
+  // Delegated Open Size Chart Modal
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('#open-size-chart-btn');
+    if (!btn) return;
+    e.preventDefault();
+    const chartModal = document.getElementById('printora-size-chart-modal');
+    if (chartModal) chartModal.classList.remove('hidden');
+  });
+
+  // Delegated Close Size Chart Modal
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#close-size-chart-btn') || e.target.closest('#size-chart-got-it-btn') || e.target.id === 'printora-size-chart-modal') {
+      const chartModal = document.getElementById('printora-size-chart-modal');
+      if (chartModal) chartModal.classList.add('hidden');
+    }
+  });
+
+  // Delegated Quick Select Size inside Size Chart Table
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.quick-select-size-btn');
+    if (!btn) return;
+    e.preventDefault();
+    const size = btn.getAttribute('data-size');
+    if (!size) return;
+    currentSelectedSize = size;
+    // Reflect on modal size buttons
+    document.querySelectorAll('.prod-modal-size-btn').forEach(b => {
+      if (b.getAttribute('data-size') === size) {
+        b.className = 'prod-modal-size-btn px-3.5 py-1.5 rounded-xl border text-xs font-bold border-black bg-[#111] text-white shadow-sm transition-all cursor-pointer';
+      } else {
+        b.className = 'prod-modal-size-btn px-3.5 py-1.5 rounded-xl border text-xs font-bold border-[#DDD4C4] bg-white text-[#444] hover:border-black transition-all cursor-pointer';
+      }
+    });
+    const chartModal = document.getElementById('printora-size-chart-modal');
+    if (chartModal) chartModal.classList.add('hidden');
+    store.showToast(`Selected size: ${size}`, 'success');
+  });
 
   // PIN checker
-  if (pincodeBtn) {
-    pincodeBtn.addEventListener('click', () => {
-      const pin = document.getElementById('prod-modal-pincode-input')?.value;
-      if (pin && pin.length === 6) {
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#prod-modal-pincode-check-btn')) {
+      const pin = document.getElementById('prod-modal-pincode-input')?.value.trim();
+      const pincodeResult = document.getElementById('prod-modal-pincode-result');
+      if (pin && pin.length === 6 && /^\d{6}$/.test(pin)) {
         if (pincodeResult) pincodeResult.classList.remove('hidden');
       } else {
         alert("Please enter a valid 6-digit PIN code.");
       }
-    });
-  }
+    }
+  });
 
   // Qty +/-
-  if (qtyMinus && qtyPlus && qtyVal) {
-    qtyMinus.addEventListener('click', () => {
+  document.addEventListener('click', (e) => {
+    const qtyVal = document.getElementById('prod-modal-qty-val');
+    if (e.target.closest('#prod-modal-qty-minus')) {
       if (currentModalQty > 1) {
         currentModalQty--;
-        qtyVal.textContent = currentModalQty;
+        if (qtyVal) qtyVal.textContent = currentModalQty;
       }
-    });
-
-    qtyPlus.addEventListener('click', () => {
+    } else if (e.target.closest('#prod-modal-qty-plus')) {
       currentModalQty++;
-      qtyVal.textContent = currentModalQty;
-    });
-  }
+      if (qtyVal) qtyVal.textContent = currentModalQty;
+    }
+  });
 
   // File Upload
-  if (fileInput && fileText) {
-    fileInput.addEventListener('change', (e) => {
+  document.addEventListener('change', (e) => {
+    if (e.target.id === 'prod-modal-file-upload') {
+      const fileText = document.getElementById('prod-modal-file-text');
       if (e.target.files && e.target.files[0]) {
         currentUploadedFile = e.target.files[0];
-        fileText.textContent = `✓ ${currentUploadedFile.name.slice(0, 18)}...`;
+        if (fileText) fileText.textContent = `✓ ${currentUploadedFile.name.slice(0, 18)}...`;
       }
-    });
-  }
+    }
+  });
 
   // Add to Bag
-  if (addBagBtn) {
-    addBagBtn.addEventListener('click', () => {
-      if (!currentSelectedProduct) return;
-      const phoneModel = document.getElementById('prod-modal-input-model')?.value.trim() || '';
-      if (currentSelectedProduct.customization?.allowModel || currentSelectedProduct.id === 'prn-tch-01') {
-        if (!phoneModel) {
-          alert("Please enter your mobile phone model (e.g. iPhone 15, Samsung S24) so we print the exact fit.");
-          document.getElementById('prod-modal-input-model')?.focus();
-          return;
-        }
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#prod-modal-add-bag-btn')) return;
+    if (!currentSelectedProduct) return;
+
+    const phoneModel = document.getElementById('prod-modal-input-model')?.value.trim() || '';
+    // Only require phone model for strict phone case product
+    if (currentSelectedProduct.id === 'prn-tch-01' && (currentSelectedProduct.slug?.includes('phone') || currentSelectedProduct.name?.toLowerCase().includes('phone'))) {
+      if (!phoneModel) {
+        alert("Please enter your mobile phone model (e.g. iPhone 15, Samsung S24) so we print the exact fit.");
+        document.getElementById('prod-modal-input-model')?.focus();
+        return;
       }
+    }
 
-      const customName = document.getElementById('prod-modal-input-name')?.value || '';
-      const customNumber = document.getElementById('prod-modal-input-number')?.value || '';
-      let customNotes = document.getElementById('prod-modal-input-notes')?.value || '';
-      if (phoneModel) {
-        customNotes = customNotes ? `Model: ${phoneModel} | ${customNotes}` : `Model: ${phoneModel}`;
-      }
+    const customName = document.getElementById('prod-modal-input-name')?.value || '';
+    const customNumber = document.getElementById('prod-modal-input-number')?.value || '';
+    let customNotes = document.getElementById('prod-modal-input-notes')?.value || '';
+    if (phoneModel) {
+      customNotes = customNotes ? `Model: ${phoneModel} | ${customNotes}` : `Model: ${phoneModel}`;
+    }
 
-      store.addToCart(currentSelectedProduct, {
-        size: currentSelectedSize,
-        color: currentSelectedColor,
-        quantity: currentModalQty,
-        customName,
-        customNumber,
-        customNotes,
-        phoneModel,
-        artworkFile: currentUploadedFile
-      });
-
-      if (modal) modal.classList.add('hidden');
-      const cartDrawer = document.getElementById('cart-drawer');
-      if (cartDrawer) cartDrawer.classList.remove('hidden');
+    store.addToCart(currentSelectedProduct, {
+      size: currentSelectedSize,
+      color: currentSelectedColor,
+      quantity: currentModalQty,
+      customName,
+      customNumber,
+      customNotes,
+      phoneModel,
+      artworkFile: currentUploadedFile
     });
-  }
+
+    if (modal) modal.classList.add('hidden');
+    const cartDrawer = document.getElementById('cart-drawer');
+    if (cartDrawer) cartDrawer.classList.remove('hidden');
+  });
 
   // Buy Now
-  if (buyNowBtn) {
-    buyNowBtn.addEventListener('click', () => {
-      if (!currentSelectedProduct) return;
-      const phoneModel = document.getElementById('prod-modal-input-model')?.value.trim() || '';
-      if (currentSelectedProduct.customization?.allowModel || currentSelectedProduct.id === 'prn-tch-01') {
-        if (!phoneModel) {
-          alert("Please enter your mobile phone model (e.g. iPhone 15, Samsung S24) so we print the exact fit.");
-          document.getElementById('prod-modal-input-model')?.focus();
-          return;
-        }
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#prod-modal-buy-now-btn')) return;
+    if (!currentSelectedProduct) return;
+
+    const phoneModel = document.getElementById('prod-modal-input-model')?.value.trim() || '';
+    // Only require phone model for strict phone case product
+    if (currentSelectedProduct.id === 'prn-tch-01' && (currentSelectedProduct.slug?.includes('phone') || currentSelectedProduct.name?.toLowerCase().includes('phone'))) {
+      if (!phoneModel) {
+        alert("Please enter your mobile phone model (e.g. iPhone 15, Samsung S24) so we print the exact fit.");
+        document.getElementById('prod-modal-input-model')?.focus();
+        return;
       }
+    }
 
-      const customName = document.getElementById('prod-modal-input-name')?.value || '';
-      const customNumber = document.getElementById('prod-modal-input-number')?.value || '';
-      let customNotes = document.getElementById('prod-modal-input-notes')?.value || '';
-      if (phoneModel) {
-        customNotes = customNotes ? `Model: ${phoneModel} | ${customNotes}` : `Model: ${phoneModel}`;
-      }
+    const customName = document.getElementById('prod-modal-input-name')?.value || '';
+    const customNumber = document.getElementById('prod-modal-input-number')?.value || '';
+    let customNotes = document.getElementById('prod-modal-input-notes')?.value || '';
+    if (phoneModel) {
+      customNotes = customNotes ? `Model: ${phoneModel} | ${customNotes}` : `Model: ${phoneModel}`;
+    }
 
-      store.addToCart(currentSelectedProduct, {
-        size: currentSelectedSize,
-        color: currentSelectedColor,
-        quantity: currentModalQty,
-        customName,
-        customNumber,
-        customNotes,
-        phoneModel,
-        artworkFile: currentUploadedFile
-      });
-
-      if (modal) modal.classList.add('hidden');
-      openCheckoutModal();
+    store.addToCart(currentSelectedProduct, {
+      size: currentSelectedSize,
+      color: currentSelectedColor,
+      quantity: currentModalQty,
+      customName,
+      customNumber,
+      customNotes,
+      phoneModel,
+      artworkFile: currentUploadedFile
     });
-  }
+
+    if (modal) modal.classList.add('hidden');
+    openCheckoutModal();
+  });
 }
 

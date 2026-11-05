@@ -14,7 +14,8 @@ let globalMemoryState = {
   coupons: null,
   reviews: [],
   registeredUsers: [],
-  deletedOrders: []
+  deletedOrders: [],
+  deletedProducts: []
 };
 
 // Check if pre-injected by Netlify into window
