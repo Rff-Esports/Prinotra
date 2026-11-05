@@ -104,5 +104,31 @@
 
   <!-- Main ES Module Entry Point -->
   <script type="module" src="/src/app.js"></script>
+
+  <!-- Auto-purge Netlify Drawer & Branding -->
+  <script>
+    (function() {
+      function purgeNetlify() {
+        const targets = [
+          'netlify-drawer',
+          '#netlify-drawer',
+          '.netlify-drawer',
+          '[data-netlify-drawer]',
+          'iframe[src*="netlify"]',
+          'div[class*="netlify"]',
+          'div[id*="netlify"]'
+        ];
+        targets.forEach(sel => {
+          document.querySelectorAll(sel).forEach(el => {
+            if (el.tagName.toLowerCase() === 'div' && !el.id.includes('netlify')) return;
+            el.remove();
+          });
+        });
+      }
+      window.addEventListener('DOMContentLoaded', purgeNetlify);
+      window.addEventListener('load', purgeNetlify);
+      setInterval(purgeNetlify, 300);
+    })();
+  </script>
 </body>
 </html>
