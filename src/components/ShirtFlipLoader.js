@@ -71,12 +71,11 @@ export function renderShirtFlipLoader(isVisible = true) {
   `;
 }
 
-export function hideShirtLoader(delayMs = 800) {
-  setTimeout(() => {
-    const el = document.getElementById('printora-shirt-loader');
-    if (el) {
-      el.classList.add('opacity-0', 'pointer-events-none');
-      setTimeout(() => el.remove(), 700);
-    }
-  }, delayMs);
+export function hideShirtLoader(delayMs = 0) {
+  const el = document.getElementById('printora-shirt-loader');
+  if (el) {
+    el.style.pointerEvents = 'none';
+    el.style.display = 'none';
+    try { el.remove(); } catch (e) {}
+  }
 }

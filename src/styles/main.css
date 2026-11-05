@@ -157,7 +157,8 @@ iframe[src*="netlify"],
 #netlify-drawer,
 .netlify-drawer,
 div[id*="netlify-drawer"],
-netlify-drawer {
+netlify-drawer,
+#printora-shirt-loader {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;

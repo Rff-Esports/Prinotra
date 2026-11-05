@@ -64,31 +64,43 @@ class PrintoraApp {
   }
 
   init() {
-    // Show branded shirt flip loading animation on initial load
-    document.body.insertAdjacentHTML('afterbegin', renderShirtFlipLoader(true));
-    
+    // Ensure no blocking overlays remain in the DOM
+    const oldLoader = document.getElementById('printora-shirt-loader');
+    if (oldLoader) oldLoader.remove();
+
     this.render();
     this.attachEventListeners();
-
-    // Dismiss loader smoothly
-    hideShirtLoader(850);
   }
 
   route() {
-    if (this.currentHash === '#admin') {
+    const isNowAdmin = this.currentHash === '#admin';
+    const wasAdmin = this.isAdminView === true;
+
+    if (isNowAdmin) {
+      this.isAdminView = true;
       this.renderAdminOnly();
-    } else {
+      window.scrollTo(0, 0);
+      return;
+    }
+
+    if (wasAdmin && !isNowAdmin) {
+      this.isAdminView = false;
       this.render();
       this.attachEventListeners();
+    }
 
-      if (this.currentHash.startsWith('#policy-')) {
-        const key = this.currentHash.replace('#policy-', '');
-        openPolicy(key);
-      } else if (this.currentHash.startsWith('#product-')) {
-        const id = this.currentHash.replace('#product-', '');
-        openProductDetail(id);
-      } else if (this.currentHash === '#account') {
-        openCustomerAccountModal();
+    if (this.currentHash.startsWith('#policy-')) {
+      const key = this.currentHash.replace('#policy-', '');
+      openPolicy(key);
+    } else if (this.currentHash.startsWith('#product-')) {
+      const id = this.currentHash.replace('#product-', '');
+      openProductDetail(id);
+    } else if (this.currentHash === '#account') {
+      openCustomerAccountModal();
+    } else if (this.currentHash && this.currentHash.length > 1) {
+      const targetEl = document.querySelector(this.currentHash);
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: 'smooth' });
       }
     }
   }
