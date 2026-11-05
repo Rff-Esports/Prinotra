@@ -278,9 +278,71 @@ function renderOrderTrackingCard(order) {
             </div>
           ` : ''}
         `}
+
+        <!-- Customer Rating & Photo Attachment when Delivered -->
+        ${order.status === 'Delivered' ? `
+          <div class="mt-4 pt-3 border-t border-[#EFECE4]">
+            ${order.review ? `
+              <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1.5 text-xs text-emerald-900">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-emerald-800 flex items-center gap-1">
+                    <span>✓ Delivery Review Submitted</span>
+                    <span class="text-amber-500">${'★'.repeat(order.review.rating || 5)}</span>
+                  </span>
+                  <span class="text-[10px] text-emerald-600">${order.review.date}</span>
+                </div>
+                <p class="italic text-[11px] text-[#444]">"${order.review.comment}"</p>
+                ${order.review.photoUrl ? `
+                  <div class="mt-2 flex items-center gap-2">
+                    <img src="${order.review.photoUrl}" alt="Customer delivery photo" class="w-14 h-14 rounded-lg object-cover border border-emerald-300 shadow-sm">
+                    <span class="text-[10px] font-bold text-emerald-700">Verified Customer Photo</span>
+                  </div>
+                ` : ''}
+              </div>
+            ` : `
+              <div class="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl space-y-2.5 text-xs">
+                <div class="flex items-center justify-between">
+                  <span class="font-heading font-bold text-amber-950 flex items-center gap-1.5">
+                    <span>⭐ Rate Your Delivery & Attach Photo</span>
+                  </span>
+                  <span class="text-[10px] bg-amber-200/60 text-amber-900 px-2 py-0.5 rounded-full font-bold">Delivered</span>
+                </div>
+                
+                <form class="order-review-form space-y-2.5" data-order-code="${order.orderCode}">
+                  <div>
+                    <label class="block text-[11px] font-bold text-[#555] mb-1">Your Rating *</label>
+                    <div class="flex items-center gap-1.5 text-lg cursor-pointer star-rating-picker" data-order-code="${order.orderCode}">
+                      <span class="star-btn text-amber-400 hover:scale-125 transition-transform" data-val="1">★</span>
+                      <span class="star-btn text-amber-400 hover:scale-125 transition-transform" data-val="2">★</span>
+                      <span class="star-btn text-amber-400 hover:scale-125 transition-transform" data-val="3">★</span>
+                      <span class="star-btn text-amber-400 hover:scale-125 transition-transform" data-val="4">★</span>
+                      <span class="star-btn text-amber-400 hover:scale-125 transition-transform" data-val="5">★</span>
+                      <input type="hidden" class="review-star-input" value="5">
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block text-[11px] font-bold text-[#555] mb-1">Review & Feedback</label>
+                    <textarea class="review-comment-input w-full bg-white border border-[#DDD4C4] rounded-xl p-2 text-xs outline-none focus:border-[#FF6B35] resize-none" rows="2" placeholder="How was the print clarity, fabric, and delivery experience?"></textarea>
+                  </div>
+
+                  <div>
+                    <label class="block text-[11px] font-bold text-[#555] mb-1">Attach Photo of Delivered Item 📷</label>
+                    <input type="file" accept="image/*" class="review-photo-input w-full text-xs text-[#555] file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-[#111] file:text-white hover:file:bg-[#FF6B35] file:cursor-pointer cursor-pointer border border-[#DDD4C4] rounded-xl p-1 bg-white">
+                  </div>
+
+                  <button type="submit" class="bg-[#111] hover:bg-[#FF6B35] text-white font-bold py-2 px-4 rounded-xl text-xs uppercase tracking-wider transition-colors cursor-pointer shadow-sm">
+                    Submit Rating & Photo
+                  </button>
+                </form>
+              </div>
+            `}
+          </div>
+        ` : ''}
       </div>
     </div>
   `;
+
 }
 
 export function openCustomerAccountModal() {
@@ -326,12 +388,59 @@ export function initCustomerAccountEvents() {
     });
   }
 
-  // Sign In Prompt button
-  const loginPromptBtn = document.getElementById('account-login-prompt-btn');
-  if (loginPromptBtn) {
-    loginPromptBtn.addEventListener('click', () => {
-      closeCustomerAccountModal();
-      openAuthModal();
+  // Star rating picker delegation
+  document.addEventListener('click', (e) => {
+    const starBtn = e.target.closest('.star-btn');
+    if (!starBtn) return;
+    const picker = starBtn.closest('.star-rating-picker');
+    if (!picker) return;
+    const val = Number(starBtn.getAttribute('data-val') || 5);
+    const hiddenIn = picker.querySelector('.review-star-input');
+    if (hiddenIn) hiddenIn.value = val;
+    picker.querySelectorAll('.star-btn').forEach(s => {
+      const sVal = Number(s.getAttribute('data-val'));
+      s.className = `star-btn transition-transform ${sVal <= val ? 'text-amber-400 font-bold' : 'text-[#DDD4C4]'}`;
     });
-  }
+  });
+
+  // Delegated Review Form Submission
+  document.addEventListener('submit', (e) => {
+    const form = e.target.closest('.order-review-form');
+    if (!form) return;
+    e.preventDefault();
+
+    const orderCode = form.getAttribute('data-order-code');
+    const rating = form.querySelector('.review-star-input')?.value || 5;
+    const comment = form.querySelector('.review-comment-input')?.value || 'Loved the print quality!';
+    const fileInput = form.querySelector('.review-photo-input');
+    const file = fileInput?.files?.[0];
+
+    const submitReview = (photoUrl = '') => {
+      store.addReview({
+        orderCode,
+        rating: Number(rating),
+        comment,
+        photoUrl,
+        customerName: store.currentUser?.name || 'Customer'
+      });
+      // Re-render account modal view
+      const modal = document.getElementById('account-modal');
+      if (modal) {
+        const temp = document.createElement('div');
+        temp.innerHTML = renderCustomerAccountModal();
+        const newModal = temp.querySelector('#account-modal');
+        if (newModal) modal.innerHTML = newModal.innerHTML;
+        initCustomerAccountEvents();
+      }
+    };
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (loadEv) => submitReview(loadEv.target.result);
+      reader.readAsDataURL(file);
+    } else {
+      submitReview('');
+    }
+  });
 }
+

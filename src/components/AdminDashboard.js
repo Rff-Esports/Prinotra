@@ -841,18 +841,32 @@ ON CONFLICT (user_id) DO UPDATE SET role = 'admin';</pre>
             </div>
 
             <div>
-              <label class="block text-[11px] font-bold text-[#555] mb-1">Primary Product Image URL *</label>
-              <input type="url" id="edit-prod-image" required placeholder="https://images.unsplash.com/..." class="w-full bg-white border border-[#DDD4C4] rounded-xl px-3.5 py-2.5 font-mono text-[11px] outline-none focus:border-[#FF6B35]">
+              <div class="flex items-center justify-between mb-1">
+                <label class="block text-[11px] font-bold text-[#555]">Primary Product Image *</label>
+                <span class="text-[10px] text-[#FF6B35] font-bold">Gallery or Image URL</span>
+              </div>
+              
+              <!-- Direct Gallery / File Manager Image Picker -->
+              <div class="mb-2.5 p-3 bg-[#FAF7F2] border-2 border-dashed border-[#FF6B35]/30 rounded-xl space-y-1">
+                <label class="block text-[11px] font-bold text-[#FF6B35] flex items-center gap-1.5">
+                  <span>📁 Choose Image from Device Gallery / File Manager</span>
+                </label>
+                <input type="file" id="edit-prod-file-input" accept="image/*" class="w-full text-xs text-[#555] file:mr-2.5 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#111] file:text-white hover:file:bg-[#FF6B35] file:cursor-pointer cursor-pointer">
+                <span class="text-[10px] text-[#777] block">Select photo directly from your phone gallery or computer file explorer</span>
+              </div>
+
+              <input type="text" id="edit-prod-image" required placeholder="Image URL or loaded from gallery above" class="w-full bg-white border border-[#DDD4C4] rounded-xl px-3.5 py-2.5 font-mono text-[11px] outline-none focus:border-[#FF6B35]">
               
               <!-- Real-time Image Preview -->
               <div class="mt-2.5 flex items-center gap-3 p-2.5 bg-[#FAF7F2] rounded-xl border border-[#DDD4C4]">
                 <img id="edit-prod-img-preview" src="" alt="Preview" class="w-14 h-14 rounded-lg object-cover border border-[#CCC] bg-white">
                 <div class="text-[11px] text-[#666]">
                   <strong class="text-black block font-heading">Live Image Preview</strong>
-                  <span class="text-[10px]">Verify your product photo appearance</span>
+                  <span class="text-[10px]">Photo loaded from gallery or URL</span>
                 </div>
               </div>
             </div>
+
 
             <div>
               <label class="block text-[11px] font-bold text-[#555] mb-1">Additional Gallery Image URLs (Optional)</label>
@@ -1252,6 +1266,26 @@ export function initAdminEvents() {
       editImgPreview.src = url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=150&q=80';
     });
   }
+
+  // Device Gallery & File Manager Image Reader
+  document.addEventListener('change', (e) => {
+    if (e.target && e.target.id === 'edit-prod-file-input') {
+      const file = e.target.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const dataUrl = ev.target.result;
+          const imgIn = document.getElementById('edit-prod-image');
+          const imgPrev = document.getElementById('edit-prod-img-preview');
+          if (imgIn) imgIn.value = dataUrl;
+          if (imgPrev) imgPrev.src = dataUrl;
+          store.showToast('Product photo selected from device gallery!', 'success');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  });
+
 
   // Delegated Open Edit Product Modal on button click (100% reliable across tab switches)
   document.addEventListener('click', (e) => {

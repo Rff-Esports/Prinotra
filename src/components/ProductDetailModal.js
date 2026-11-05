@@ -147,13 +147,21 @@ export function renderProductDetailModal() {
             </div>
 
             <!-- Customer Reviews Summary -->
-            <div class="pt-2 border-t border-[#EFECE4] flex items-center justify-between text-xs">
-              <div class="flex items-center gap-1 text-[#FF6B35]">
-                <span>★★★★★</span>
-                <span class="text-black font-bold ml-1">4.9 / 5</span>
+            <div class="pt-2.5 border-t border-[#EFECE4] space-y-2">
+              <div class="flex items-center justify-between text-xs">
+                <div class="flex items-center gap-1.5 text-amber-500">
+                  <span class="font-bold">★★★★★</span>
+                  <span class="text-black font-extrabold ml-1">4.9 / 5</span>
+                </div>
+                <span class="text-[#777] text-[11px] font-medium">Verified Delivery Ratings & Photos</span>
               </div>
-              <span class="text-[#777]">Based on 128 verified customer reviews</span>
+
+              <!-- Customer Delivery Reviews & Photos -->
+              <div id="prod-modal-customer-reviews" class="space-y-1.5">
+                <!-- Dynamically loaded from store.reviews -->
+              </div>
             </div>
+
 
             <!-- Quantity & Actions (Add to Cart & Buy Now) -->
             <div class="pt-2 space-y-3">
@@ -309,10 +317,36 @@ export function openProductDetail(productId) {
     }
   }
 
+  // Populate verified delivery reviews & photos
+  const reviewsContainer = document.getElementById('prod-modal-customer-reviews');
+  if (reviewsContainer) {
+    const list = store.reviews || [];
+    if (list.length === 0) {
+      reviewsContainer.innerHTML = '<p class="text-[11px] text-[#888] italic">No customer photos submitted yet. Be the first to review!</p>';
+    } else {
+      reviewsContainer.innerHTML = list.slice(0, 2).map(r => `
+        <div class="p-2 bg-[#FAF8F5] rounded-xl border border-[#DDD4C4] text-[11px] space-y-1">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-black font-heading">${r.customerName}</span>
+            <span class="text-amber-500 font-bold text-[10px]">${'★'.repeat(r.rating || 5)}</span>
+          </div>
+          <p class="text-[#555] italic truncate">"${r.comment}"</p>
+          ${r.photoUrl ? `
+            <div class="flex items-center gap-2 pt-0.5">
+              <img src="${r.photoUrl}" class="w-9 h-9 rounded-lg object-cover border border-[#CCC] shadow-xs">
+              <span class="text-[10px] text-emerald-700 font-bold">✓ Verified Delivery Photo</span>
+            </div>
+          ` : ''}
+        </div>
+      `).join('');
+    }
+  }
+
   if (modal) {
     modal.classList.remove('hidden');
   }
 }
+
 
 export function initProductDetailModalEvents() {
   const modal = document.getElementById('product-detail-modal');

@@ -178,37 +178,10 @@ export function renderCheckoutModal() {
                          class="w-full bg-white border border-[#DDD4C4] focus:border-black rounded-r-xl px-3 py-2 text-xs font-medium outline-none">
                 </div>
               </div>
-              <div class="sm:col-span-2 space-y-1.5">
-                <div class="flex items-center justify-between">
-                  <label for="chk-email" class="block text-[11px] font-bold text-[#444]">Email (For Brevo Invoice & Updates) *</label>
-                  <span id="chk-email-verified-pill" class="${(isCheckoutOtpVerified || user?.verifiedAt) ? '' : 'hidden'} text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                    ✓ Brevo OTP Verified
-                  </span>
-                </div>
-                <div class="flex gap-2">
-                  <input type="email" id="chk-email" required value="${user?.email || ''}" placeholder="name@example.com" 
-                         ${(isCheckoutOtpVerified || user?.verifiedAt) ? 'readonly' : ''}
-                         class="flex-1 bg-white border border-[#DDD4C4] focus:border-black rounded-xl px-3 py-2 text-xs font-medium outline-none">
-                  <button type="button" id="chk-send-otp-btn" class="${(isCheckoutOtpVerified || user?.verifiedAt) ? 'hidden' : ''} bg-[#111] hover:bg-[#FF6B35] text-white px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap cursor-pointer">
-                    Verify OTP
-                  </button>
-                </div>
-
-                <!-- OTP Input Area -->
-                <div id="chk-otp-box" class="hidden p-3 bg-[#FAF7F2] border border-[#DDD4C4] rounded-xl space-y-2 animate-fade-in">
-                  <div class="flex items-center justify-between text-xs">
-                    <span class="text-[#666]">Enter 6-digit code:</span>
-                    <button type="button" id="chk-otp-resend-btn" class="text-[#FF6B35] hover:underline font-bold text-[11px] cursor-pointer">Resend</button>
-                  </div>
-                  <div class="flex gap-2">
-                    <input type="text" id="chk-otp-input" maxlength="6" placeholder="••••••" 
-                           class="w-28 bg-white border border-[#DDD4C4] focus:border-[#FF6B35] rounded-xl px-2 py-1.5 text-center text-xs font-mono font-bold tracking-widest outline-none">
-                    <button type="button" id="chk-verify-otp-btn" class="bg-[#FF6B35] hover:bg-[#E55A2B] text-white px-3 py-1.5 rounded-xl text-xs font-bold uppercase cursor-pointer">
-                      Confirm
-                    </button>
-                  </div>
-                  <div id="chk-otp-feedback" class="hidden text-xs"></div>
-                </div>
+              <div class="sm:col-span-2">
+                <label for="chk-email" class="block text-[11px] font-bold text-[#444] mb-1">Email Address * (For invoice & delivery updates)</label>
+                <input type="email" id="chk-email" required value="${user?.email || ''}" placeholder="name@example.com" 
+                       class="w-full bg-white border border-[#DDD4C4] focus:border-black rounded-xl px-3 py-2 text-xs font-medium outline-none">
               </div>
             </div>
 
@@ -639,93 +612,24 @@ export function initCheckoutModalEvents() {
     });
   }
 
-  // Brevo OTP verification
-  const emailInput = document.getElementById('chk-email');
-  const sendOtpBtn = document.getElementById('chk-send-otp-btn');
-  const otpBox = document.getElementById('chk-otp-box');
-  const otpCodeInput = document.getElementById('chk-otp-input');
-  const verifyOtpBtn = document.getElementById('chk-verify-otp-btn');
-  const resendOtpBtn = document.getElementById('chk-otp-resend-btn');
-  const otpFeedback = document.getElementById('chk-otp-feedback');
-  const verifiedPill = document.getElementById('chk-email-verified-pill');
+  // Save user contact updates reactively
   const nameInput = document.getElementById('chk-name');
+  const emailInput = document.getElementById('chk-email');
+  const phoneInput = document.getElementById('chk-phone');
 
-  async function triggerOtp() {
-    const email = emailInput?.value.trim();
-    if (!email || !email.includes('@')) {
-      alert("Please enter a valid email address first.");
-      emailInput?.focus();
-      return;
-    }
-
-    checkoutOtpCode = generate6DigitOtp();
-    if (otpBox) otpBox.classList.remove('hidden');
-    if (sendOtpBtn) sendOtpBtn.classList.add('hidden');
-
-    if (otpFeedback) {
-      otpFeedback.className = 'text-xs font-medium text-blue-700 bg-blue-50 p-2 rounded-lg block';
-      otpFeedback.textContent = `⏳ Dispatching 6-digit OTP to ${email} via Brevo...`;
-    }
-
-    const apiKey = store.settings.brevoApiKey || "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";
-    const res = await sendBrevoOtpEmail({
-      apiKey,
-      toEmail: email,
-      toName: nameInput?.value.trim() || "PRINTORA Shopper",
-      otpCode: checkoutOtpCode,
-      purpose: "Checkout Email Verification"
-    });
-
-    if (otpFeedback) {
-      if (res.success) {
-        otpFeedback.className = 'text-xs font-medium text-emerald-700 bg-emerald-50 p-2 rounded-lg block';
-        otpFeedback.textContent = `✓ Verification code sent to ${email}.`;
-      } else {
-        otpFeedback.className = 'text-xs font-medium text-rose-700 bg-rose-50 p-2 rounded-lg block';
-        otpFeedback.textContent = `Brevo Notice: ${res.error || 'Failed to dispatch email'}. (Code: ${checkoutOtpCode})`;
-      }
-    }
-    if (otpCodeInput) otpCodeInput.focus();
-  }
-
-  if (sendOtpBtn) sendOtpBtn.addEventListener('click', triggerOtp);
-  if (resendOtpBtn) resendOtpBtn.addEventListener('click', triggerOtp);
-
-  if (verifyOtpBtn) {
-    verifyOtpBtn.addEventListener('click', () => {
-      const entered = otpCodeInput?.value.trim();
-      if (!entered || entered.length !== 6) {
-        if (otpFeedback) {
-          otpFeedback.className = 'text-xs font-medium text-rose-700 bg-rose-50 p-2 rounded-lg block';
-          otpFeedback.textContent = 'Please enter the 6-digit verification code.';
-        }
-        return;
-      }
-
-      if (entered === checkoutOtpCode || entered === '123456') {
-        isCheckoutOtpVerified = true;
-        if (otpBox) otpBox.classList.add('hidden');
-        if (verifiedPill) verifiedPill.classList.remove('hidden');
-        if (emailInput) emailInput.readOnly = true;
-        store.showToast('Email verified successfully with Brevo OTP!', 'success');
-
-        const email = emailInput?.value.trim();
-        const fullName = nameInput?.value.trim() || email.split('@')[0];
-        store.currentUser = {
-          name: fullName,
-          email,
-          phone: document.getElementById('chk-phone')?.value || '',
-          verifiedAt: new Date().toISOString()
-        };
-        store.saveUser();
-      } else {
-        if (otpFeedback) {
-          otpFeedback.className = 'text-xs font-medium text-rose-700 bg-rose-50 p-2 rounded-lg block';
-          otpFeedback.textContent = 'Incorrect verification code. Please check email or click Resend.';
-        }
+  if (nameInput) {
+    nameInput.addEventListener('input', (e) => {
+      const val = e.target.value.trim();
+      if (val) {
+        const firstName = val.split(' ')[0];
+        const greetingEl = document.getElementById('nav-user-greeting');
+        if (greetingEl) greetingEl.textContent = `Hi, ${firstName}`;
+        const topGreetingEl = document.getElementById('top-announcement-greeting');
+        if (topGreetingEl) topGreetingEl.textContent = `Hi, ${firstName}!`;
       }
     });
   }
+
 
   // Step 3 WhatsApp Order Submission & Redirection
   const confirmWhatsAppBtn = document.getElementById('chk-confirm-whatsapp-btn');

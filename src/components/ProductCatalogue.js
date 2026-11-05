@@ -25,34 +25,27 @@ export function renderGenderRecommendations(gender) {
   }
 
   return `
-    <div id="gender-recommendations" class="mb-10 p-5 sm:p-7 bg-[#141414] text-white rounded-3xl border border-[#2A2A2A] shadow-xl">
+    <div id="gender-recommendations" class="mb-10 p-5 sm:p-6 bg-[#141414] text-white rounded-3xl border border-[#2A2A2A] shadow-xl">
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
           <div class="inline-flex items-center gap-1.5 bg-[#FF6B35]/20 text-[#FF6B35] px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider font-heading mb-1">
-            <span>✨ Tailored Recommendations</span>
+            <span>Recommendations</span>
           </div>
-          <h3 class="font-heading text-xl sm:text-2xl font-bold text-white">
-            ${userGender === 'Male' ? '🔥 Top Recommendations for Men' : userGender === 'Female' ? '🌸 Curated Picks for Women' : '🌟 Trending Custom Picks'}
+          <h3 class="font-heading text-lg sm:text-xl font-bold text-white">
+            ${userGender === 'Male' ? 'Male' : userGender === 'Female' ? 'Female' : 'Custom Picks'}
           </h3>
-          <p class="text-xs text-[#888] mt-0.5">
-            ${userGender === 'Male' 
-              ? 'High-performance team jerseys, heavyweight streetwear tees & rugged gym duffles.' 
-              : userGender === 'Female' 
-              ? 'Aesthetic relaxed fits, canvas totes, personalized pillows & memory frames.' 
-              : 'Top customer favorites across personalized clothing and custom gift keepsakes.'}
-          </p>
         </div>
 
         <!-- Quick Switcher -->
         <div class="flex items-center bg-[#222] p-1 rounded-xl border border-[#333] text-xs font-bold font-heading self-start sm:self-auto">
-          <button type="button" class="gender-pill-btn px-3 py-1.5 rounded-lg transition-all cursor-pointer ${userGender === 'Male' ? 'bg-[#FF6B35] text-white shadow-md' : 'text-[#888] hover:text-white'}" data-gender="Male">
-            👨 Men's
+          <button type="button" class="gender-pill-btn px-4 py-1.5 rounded-lg transition-all cursor-pointer ${userGender === 'Male' ? 'bg-[#FF6B35] text-white shadow-md' : 'text-[#888] hover:text-white'}" data-gender="Male">
+            Male
           </button>
-          <button type="button" class="gender-pill-btn px-3 py-1.5 rounded-lg transition-all cursor-pointer ${userGender === 'Female' ? 'bg-[#FF6B35] text-white shadow-md' : 'text-[#888] hover:text-white'}" data-gender="Female">
-            👩 Women's
+          <button type="button" class="gender-pill-btn px-4 py-1.5 rounded-lg transition-all cursor-pointer ${userGender === 'Female' ? 'bg-[#FF6B35] text-white shadow-md' : 'text-[#888] hover:text-white'}" data-gender="Female">
+            Female
           </button>
-          <button type="button" class="gender-pill-btn px-3 py-1.5 rounded-lg transition-all cursor-pointer ${(userGender !== 'Male' && userGender !== 'Female') ? 'bg-[#FF6B35] text-white shadow-md' : 'text-[#888] hover:text-white'}" data-gender="Unisex">
-            🌟 All
+          <button type="button" class="gender-pill-btn px-4 py-1.5 rounded-lg transition-all cursor-pointer ${(userGender !== 'Male' && userGender !== 'Female') ? 'bg-[#FF6B35] text-white shadow-md' : 'text-[#888] hover:text-white'}" data-gender="Unisex">
+            All
           </button>
         </div>
       </div>

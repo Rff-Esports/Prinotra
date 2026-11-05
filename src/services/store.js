@@ -28,10 +28,12 @@ class PrintoraStore {
     this.supplierAssignments = this.loadSupplierAssignments();
     this.settings = this.loadSettings();
     this.currentUser = this.loadUser();
+    this.reviews = this.loadReviews();
     this.activeCategory = 'all';
     this.searchQuery = '';
     this.sortBy = 'featured'; // featured, price-low, price-high, name
     this.notification = null;
+
     
     // Sync with Supabase in background if configured
     this.syncFromSupabase();
@@ -428,6 +430,137 @@ class PrintoraStore {
     return saved ? JSON.parse(saved) : null;
   }
 
+  loadRegisteredUsers() {
+    const saved = safeGetItem('printora_registered_users');
+    if (!saved) return [];
+    try { return JSON.parse(saved); } catch (e) { return []; }
+  }
+
+  saveRegisteredUsers(users) {
+    safeSetItem('printora_registered_users', JSON.stringify(users));
+  }
+
+  registerUser({ name, phone, email, gender, password }) {
+    const users = this.loadRegisteredUsers();
+    const cleanPhone = (phone || '').replace(/[^0-9]/g, '').slice(-10);
+    const cleanEmail = (email || '').trim().toLowerCase();
+
+    if (!cleanPhone || cleanPhone.length !== 10) {
+      return { success: false, message: "Please provide a valid 10-digit mobile number." };
+    }
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      return { success: false, message: "Please provide a valid email address." };
+    }
+    if (!password || password.length < 4) {
+      return { success: false, message: "Password must be at least 4 characters long." };
+    }
+
+    // Check if already registered
+    const existing = users.find(u => 
+      u.email.toLowerCase() === cleanEmail || 
+      (u.phone && u.phone.replace(/[^0-9]/g, '').slice(-10) === cleanPhone)
+    );
+    if (existing) {
+      return { success: false, message: "An account with this email or mobile number already exists. Please sign in." };
+    }
+
+    const newUser = {
+      id: `usr-${Date.now()}`,
+      name: name.trim(),
+      phone: cleanPhone,
+      email: cleanEmail,
+      gender: gender || 'Unisex',
+      password: password,
+      createdAt: new Date().toISOString()
+    };
+
+    users.push(newUser);
+    this.saveRegisteredUsers(users);
+    this.setUser(newUser);
+    return { success: true, user: newUser };
+  }
+
+  loginUser({ contact, password }) {
+    const users = this.loadRegisteredUsers();
+    const cleanContact = (contact || '').trim().toLowerCase();
+    const cleanPhone = cleanContact.replace(/[^0-9]/g, '').slice(-10);
+
+    const user = users.find(u => 
+      u.email.toLowerCase() === cleanContact || 
+      (cleanPhone.length === 10 && u.phone && u.phone.replace(/[^0-9]/g, '').slice(-10) === cleanPhone)
+    );
+
+    if (!user) {
+      return { success: false, message: "No account found matching this email or mobile number. Please register first." };
+    }
+
+    if (user.password !== password) {
+      return { success: false, message: "Incorrect password. Please enter the correct password." };
+    }
+
+    this.setUser(user);
+    return { success: true, user };
+  }
+
+  loadReviews() {
+    const saved = safeGetItem('printora_customer_reviews');
+    if (!saved) {
+      return [
+        {
+          id: 'rev-1',
+          orderCode: 'PRN-DEMO-1',
+          customerName: 'Rahul Varma',
+          rating: 5,
+          comment: 'Outstanding sublimation print and ultra-comfortable cotton. Delivered right to my doorstep with zero shipping charge!',
+          photoUrl: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=300&q=80',
+          date: '02 Nov 2026'
+        },
+        {
+          id: 'rev-2',
+          orderCode: 'PRN-DEMO-2',
+          customerName: 'Ananya Sharma',
+          rating: 5,
+          comment: 'Custom coffee mug and tote bag came out better than expected! Crisp colors and fast WhatsApp confirmation.',
+          photoUrl: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=300&q=80',
+          date: '04 Nov 2026'
+        }
+      ];
+    }
+    try { return JSON.parse(saved); } catch (e) { return []; }
+  }
+
+  saveReviews(reviews) {
+    safeSetItem('printora_customer_reviews', JSON.stringify(reviews));
+    this.reviews = reviews;
+    this.notify();
+  }
+
+  addReview({ orderCode, customerName, rating, comment, photoUrl }) {
+    const newRev = {
+      id: `rev-${Date.now()}`,
+      orderCode,
+      customerName: customerName || this.currentUser?.name || 'Customer',
+      rating: Number(rating) || 5,
+      comment: comment || 'Great quality delivery!',
+      photoUrl: photoUrl || '',
+      date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+    };
+
+    const reviews = [newRev, ...(this.reviews || [])];
+    this.saveReviews(reviews);
+
+    // Update order record if present
+    const ordIdx = this.orders.findIndex(o => o.orderCode === orderCode);
+    if (ordIdx !== -1) {
+      this.orders[ordIdx].reviewed = true;
+      this.orders[ordIdx].review = newRev;
+      this.saveOrders();
+    }
+
+    this.showToast('Thank you! Your rating and photo review has been published.', 'success');
+    return newRev;
+  }
+
   setUser(user) {
     this.currentUser = user;
     if (user) {
@@ -451,6 +584,7 @@ class PrintoraStore {
     safeSetItem('printora_user_gender', gender);
     this.notify();
   }
+
 
   // --- Background Supabase Synchronization ---
   async syncFromSupabase() {
