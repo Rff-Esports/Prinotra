@@ -64,9 +64,20 @@ class PrintoraApp {
   }
 
   init() {
+    // Smooth transition from initial boot loader
+    const bootLoader = document.getElementById('printora-initial-boot');
+    if (bootLoader) {
+      bootLoader.style.transition = 'opacity 0.3s ease-out';
+      bootLoader.style.opacity = '0';
+      setTimeout(() => bootLoader.remove(), 300);
+    }
+
     // Ensure no blocking overlays remain in the DOM
     const oldLoader = document.getElementById('printora-shirt-loader');
     if (oldLoader) oldLoader.remove();
+
+    // Initialize Smooth Offline / Online Status Listener
+    this.initNetworkStatusListener();
 
     // Route immediately on initial page mount (supports direct links like #admin or ?admin=1)
     this.route();
@@ -85,6 +96,44 @@ class PrintoraApp {
       this.currentHash = window.location.hash || '';
       this.route();
     });
+  }
+
+  initNetworkStatusListener() {
+    const updateNetworkStatus = () => {
+      let statusEl = document.getElementById('printora-network-status');
+      if (!statusEl) {
+        statusEl = document.createElement('div');
+        statusEl.id = 'printora-network-status';
+        statusEl.className = 'fixed bottom-5 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 pointer-events-none';
+        document.body.appendChild(statusEl);
+      }
+
+      if (!navigator.onLine) {
+        statusEl.innerHTML = `
+          <div class="pointer-events-auto bg-[#1A1A1A]/95 text-white border border-amber-500/40 px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-2.5 backdrop-blur-md animate-fade-in text-xs font-medium">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse flex-shrink-0"></span>
+            <span><strong>Offline Mode:</strong> No internet connection. Your bag, designs & cart are safely saved locally.</span>
+          </div>
+        `;
+        statusEl.classList.remove('hidden');
+      } else {
+        if (statusEl.innerHTML.includes('Offline Mode')) {
+          statusEl.innerHTML = `
+            <div class="pointer-events-auto bg-[#111]/95 text-white border border-emerald-500/40 px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-2.5 backdrop-blur-md animate-fade-in text-xs font-medium">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0"></span>
+              <span><strong>Back Online!</strong> Reconnected to Printora.</span>
+            </div>
+          `;
+          setTimeout(() => {
+            if (statusEl) statusEl.classList.add('hidden');
+          }, 3000);
+        }
+      }
+    };
+
+    window.addEventListener('offline', updateNetworkStatus);
+    window.addEventListener('online', updateNetworkStatus);
+    if (!navigator.onLine) updateNetworkStatus();
   }
 
   route() {

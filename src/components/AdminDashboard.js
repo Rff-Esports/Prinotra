@@ -441,11 +441,11 @@ export function renderAdminDashboard() {
                           ${p.isAvailable !== false ? 'Active' : 'Hidden'}
                         </span>
                       </td>
-                      <td class="py-3 px-4 text-right space-x-2">
-                        <button class="admin-edit-prod-btn text-[#FF6B35] hover:text-black font-bold" data-prod-id="${p.id}">
-                          Edit Price
+                      <td class="py-3 px-4 text-right space-x-2 whitespace-nowrap">
+                        <button class="admin-edit-prod-btn text-[#FF6B35] hover:text-black font-bold px-2.5 py-1 rounded-lg bg-[#FF6B35]/10 hover:bg-[#FF6B35]/20 transition-colors cursor-pointer" data-prod-id="${p.id}">
+                          ✏️ Edit Price & Images
                         </button>
-                        <button class="admin-delete-prod-btn text-rose-600 hover:text-rose-800 font-bold" data-prod-id="${p.id}">
+                        <button class="admin-delete-prod-btn text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-200 font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer" data-prod-id="${p.id}">
                           Delete
                         </button>
                       </td>
@@ -802,6 +802,80 @@ ON CONFLICT (user_id) DO UPDATE SET role = 'admin';</pre>
             </button>
           </form>
         </div>
+      <!-- ==========================================
+           EDIT PRODUCT DETAILS MODAL (PRICE & IMAGES)
+           ========================================== -->
+      <div id="admin-edit-product-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+        <div class="relative w-full max-w-xl bg-white border border-[#DDD4C4] rounded-3xl shadow-2xl p-6 md:p-8 space-y-5 text-[#111] my-8 animate-fade-in">
+          <div class="flex items-center justify-between pb-3 border-b border-[#EFECE4]">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-[#FF6B35] bg-[#FF6B35]/10 px-2 py-0.5 rounded-full font-heading">Product Editor</span>
+              <h3 class="font-heading text-xl font-bold text-black mt-1" id="edit-prod-modal-title">Edit Product Details</h3>
+            </div>
+            <button id="close-edit-prod-modal-btn" type="button" class="text-[#888] hover:text-black p-1 text-lg cursor-pointer">✕</button>
+          </div>
+
+          <form id="admin-edit-prod-form" class="space-y-4 text-xs">
+            <input type="hidden" id="edit-prod-id">
+
+            <div>
+              <label class="block text-[11px] font-bold text-[#555] mb-1">Product Title / Name *</label>
+              <input type="text" id="edit-prod-name" required class="w-full bg-white border border-[#DDD4C4] rounded-xl px-3.5 py-2.5 font-bold outline-none focus:border-[#FF6B35]">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label class="block text-[11px] font-bold text-[#555] mb-1">Customer Selling Price (₹) *</label>
+                <input type="number" id="edit-prod-price" required placeholder="499" class="w-full bg-white border border-[#DDD4C4] rounded-xl px-3.5 py-2.5 font-mono font-bold outline-none focus:border-[#FF6B35]">
+                <span class="text-[10px] text-[#777] block mt-0.5">Amount customer pays at checkout</span>
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-[#555] mb-1">Original MRP Price (₹) (Crossed-Out)</label>
+                <input type="number" id="edit-prod-orig-price" placeholder="699" class="w-full bg-white border border-[#DDD4C4] rounded-xl px-3.5 py-2.5 font-mono font-bold outline-none focus:border-[#FF6B35]">
+                <span class="text-[10px] text-[#777] block mt-0.5">Displays discount strikethrough</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-[#555] mb-1">Primary Product Image URL *</label>
+              <input type="url" id="edit-prod-image" required placeholder="https://images.unsplash.com/..." class="w-full bg-white border border-[#DDD4C4] rounded-xl px-3.5 py-2.5 font-mono text-[11px] outline-none focus:border-[#FF6B35]">
+              
+              <!-- Real-time Image Preview -->
+              <div class="mt-2.5 flex items-center gap-3 p-2.5 bg-[#FAF7F2] rounded-xl border border-[#DDD4C4]">
+                <img id="edit-prod-img-preview" src="" alt="Preview" class="w-14 h-14 rounded-lg object-cover border border-[#CCC] bg-white">
+                <div class="text-[11px] text-[#666]">
+                  <strong class="text-black block font-heading">Live Image Preview</strong>
+                  <span class="text-[10px]">Verify your product photo appearance</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-[#555] mb-1">Additional Gallery Image URLs (Optional)</label>
+              <textarea id="edit-prod-extra-images" rows="2" placeholder="Paste extra image URLs separated by comma or new lines" class="w-full bg-white border border-[#DDD4C4] rounded-xl p-3 font-mono text-[11px] outline-none focus:border-[#FF6B35] resize-none"></textarea>
+            </div>
+
+            <div class="flex items-center justify-between p-3 bg-[#FAF7F2] rounded-xl border border-[#DDD4C4]">
+              <div>
+                <strong class="text-black block text-xs">Catalogue Visibility</strong>
+                <span class="text-[10px] text-[#777]">Set whether this product is active and visible to customers</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="edit-prod-available" class="sr-only peer" checked>
+                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#FF6B35]"></div>
+              </label>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-3 border-t border-[#EFECE4]">
+              <button type="button" id="cancel-edit-prod-btn" class="px-4 py-2.5 rounded-xl border border-[#DDD4C4] text-[#666] font-bold hover:bg-[#F0EAE1] cursor-pointer">
+                Cancel
+              </button>
+              <button type="submit" class="bg-[#111] hover:bg-[#FF6B35] text-white font-bold px-6 py-2.5 rounded-xl transition-colors shadow-md cursor-pointer">
+                Save Product Changes
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
 
     </div>
@@ -1120,5 +1194,123 @@ export function initAdminEvents() {
       }
     });
   }
+
+  // ==========================================
+  // PRODUCT EDIT MODAL & MANAGEMENT
+  // ==========================================
+  const editModal = document.getElementById('admin-edit-product-modal');
+  const closeEditBtn = document.getElementById('close-edit-prod-modal-btn');
+  const cancelEditBtn = document.getElementById('cancel-edit-prod-btn');
+  const editForm = document.getElementById('admin-edit-prod-form');
+  const editIdInput = document.getElementById('edit-prod-id');
+  const editNameInput = document.getElementById('edit-prod-name');
+  const editPriceInput = document.getElementById('edit-prod-price');
+  const editOrigPriceInput = document.getElementById('edit-prod-orig-price');
+  const editImgInput = document.getElementById('edit-prod-image');
+  const editImgPreview = document.getElementById('edit-prod-img-preview');
+  const editExtraImgsInput = document.getElementById('edit-prod-extra-images');
+  const editAvailableInput = document.getElementById('edit-prod-available');
+
+  const closeEditModal = () => {
+    if (editModal) editModal.classList.add('hidden');
+  };
+
+  if (closeEditBtn) closeEditBtn.addEventListener('click', closeEditModal);
+  if (cancelEditBtn) cancelEditBtn.addEventListener('click', closeEditModal);
+
+  // Live image preview listener
+  if (editImgInput && editImgPreview) {
+    editImgInput.addEventListener('input', (e) => {
+      const url = e.target.value.trim();
+      editImgPreview.src = url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=150&q=80';
+    });
+  }
+
+  // Open Edit Product Modal on button click
+  document.querySelectorAll('.admin-edit-prod-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const prodId = btn.getAttribute('data-prod-id');
+      const prod = store.products.find(p => p.id === prodId);
+      if (!prod) return;
+
+      if (editIdInput) editIdInput.value = prod.id;
+      if (editNameInput) editNameInput.value = prod.name;
+      if (editPriceInput) editPriceInput.value = prod.price !== null ? prod.price : '';
+      if (editOrigPriceInput) editOrigPriceInput.value = prod.originalPrice !== null ? prod.originalPrice : '';
+      
+      const primaryImg = prod.images?.[0] || '';
+      if (editImgInput) editImgInput.value = primaryImg;
+      if (editImgPreview) editImgPreview.src = primaryImg;
+
+      const extraImgs = prod.images && prod.images.length > 1 ? prod.images.slice(1).join(', ') : '';
+      if (editExtraImgsInput) editExtraImgsInput.value = extraImgs;
+
+      if (editAvailableInput) editAvailableInput.checked = prod.isAvailable !== false;
+
+      const titleEl = document.getElementById('edit-prod-modal-title');
+      if (titleEl) titleEl.textContent = `Edit Product: ${prod.name}`;
+
+      if (editModal) editModal.classList.remove('hidden');
+    });
+  });
+
+  // Handle Edit Product Form Submission
+  if (editForm) {
+    editForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = editIdInput?.value;
+      if (!id) return;
+
+      const name = editNameInput?.value.trim();
+      const priceVal = editPriceInput?.value.trim();
+      const origPriceVal = editOrigPriceInput?.value.trim();
+      const primaryImg = editImgInput?.value.trim();
+      const extraImgsStr = editExtraImgsInput?.value.trim();
+      const isAvailable = editAvailableInput?.checked !== false;
+
+      const price = priceVal !== '' ? Number(priceVal) : null;
+      const originalPrice = origPriceVal !== '' ? Number(origPriceVal) : null;
+
+      let images = [primaryImg];
+      if (extraImgsStr) {
+        const extras = extraImgsStr.split(/[,\n]/).map(s => s.trim()).filter(Boolean);
+        images = [...images, ...extras];
+      }
+
+      store.updateProduct(id, {
+        name,
+        price,
+        originalPrice,
+        images,
+        isAvailable,
+        isQuoteOnly: price === null
+      });
+
+      store.showToast(`Product "${name}" updated successfully!`, 'success');
+      closeEditModal();
+      window._adminActiveTab = 'products';
+      if (window.printoraApp) {
+        window.printoraApp.renderAdminOnly();
+      }
+    });
+  }
+
+  // Handle Delete Product Button
+  document.querySelectorAll('.admin-delete-prod-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const prodId = btn.getAttribute('data-prod-id');
+      const prod = store.products.find(p => p.id === prodId);
+      if (!prod) return;
+
+      if (confirm(`Are you sure you want to delete / hide "${prod.name}" from active catalogue?`)) {
+        store.updateProduct(prodId, { isAvailable: false });
+        store.showToast(`Product "${prod.name}" marked as hidden`, 'info');
+        window._adminActiveTab = 'products';
+        if (window.printoraApp) {
+          window.printoraApp.renderAdminOnly();
+        }
+      }
+    });
+  });
 }
 

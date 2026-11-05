@@ -9,6 +9,22 @@ import { CATEGORIES } from '../data/products.js';
 export function renderProductCatalogue() {
   const filteredProducts = store.getFilteredProducts();
   const totalCount = store.products.length;
+  const userGender = store.getUserGender() || 'Unisex';
+
+  let recommendedProducts = [];
+  if (userGender === 'Male') {
+    const maleIds = ['prn-app-03', 'prn-spt-01', 'prn-bag-02', 'prn-gft-03', 'prn-app-05', 'prn-spt-02', 'prn-drk-04', 'prn-app-01'];
+    recommendedProducts = store.products.filter(p => maleIds.includes(p.id));
+  } else if (userGender === 'Female') {
+    const femaleIds = ['prn-bag-01', 'prn-gft-06', 'prn-drk-02', 'prn-gft-07', 'prn-app-03', 'prn-drk-03', 'prn-stn-02', 'prn-gft-01'];
+    recommendedProducts = store.products.filter(p => femaleIds.includes(p.id));
+  } else {
+    const unisexIds = ['prn-app-01', 'prn-spt-01', 'prn-bag-01', 'prn-drk-01', 'prn-gft-01', 'prn-app-05', 'prn-drk-03', 'prn-stn-03'];
+    recommendedProducts = store.products.filter(p => unisexIds.includes(p.id));
+  }
+  if (recommendedProducts.length === 0) {
+    recommendedProducts = store.products.slice(0, 4);
+  }
 
   return `
     <section id="catalogue" class="py-16 md:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 font-sans">
@@ -53,6 +69,45 @@ export function renderProductCatalogue() {
             <span class="absolute right-3.5 top-3 pointer-events-none text-xs text-[#888]">▼</span>
           </div>
 
+        </div>
+      </div>
+
+      <!-- Personalized Gender-Based Recommendations Block -->
+      <div id="gender-recommendations" class="mb-10 p-5 sm:p-7 bg-[#141414] text-white rounded-3xl border border-[#2A2A2A] shadow-xl">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <div class="inline-flex items-center gap-1.5 bg-[#FF6B35]/20 text-[#FF6B35] px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider font-heading mb-1">
+              <span>✨ Tailored Recommendations</span>
+            </div>
+            <h3 class="font-heading text-xl sm:text-2xl font-bold text-white">
+              ${userGender === 'Male' ? '🔥 Top Recommendations for Men' : userGender === 'Female' ? '🌸 Curated Picks for Women' : '🌟 Trending Custom Picks'}
+            </h3>
+            <p class="text-xs text-[#888] mt-0.5">
+              ${userGender === 'Male' 
+                ? 'High-performance team jerseys, heavyweight streetwear tees & rugged gym duffles.' 
+                : userGender === 'Female' 
+                ? 'Aesthetic relaxed fits, canvas totes, personalized pillows & memory frames.' 
+                : 'Top customer favorites across personalized clothing and custom gift keepsakes.'}
+            </p>
+          </div>
+
+          <!-- Quick Switcher -->
+          <div class="flex items-center bg-[#222] p-1 rounded-xl border border-[#333] text-xs font-bold font-heading self-start sm:self-auto">
+            <button type="button" class="gender-pill-btn px-3 py-1.5 rounded-lg transition-all cursor-pointer ${userGender === 'Male' ? 'bg-[#FF6B35] text-white' : 'text-[#888] hover:text-white'}" data-gender="Male">
+              👨 Men's
+            </button>
+            <button type="button" class="gender-pill-btn px-3 py-1.5 rounded-lg transition-all cursor-pointer ${userGender === 'Female' ? 'bg-[#FF6B35] text-white' : 'text-[#888] hover:text-white'}" data-gender="Female">
+              👩 Women's
+            </button>
+            <button type="button" class="gender-pill-btn px-3 py-1.5 rounded-lg transition-all cursor-pointer ${(userGender !== 'Male' && userGender !== 'Female') ? 'bg-[#FF6B35] text-white' : 'text-[#888] hover:text-white'}" data-gender="Unisex">
+              🌟 All
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Recommended Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          ${recommendedProducts.slice(0, 4).map(p => renderProductCard(p)).join('')}
         </div>
       </div>
 
@@ -121,6 +176,16 @@ export function initProductCatalogueEvents() {
     btn.addEventListener('click', () => {
       const cat = btn.getAttribute('data-cat');
       store.activeCategory = cat;
+      store.notify();
+    });
+  });
+
+  // Gender Switcher Pills
+  document.querySelectorAll('.gender-pill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const g = btn.getAttribute('data-gender');
+      store.setUserGender(g);
+      store.showToast(`Displaying ${g} recommendations`, 'info');
       store.notify();
     });
   });

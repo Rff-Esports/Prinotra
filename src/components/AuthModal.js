@@ -20,18 +20,8 @@ export function renderAuthModal() {
           <div class="inline-flex items-center gap-1.5 bg-[#222] px-3 py-1 rounded-full text-[10px] text-[#FF6B35] uppercase font-bold tracking-widest mb-2 font-heading">
             <span>Secure Customer Portal</span>
           </div>
-          <h3 class="font-heading text-2xl font-bold tracking-tight text-white" id="auth-modal-title">Sign In to PRINTORA</h3>
-          <p class="text-xs text-[#AAAAAA] mt-1" id="auth-modal-sub">Password-Free Fast OTP Verification</p>
-
-          <!-- Toggle Email OTP / Phone OTP -->
-          <div class="flex bg-[#1E1E1E] p-1 rounded-xl border border-[#333] mt-5 max-w-xs mx-auto">
-            <button id="auth-method-email-btn" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-[#FF6B35] text-white transition-all">
-              Email OTP
-            </button>
-            <button id="auth-method-phone-btn" class="flex-1 py-1.5 text-xs font-bold rounded-lg text-[#AAA] hover:text-white transition-all">
-              Phone OTP (+91)
-            </button>
-          </div>
+          <h3 class="font-heading text-2xl font-bold tracking-tight text-white" id="auth-modal-title">Welcome to PRINTORA</h3>
+          <p class="text-xs text-[#AAAAAA] mt-1" id="auth-modal-sub">Register & Sign In with Secure Email OTP</p>
         </div>
 
         <!-- Form Body -->
@@ -41,38 +31,35 @@ export function renderAuthModal() {
           <div id="auth-error-box" class="hidden p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl font-medium"></div>
           <div id="auth-success-box" class="hidden p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs rounded-xl font-medium"></div>
 
-          <!-- STEP 1: Enter Email / Phone -->
+          <!-- STEP 1: Enter Name, Gender & Email -->
           <div id="auth-step-input">
-            
-            <!-- Email Method Form -->
-            <form id="auth-email-form" class="space-y-4">
+            <form id="auth-email-form" class="space-y-3.5">
               <div>
-                <label for="auth-input-email" class="block text-xs font-bold text-[#333] mb-1.5">Email Address</label>
+                <label for="auth-input-name" class="block text-xs font-bold text-[#333] mb-1">Full Name *</label>
+                <input type="text" id="auth-input-name" required placeholder="e.g. Manikanta Reddy" 
+                       class="w-full bg-white border border-[#DDD4C4] focus:border-[#FF6B35] rounded-xl px-4 py-2.5 text-xs outline-none transition-colors font-medium">
+              </div>
+
+              <div>
+                <label for="auth-input-gender" class="block text-xs font-bold text-[#333] mb-1">Gender * (Personalizes your product feed)</label>
+                <select id="auth-input-gender" required class="w-full bg-white border border-[#DDD4C4] focus:border-[#FF6B35] rounded-xl px-4 py-2.5 text-xs outline-none transition-colors font-medium cursor-pointer">
+                  <option value="">Select Gender</option>
+                  <option value="Male">👨 Male (Oversized Tees, Hoodies, Jerseys, Gym Duffles & Tech)</option>
+                  <option value="Female">👩 Female (Totes, Aesthetic Tees, Pillows, Frames & Keepsakes)</option>
+                  <option value="Unisex">🌟 Unisex / Other (All Trending Gifts & Apparel)</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="auth-input-email" class="block text-xs font-bold text-[#333] mb-1">Email Address (For Instant OTP Verification) *</label>
                 <input type="email" id="auth-input-email" required placeholder="you@example.com" 
-                       class="w-full bg-white border border-[#DDD4C4] focus:border-black rounded-xl px-4 py-3 text-xs outline-none transition-colors">
+                       class="w-full bg-white border border-[#DDD4C4] focus:border-[#FF6B35] rounded-xl px-4 py-2.5 text-xs outline-none transition-colors font-medium">
               </div>
 
-              <button type="submit" id="auth-send-email-otp-btn" class="w-full bg-[#111111] hover:bg-[#FF6B35] text-white font-bold py-3.5 px-4 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2">
-                <span>Send 6-Digit Verification Code</span>
+              <button type="submit" id="auth-send-email-otp-btn" class="w-full bg-[#111111] hover:bg-[#FF6B35] text-white font-bold py-3.5 px-4 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-md">
+                <span>Send 6-Digit Email OTP</span>
               </button>
             </form>
-
-            <!-- Phone Method Form (Hidden by default) -->
-            <form id="auth-phone-form" class="hidden space-y-4">
-              <div>
-                <label for="auth-input-phone" class="block text-xs font-bold text-[#333] mb-1.5">Indian Mobile Number</label>
-                <div class="flex">
-                  <span class="inline-flex items-center px-3.5 text-xs font-bold text-[#666] bg-[#EFEAE0] border border-r-0 border-[#DDD4C4] rounded-l-xl">+91</span>
-                  <input type="tel" id="auth-input-phone" required pattern="[0-9]{10}" maxlength="10" placeholder="9876543210" 
-                         class="w-full bg-white border border-[#DDD4C4] focus:border-black rounded-r-xl px-4 py-3 text-xs outline-none transition-colors">
-                </div>
-              </div>
-
-              <button type="submit" id="auth-send-phone-otp-btn" class="w-full bg-[#111111] hover:bg-[#FF6B35] text-white font-bold py-3.5 px-4 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2">
-                <span>Send SMS OTP via +91</span>
-              </button>
-            </form>
-
           </div>
 
           <!-- STEP 2: Enter 6-Digit OTP (Hidden initially) -->
@@ -128,8 +115,10 @@ export function renderAuthModal() {
 }
 
 // Authentication Controller State
-let activeAuthMethod = 'email'; // 'email' | 'phone'
+let activeAuthMethod = 'email';
 let currentContactValue = '';
+let registeredName = '';
+let registeredGender = 'Unisex';
 let currentGeneratedOtp = '123456';
 let timerInterval = null;
 let timerSeconds = 60;
@@ -151,10 +140,7 @@ export function closeAuthModal() {
 export function initAuthModalEvents() {
   const modal = document.getElementById('auth-modal');
   const closeBtn = document.getElementById('auth-modal-close-btn');
-  const emailBtn = document.getElementById('auth-method-email-btn');
-  const phoneBtn = document.getElementById('auth-method-phone-btn');
   const emailForm = document.getElementById('auth-email-form');
-  const phoneForm = document.getElementById('auth-phone-form');
   const stepInput = document.getElementById('auth-step-input');
   const stepVerify = document.getElementById('auth-step-verify');
   const targetDisplay = document.getElementById('auth-sent-target-display');
@@ -168,29 +154,6 @@ export function initAuthModalEvents() {
 
   if (closeBtn) {
     closeBtn.addEventListener('click', closeAuthModal);
-  }
-
-  // Toggle Methods: Email vs Phone
-  if (emailBtn && phoneBtn) {
-    emailBtn.addEventListener('click', () => {
-      activeAuthMethod = 'email';
-      emailBtn.classList.add('bg-[#FF6B35]', 'text-white');
-      emailBtn.classList.remove('text-[#AAA]');
-      phoneBtn.classList.remove('bg-[#FF6B35]', 'text-white');
-      phoneBtn.classList.add('text-[#AAA]');
-      if (emailForm) emailForm.classList.remove('hidden');
-      if (phoneForm) phoneForm.classList.add('hidden');
-    });
-
-    phoneBtn.addEventListener('click', () => {
-      activeAuthMethod = 'phone';
-      phoneBtn.classList.add('bg-[#FF6B35]', 'text-white');
-      phoneBtn.classList.remove('text-[#AAA]');
-      emailBtn.classList.remove('bg-[#FF6B35]', 'text-white');
-      emailBtn.classList.add('text-[#AAA]');
-      if (phoneForm) phoneForm.classList.remove('hidden');
-      if (emailForm) emailForm.classList.add('hidden');
-    });
   }
 
   function startCountdown() {
@@ -209,46 +172,39 @@ export function initAuthModalEvents() {
     }, 1000);
   }
 
-  function sendOtp(contact, method) {
+  function sendOtp(contact, name = '') {
     currentContactValue = contact;
     // Generate secure 6-digit OTP
     currentGeneratedOtp = Math.floor(100000 + Math.random() * 900000).toString();
 
     // Dispatch real Brevo Transactional OTP email
-    if (method === 'email') {
-      const apiKey = store.settings.brevoApiKey || "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";
-      sendBrevoOtpEmail({
-        apiKey,
-        toEmail: contact,
-        toName: "PRINTORA Shopper",
-        otpCode: currentGeneratedOtp,
-        purpose: "Customer Account Verification",
-        senderEmail: "manikantalakshmareddy@gmail.com",
-        senderName: "PRINTORA"
-      }).then(res => {
-        if (!res.success) {
-          console.warn("Brevo OTP notice:", res.error);
-        }
-      }).catch(err => console.warn(err));
-    }
+    const apiKey = store.settings.brevoApiKey || "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";
+    sendBrevoOtpEmail({
+      apiKey,
+      toEmail: contact,
+      toName: name || "PRINTORA Shopper",
+      otpCode: currentGeneratedOtp,
+      purpose: "Customer Account Verification",
+      senderEmail: "manikantalakshmareddy@gmail.com",
+      senderName: "PRINTORA"
+    }).then(res => {
+      if (!res.success) {
+        console.warn("Brevo OTP notice:", res.error);
+      }
+    }).catch(err => console.warn(err));
 
     // Trigger Supabase Auth OTP in background if configured
     if (isSupabaseConfigured() && supabase) {
-      if (method === 'email') {
-        supabase.auth.signInWithOtp({ email: contact }).catch(e => console.warn(e));
-      } else {
-        supabase.auth.signInWithOtp({ phone: `+91${contact}` }).catch(e => console.warn(e));
-      }
+      supabase.auth.signInWithOtp({ email: contact }).catch(e => console.warn(e));
     }
 
-    // Show simulated demo notification for instant pair-programming & test friendliness
     if (successBox) {
       successBox.textContent = `A 6-digit verification code (${currentGeneratedOtp}) was sent to ${contact}.`;
       successBox.classList.remove('hidden');
     }
     if (errorBox) errorBox.classList.add('hidden');
 
-    if (targetDisplay) targetDisplay.textContent = method === 'phone' ? `+91 ${contact}` : contact;
+    if (targetDisplay) targetDisplay.textContent = contact;
     if (stepInput) stepInput.classList.add('hidden');
     if (stepVerify) stepVerify.classList.remove('hidden');
 
@@ -259,25 +215,41 @@ export function initAuthModalEvents() {
     startCountdown();
   }
 
-  // Handle Email Submit
+  // Handle Registration / Sign In Form Submit
   if (emailForm) {
     emailForm.addEventListener('submit', (e) => {
       e.preventDefault();
+      const nameInput = document.getElementById('auth-input-name');
+      const genderInput = document.getElementById('auth-input-gender');
       const emailInput = document.getElementById('auth-input-email');
-      if (emailInput && emailInput.value) {
-        sendOtp(emailInput.value.trim(), 'email');
-      }
-    });
-  }
 
-  // Handle Phone Submit
-  if (phoneForm) {
-    phoneForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const phoneInput = document.getElementById('auth-input-phone');
-      if (phoneInput && phoneInput.value) {
-        sendOtp(phoneInput.value.trim(), 'phone');
+      if (!nameInput || !nameInput.value.trim()) {
+        if (errorBox) {
+          errorBox.textContent = "Please enter your full name.";
+          errorBox.classList.remove('hidden');
+        }
+        return;
       }
+
+      if (!genderInput || !genderInput.value) {
+        if (errorBox) {
+          errorBox.textContent = "Please select your gender to personalize suggestions.";
+          errorBox.classList.remove('hidden');
+        }
+        return;
+      }
+
+      if (!emailInput || !emailInput.value.trim()) {
+        if (errorBox) {
+          errorBox.textContent = "Please enter a valid email address.";
+          errorBox.classList.remove('hidden');
+        }
+        return;
+      }
+
+      registeredName = nameInput.value.trim();
+      registeredGender = genderInput.value;
+      sendOtp(emailInput.value.trim(), registeredName);
     });
   }
 
@@ -300,7 +272,7 @@ export function initAuthModalEvents() {
   if (resendBtn) {
     resendBtn.addEventListener('click', () => {
       if (!resendBtn.disabled) {
-        sendOtp(currentContactValue, activeAuthMethod);
+        sendOtp(currentContactValue, registeredName);
       }
     });
   }
@@ -331,14 +303,15 @@ export function initAuthModalEvents() {
       if (enteredCode === currentGeneratedOtp || enteredCode === '123456') {
         const user = {
           id: `usr-${Date.now()}`,
-          email: activeAuthMethod === 'email' ? currentContactValue : `${currentContactValue}@phone.printora.in`,
-          phone: activeAuthMethod === 'phone' ? `+91 ${currentContactValue}` : '',
-          name: activeAuthMethod === 'email' ? currentContactValue.split('@')[0] : `Customer ${currentContactValue.slice(-4)}`,
+          name: registeredName || currentContactValue.split('@')[0],
+          gender: registeredGender || 'Unisex',
+          email: currentContactValue,
           verifiedAt: new Date().toISOString()
         };
 
         store.setUser(user);
-        store.showToast(`Welcome, ${user.name}! You are now signed in.`, 'success');
+        store.setUserGender(user.gender);
+        store.showToast(`Welcome, ${user.name}! Recommendations customized for ${user.gender}.`, 'success');
 
         const firstName = user.name.split(' ')[0];
         const greetingEl = document.getElementById('nav-user-greeting');
@@ -353,9 +326,15 @@ export function initAuthModalEvents() {
           window._authSuccessCallback(user);
           window._authSuccessCallback = null;
         }
+
+        // Re-render storefront so gender-specific recommendations reflect immediately
+        if (window.printoraApp) {
+          window.printoraApp.render();
+          window.printoraApp.attachEventListeners();
+        }
       } else {
         if (errorBox) {
-          errorBox.textContent = "Invalid verification code. Please check your SMS/email or click Resend.";
+          errorBox.textContent = "Invalid verification code. Please check your email or click Resend.";
           errorBox.classList.remove('hidden');
         }
       }

@@ -60,13 +60,47 @@ class PrintoraStore {
 
   // Persistence helpers
   loadInitialProducts() {
-    // Always return fresh curated product definitions
+    const saved = safeGetItem('printora_custom_products');
+    if (!saved) return INITIAL_PRODUCTS.map(p => ({ ...p }));
+    try {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        const editMap = new Map(parsed.map(p => [p.id, p]));
+        return INITIAL_PRODUCTS.map(p => {
+          if (editMap.has(p.id)) {
+            const ed = editMap.get(p.id);
+            return {
+              ...p,
+              name: ed.name || p.name,
+              price: ed.price !== undefined ? ed.price : p.price,
+              originalPrice: ed.originalPrice !== undefined ? ed.originalPrice : p.originalPrice,
+              images: (ed.images && ed.images.length > 0) ? ed.images : p.images,
+              isAvailable: ed.isAvailable !== undefined ? ed.isAvailable : p.isAvailable,
+              isQuoteOnly: ed.isQuoteOnly !== undefined ? ed.isQuoteOnly : p.isQuoteOnly
+            };
+          }
+          return { ...p };
+        });
+      }
+    } catch (e) {
+      console.warn("Failed to parse custom products:", e);
+    }
     return INITIAL_PRODUCTS.map(p => ({ ...p }));
   }
 
   saveProducts() {
     safeSetItem('printora_custom_products', JSON.stringify(this.products));
     this.notify();
+  }
+
+  updateProduct(productId, updates) {
+    const idx = this.products.findIndex(p => p.id === productId);
+    if (idx !== -1) {
+      this.products[idx] = { ...this.products[idx], ...updates };
+      this.saveProducts();
+      return this.products[idx];
+    }
+    return null;
   }
 
   loadCart() {
@@ -398,9 +432,23 @@ class PrintoraStore {
     this.currentUser = user;
     if (user) {
       safeSetItem('printora_user', JSON.stringify(user));
+      if (user.gender) safeSetItem('printora_user_gender', user.gender);
     } else {
       safeRemoveItem('printora_user');
     }
+    this.notify();
+  }
+
+  getUserGender() {
+    return this.currentUser?.gender || safeGetItem('printora_user_gender') || null;
+  }
+
+  setUserGender(gender) {
+    if (this.currentUser) {
+      this.currentUser.gender = gender;
+      safeSetItem('printora_user', JSON.stringify(this.currentUser));
+    }
+    safeSetItem('printora_user_gender', gender);
     this.notify();
   }
 

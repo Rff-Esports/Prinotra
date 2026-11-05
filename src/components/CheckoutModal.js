@@ -22,16 +22,23 @@ export function renderCheckoutModal() {
     <div id="checkout-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
       <div class="relative w-full max-w-3xl bg-[#FAFAF7] border border-[#DDD4C4] rounded-3xl shadow-2xl overflow-hidden my-8 animate-fade-in text-[#111]">
         
-        <!-- Modal Top Bar -->
-        <div class="bg-[#111111] text-white px-6 py-5 flex items-center justify-between border-b border-[#222]">
-          <div>
-            <div class="inline-flex items-center gap-1.5 bg-[#222] px-3 py-0.5 rounded-full text-[10px] text-[#FF6B35] uppercase font-bold tracking-widest font-heading mb-1">
-              <span>Zero Delivery Charges</span>
+        <!-- Sticky Modal Top Bar with Clear Back Button -->
+        <div class="sticky top-0 z-30 bg-[#111111] text-white px-5 sm:px-6 py-4 flex items-center justify-between border-b border-[#222] shadow-md">
+          <div class="flex items-center gap-3">
+            <button type="button" id="checkout-back-nav-btn" class="inline-flex items-center gap-1.5 text-xs text-[#FF6B35] hover:text-white font-bold uppercase tracking-wider py-1.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-pointer" title="Go back to shopping">
+              <span class="text-base leading-none">←</span>
+              <span>Back</span>
+            </button>
+            <div>
+              <div class="inline-flex items-center gap-1.5 bg-[#222] px-2.5 py-0.5 rounded-full text-[10px] text-[#FF6B35] uppercase font-bold tracking-widest font-heading">
+                <span>Free Delivery Across India</span>
+              </div>
+              <h3 class="font-heading text-lg sm:text-xl font-bold tracking-tight text-white leading-tight">Delivery & Checkout</h3>
             </div>
-            <h3 class="font-heading text-2xl font-bold tracking-tight text-white">Express Checkout</h3>
           </div>
-          <button id="checkout-close-btn" class="text-[#AAA] hover:text-white p-1.5 rounded-full hover:bg-white/10 transition-colors" aria-label="Close Checkout">
-            ${renderIcon('close', 'w-5 h-5')}
+          <button type="button" id="checkout-close-btn" class="inline-flex items-center gap-1 text-xs text-[#AAA] hover:text-white font-bold py-1.5 px-3 rounded-xl hover:bg-white/10 transition-colors cursor-pointer" aria-label="Close Checkout">
+            <span>Close</span>
+            <span class="text-sm">✕</span>
           </button>
         </div>
 
@@ -233,32 +240,28 @@ export function renderCheckoutModal() {
               </div>
             </div>
 
-            <!-- Payment Methods -->
+            <!-- Payment Methods: Direct Razorpay (@ballahruthikvardhan) -->
             <div>
               <span class="text-xs uppercase tracking-widest text-[#777] font-bold block mb-2 font-heading">
-                3. Select Payment Method
+                3. Secure Payment Gateway
               </span>
 
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="chk-payment-options">
-                
-                <!-- Option A: Razorpay Online (Cards / UPI) -->
-                <label class="cursor-pointer border-2 border-black bg-[#FAF8F5] p-3.5 rounded-xl flex items-start gap-3 transition-all chk-pay-option" data-method="Online">
-                  <input type="radio" name="payment_method" value="Online" checked class="mt-1 accent-black">
-                  <div>
-                    <strong class="text-xs font-bold text-black block">💳 Pay Online (UPI / Cards / NetBanking)</strong>
-                    <p class="text-[11px] text-[#666] mt-0.5 leading-snug">Instant confirmation. Supports Google Pay, PhonePe, Paytm, Debit/Credit Cards & NetBanking.</p>
+              <div class="border-2 border-black bg-[#FAF8F5] p-4 rounded-2xl flex items-start gap-3.5">
+                <input type="radio" name="payment_method" value="Razorpay" checked class="mt-1 accent-[#FF6B35]">
+                <div class="space-y-1 flex-1">
+                  <div class="flex items-center justify-between flex-wrap gap-2">
+                    <strong class="text-xs sm:text-sm font-bold text-black font-heading">Pay Online via Razorpay (@ballahruthikvardhan)</strong>
+                    <span class="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">Official Gateway</span>
                   </div>
-                </label>
-
-                <!-- Option B: WhatsApp Order Integration -->
-                <label class="cursor-pointer border-2 border-[#DDD4C4] hover:border-black bg-white p-3.5 rounded-xl flex items-start gap-3 transition-all chk-pay-option" data-method="WhatsApp">
-                  <input type="radio" name="payment_method" value="WhatsApp" class="mt-1 accent-black">
-                  <div>
-                    <strong class="text-xs font-bold text-black block">💬 Order via Official WhatsApp</strong>
-                    <p class="text-[11px] text-[#666] mt-0.5 leading-snug">Order is saved in Printora system, then sends full receipt & customization proof to +91 8106992102.</p>
+                  <p class="text-[11px] text-[#666] leading-snug">
+                    You will be seamlessly redirected to complete payment of <strong class="text-black font-mono font-bold">₹${total}</strong>. Supports Google Pay, PhonePe, Paytm, UPI, Debit/Credit Cards & NetBanking.
+                  </p>
+                  <div class="flex items-center gap-2 pt-1 text-[11px] text-[#777]">
+                    <span class="font-mono text-emerald-700 font-bold">✓ Amount Fixed: ₹${total}</span>
+                    <span>•</span>
+                    <span>Zero Delivery Fee (₹0)</span>
                   </div>
-                </label>
-
+                </div>
               </div>
             </div>
 
@@ -268,11 +271,14 @@ export function renderCheckoutModal() {
           <div class="space-y-3 pt-2">
             <button type="submit" id="checkout-submit-btn" class="w-full bg-[#111111] hover:bg-[#FF6B35] text-white font-extrabold py-4 px-6 rounded-2xl text-sm tracking-wider uppercase transition-all duration-300 shadow-xl flex items-center justify-center gap-2.5 cursor-pointer">
               <span id="chk-btn-icon">${renderIcon('shieldCheck', 'w-5 h-5')}</span>
-              <span id="chk-btn-text">Confirm Order • Total ₹${total} (Free Delivery)</span>
+              <span id="chk-btn-text">Proceed to Pay ₹${total} & Place Order</span>
             </button>
-            <p class="text-[11px] text-center text-[#777]">
-              🔒 256-Bit SSL Encrypted • 100% Free Pan-India Delivery Guaranteed
-            </p>
+            <div class="flex items-center justify-between text-xs text-[#777] pt-1 px-1">
+              <button type="button" id="checkout-cancel-return-btn" class="text-[#FF6B35] hover:text-black font-bold flex items-center gap-1 cursor-pointer">
+                <span>← Return to Bag & Edit</span>
+              </button>
+              <span>🔒 256-Bit SSL Encrypted • Free Delivery</span>
+            </div>
           </div>
 
         </form>
@@ -310,6 +316,12 @@ export function closeCheckoutModal() {
 export function initCheckoutModalEvents() {
   const closeBtn = document.getElementById('checkout-close-btn');
   if (closeBtn) closeBtn.addEventListener('click', closeCheckoutModal);
+
+  const backNavBtn = document.getElementById('checkout-back-nav-btn');
+  if (backNavBtn) backNavBtn.addEventListener('click', closeCheckoutModal);
+
+  const cancelReturnBtn = document.getElementById('checkout-cancel-return-btn');
+  if (cancelReturnBtn) cancelReturnBtn.addEventListener('click', closeCheckoutModal);
 
   // Reactive name update to Navbar "Hi, [Name]"
   const nameInput = document.getElementById('chk-name');
@@ -599,8 +611,8 @@ export function initCheckoutModalEvents() {
           district,
           state,
           specialInstructions: instructions,
-          paymentMethod,
-          paymentStatus: paymentMethod === 'Online' ? 'Payment Confirmed' : 'WhatsApp Verification',
+          paymentMethod: 'Razorpay Online (@ballahruthikvardhan)',
+          paymentStatus: 'Payment Pending',
           discount: appliedCoupon ? appliedCoupon.discount : 0
         });
 
@@ -609,15 +621,23 @@ export function initCheckoutModalEvents() {
           window.confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
         }
 
+        // Store last order
+        try {
+          localStorage.setItem('printora_last_order', JSON.stringify(order));
+        } catch (e) {}
+
+        // Clear cart
+        store.clearCart();
+
         // Close checkout modal
         closeCheckoutModal();
-        store.showToast(`Order ${order.orderCode} Confirmed! Free Shipping Applied.`, 'success');
+        store.showToast(`Order ${order.orderCode} Created! Redirecting to Razorpay...`, 'success');
 
-        // Always generate full WhatsApp prefilled message URL
-        const waUrl = generateWhatsAppUrl(order);
-
-        // Open WhatsApp directly
-        window.open(waUrl, '_blank');
+        // Redirect to user's specified Razorpay personal gateway link with exact fixed cart amount
+        const razorpayUrl = `https://razorpay.me/@ballahruthikvardhan?amount=${order.totalAmount}`;
+        setTimeout(() => {
+          window.location.href = razorpayUrl;
+        }, 1200);
 
       } catch (err) {
         alert("Failed to place order: " + err.message);
