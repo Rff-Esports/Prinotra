@@ -1,4 +1,9 @@
 // PRINTORA Central Store & Reactive State Management
+// Brand: PRINTORA ("YOU IMAGINE. WE PRINT.")
+// Official Domain: https://printoracustom.in
+// WhatsApp: +91 8106992102
+// Delivery: STRICT ₹0 FREE DELIVERY ACROSS INDIA
+
 import { CATEGORIES, INITIAL_PRODUCTS } from '../data/products.js';
 import { supabase, isSupabaseConfigured } from './supabase.js';
 import { formatWhatsAppOrderMessage, generateWhatsAppUrl, sendWhatsAppCloudApiNotification, generateBulkWhatsAppUrl } from './whatsapp.js';
@@ -9,6 +14,9 @@ class PrintoraStore {
     this.products = this.loadInitialProducts();
     this.categories = CATEGORIES;
     this.cart = this.loadCart();
+    this.wishlist = this.loadWishlist();
+    this.savedDesigns = this.loadSavedDesigns();
+    this.coupons = this.loadCoupons();
     this.orders = this.loadOrders();
     this.bulkEnquiries = this.loadBulkEnquiries();
     this.suppliers = this.loadSuppliers();
@@ -73,6 +81,122 @@ class PrintoraStore {
     this.notify();
   }
 
+  loadWishlist() {
+    const saved = localStorage.getItem('printora_wishlist');
+    return saved ? JSON.parse(saved) : [];
+  }
+
+  saveWishlist() {
+    localStorage.setItem('printora_wishlist', JSON.stringify(this.wishlist));
+    this.notify();
+  }
+
+  addToWishlist(product) {
+    if (!this.wishlist.some(p => p.id === product.id)) {
+      this.wishlist.push({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        originalPrice: product.originalPrice,
+        image: product.images?.[0] || '',
+        categoryName: product.categoryName,
+        isQuoteOnly: product.isQuoteOnly
+      });
+      this.saveWishlist();
+      this.showToast(`Added "${product.name}" to Wishlist`, 'success');
+    }
+  }
+
+  removeFromWishlist(productId) {
+    this.wishlist = this.wishlist.filter(p => p.id !== productId);
+    this.saveWishlist();
+    this.showToast('Removed from Wishlist', 'info');
+  }
+
+  isInWishlist(productId) {
+    return this.wishlist.some(p => p.id === productId);
+  }
+
+  getWishlistCount() {
+    return this.wishlist.length;
+  }
+
+  loadSavedDesigns() {
+    const saved = localStorage.getItem('printora_saved_designs');
+    return saved ? JSON.parse(saved) : [
+      {
+        id: "dsg-demo-1",
+        title: "Neon Cyber Jersey",
+        productName: "Custom Jersey",
+        date: new Date().toLocaleDateString('en-IN'),
+        previewData: {
+          playerName: "PRINTORA",
+          playerNumber: "10",
+          teamName: "TITANS FC",
+          jerseyColor: "#111111",
+          font: "Bebas Neue",
+          textColor: "#FF6B35"
+        }
+      }
+    ];
+  }
+
+  saveCustomDesign(designData) {
+    const newDesign = {
+      id: `dsg-${Date.now()}`,
+      title: designData.title || `Design ${this.savedDesigns.length + 1}`,
+      productName: designData.productName || 'Custom Apparel',
+      date: new Date().toLocaleDateString('en-IN'),
+      previewData: designData
+    };
+    this.savedDesigns.unshift(newDesign);
+    localStorage.setItem('printora_saved_designs', JSON.stringify(this.savedDesigns));
+    this.notify();
+    this.showToast('Design saved to your account', 'success');
+    return newDesign;
+  }
+
+  deleteSavedDesign(designId) {
+    this.savedDesigns = this.savedDesigns.filter(d => d.id !== designId);
+    localStorage.setItem('printora_saved_designs', JSON.stringify(this.savedDesigns));
+    this.notify();
+    this.showToast('Design removed', 'info');
+  }
+
+  loadCoupons() {
+    const saved = localStorage.getItem('printora_coupons');
+    return saved ? JSON.parse(saved) : [
+      { code: "PRINTORA50", discountType: "fixed", value: 50, minOrder: 499, description: "Flat ₹50 OFF on orders above ₹499" },
+      { code: "WELCOME10", discountType: "percent", value: 10, minOrder: 0, description: "10% OFF for new customers" },
+      { code: "BULK20", discountType: "percent", value: 20, minOrder: 2499, description: "20% OFF on team and bulk orders above ₹2499" }
+    ];
+  }
+
+  saveCoupons() {
+    localStorage.setItem('printora_coupons', JSON.stringify(this.coupons));
+    this.notify();
+  }
+
+  validateCoupon(code, subtotal) {
+    if (!code) return { valid: false, message: "Enter coupon code" };
+    const coupon = this.coupons.find(c => c.code.toUpperCase() === code.trim().toUpperCase());
+    if (!coupon) {
+      return { valid: false, message: "Invalid coupon code" };
+    }
+    if (subtotal < coupon.minOrder) {
+      return { valid: false, message: `Minimum order of ₹${coupon.minOrder} required for ${coupon.code}` };
+    }
+    const discount = coupon.discountType === 'percent'
+      ? Math.round((subtotal * coupon.value) / 100)
+      : coupon.value;
+    return {
+      valid: true,
+      code: coupon.code,
+      discount: Math.min(discount, subtotal),
+      message: `${coupon.code} applied! Saved ₹${Math.min(discount, subtotal)}`
+    };
+  }
+
   loadOrders() {
     const saved = localStorage.getItem('printora_orders');
     return saved ? JSON.parse(saved) : [
@@ -93,7 +217,7 @@ class PrintoraStore {
         discount: 0,
         shippingCharge: 0,
         totalAmount: 998,
-        status: "Processing",
+        status: "In Production",
         createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
         items: [
           {
@@ -102,13 +226,13 @@ class PrintoraStore {
             price: 499,
             quantity: 2,
             selectedSize: "L",
-            selectedColor: "Stealth Black & Gold",
+            selectedColor: "Stealth Black & Orange",
             customName: "VARMA",
             customNumber: "07",
-            customNotes: "Front gold team crest"
+            customNotes: "Front orange team crest"
           }
         ],
-        internalNotes: "Assigned to Nizamabad Hub. Fabric printed, awaiting stitching.",
+        internalNotes: "Assigned to Nizamabad Hub. Fabric printed, awaiting final quality check.",
         supplierAssignment: {
           supplierId: "s1000000-0000-0000-0000-000000000001",
           supplierName: "Printora Nizamabad Central Hub",
@@ -155,12 +279,12 @@ class PrintoraStore {
     return saved ? JSON.parse(saved) : [
       {
         id: "s1000000-0000-0000-0000-000000000001",
-        name: "Printora Nizamabad Central Hub",
+        name: "Printora Central Production Hub",
         contactPerson: "Production Lead",
         phone: "+91 8106992102",
         email: "production@printoracustom.in",
         city: "Nizamabad",
-        specialization: "Local fast-turnaround DTF apparel & ceramic mugs",
+        specialization: "Direct-to-Film (DTF) apparel, ceramic sublimation mugs & team jerseys",
         isActive: true
       },
       {
@@ -170,7 +294,7 @@ class PrintoraStore {
         phone: "+91 9440012345",
         email: "deccan.sublimation@example.com",
         city: "Hyderabad",
-        specialization: "Custom Sportswear, Sublimation Team Jerseys",
+        specialization: "Pro Team Sportswear, Sublimation Team Jerseys",
         isActive: true
       },
       {
@@ -180,7 +304,7 @@ class PrintoraStore {
         phone: "+91 9842011223",
         email: "tirupur.partner@example.com",
         city: "Tirupur",
-        specialization: "Bulk Oversized T-shirts, Hoodies & Sweatshirts",
+        specialization: "Bulk Oversized T-shirts, Heavyweight Hoodies & Sweatshirts",
         isActive: true
       }
     ];
@@ -205,14 +329,14 @@ class PrintoraStore {
     const saved = localStorage.getItem('printora_store_settings');
     return saved ? JSON.parse(saved) : {
       brandName: "PRINTORA",
-      tagline: "MAKE IT YOURS.",
+      tagline: "YOU IMAGINE. WE PRINT.",
       whatsappNumber: "+91 8106992102",
-      instagramHandle: "@printoracustom.in",
+      instagramHandle: "@printora.gifts",
       supportEmail: "support@printoracustom.in",
-      businessLocation: "Nizamabad, Telangana, India",
-      shippingFlatFee: 60,
-      freeShippingThreshold: 999,
-      announcementBanner: "✦ Custom Apparel & Merch for Individuals & Teams • Free Pan-India Delivery on orders over ₹999 ✦",
+      businessLocation: "India (Pan-India Free Shipping)",
+      shippingFlatFee: 0,
+      freeShippingThreshold: 0,
+      announcementBanner: "FREE SHIPPING ACROSS INDIA – NO DELIVERY CHARGES!",
       whatsappCloudApiToken: "",
       whatsappPhoneNumberId: "",
       razorpayKeyId: localStorage.getItem('printora_razorpay_key_id') || "rzp_test_Tw51XlubBFx1y1"
@@ -250,7 +374,6 @@ class PrintoraStore {
         .eq('is_available', true);
 
       if (!prodErr && dbProducts && dbProducts.length > 0) {
-        // Merge or replace
         console.log(`Loaded ${dbProducts.length} live products from Supabase.`);
       }
 
@@ -268,9 +391,9 @@ class PrintoraStore {
           tagline: dbSettings.tagline || this.settings.tagline,
           whatsappNumber: dbSettings.whatsapp_number || this.settings.whatsappNumber,
           instagramHandle: dbSettings.instagram_handle || this.settings.instagramHandle,
-          shippingFlatFee: Number(dbSettings.shipping_flat_fee) || this.settings.shippingFlatFee,
-          freeShippingThreshold: Number(dbSettings.free_shipping_threshold) || this.settings.freeShippingThreshold,
-          announcementBanner: dbSettings.announcement_banner || this.settings.announcementBanner
+          shippingFlatFee: 0, // Strict rule: always 0
+          freeShippingThreshold: 0,
+          announcementBanner: "FREE SHIPPING ACROSS INDIA – NO DELIVERY CHARGES!"
         };
         this.saveSettings();
       }
@@ -284,7 +407,7 @@ class PrintoraStore {
   // ==========================================
   addToCart(product, options = {}) {
     if (product.isQuoteOnly) {
-      this.showToast(`"${product.name}" requires a custom quote. Please submit an enquiry.`, 'info');
+      this.showToast(`"${product.name}" requires a custom quote. Please submit a bulk enquiry.`, 'info');
       return false;
     }
 
@@ -295,32 +418,31 @@ class PrintoraStore {
       customName = '',
       customNumber = '',
       customNotes = '',
-      artworkFile = null
+      artworkFile = null,
+      frontDesign = null,
+      backDesign = null
     } = options;
 
-    const cartItemId = `${product.id}-${size}-${color}-${customName}-${customNumber}`;
-    const existingIndex = this.cart.findIndex(i => i.cartItemId === cartItemId);
-
-    if (existingIndex > 0 || existingIndex === 0) {
-      this.cart[existingIndex].quantity += quantity;
-    } else {
-      this.cart.push({
-        cartItemId,
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        originalPrice: product.originalPrice,
-        image: product.images?.[0] || '',
-        category: product.categoryName,
-        selectedSize: size,
-        selectedColor: color,
-        quantity: quantity,
-        customName: customName.trim(),
-        customNumber: customNumber.trim(),
-        customNotes: customNotes.trim(),
-        artworkFile: artworkFile ? artworkFile.name : null
-      });
-    }
+    const cartItemId = `${product.id}-${size}-${color}-${customName}-${customNumber}-${Date.now()}`;
+    
+    this.cart.push({
+      cartItemId,
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      originalPrice: product.originalPrice,
+      image: product.images?.[0] || '',
+      category: product.categoryName,
+      selectedSize: size,
+      selectedColor: color,
+      quantity: quantity,
+      customName: customName.trim(),
+      customNumber: customNumber.trim(),
+      customNotes: customNotes.trim(),
+      artworkFile: artworkFile ? (artworkFile.name || artworkFile) : null,
+      frontDesign,
+      backDesign
+    });
 
     this.saveCart();
     this.showToast(`Added ${product.name} to bag`, 'success');
@@ -358,15 +480,13 @@ class PrintoraStore {
     return this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   }
 
+  // STRICT BUSINESS RULE: FREE SHIPPING ON ALL ORDERS – NO DELIVERY CHARGES
   getShippingCharge() {
-    const subtotal = this.getCartSubtotal();
-    if (subtotal === 0) return 0;
-    if (subtotal >= this.settings.freeShippingThreshold) return 0;
-    return this.settings.shippingFlatFee;
+    return 0;
   }
 
   getCartTotal(discount = 0) {
-    return Math.max(0, this.getCartSubtotal() + this.getShippingCharge() - discount);
+    return Math.max(0, this.getCartSubtotal() - discount);
   }
 
   // ==========================================
@@ -384,7 +504,7 @@ class PrintoraStore {
     }
 
     const subtotal = this.getCartSubtotal();
-    const shippingCharge = this.getShippingCharge();
+    const shippingCharge = 0; // Strict requirement: ₹0 always
     const discount = customerData.discount || 0;
     const totalAmount = this.getCartTotal(discount);
     const orderCode = this.generateOrderCode();
@@ -398,16 +518,19 @@ class PrintoraStore {
       shippingHouse: customerData.house.trim(),
       shippingArea: customerData.area.trim(),
       shippingCity: customerData.city.trim(),
+      shippingDistrict: customerData.district?.trim() || customerData.city.trim(),
       shippingState: customerData.state.trim(),
       shippingPincode: customerData.pincode.trim(),
       shippingCountry: 'India',
       specialInstructions: customerData.specialInstructions?.trim() || '',
+      paymentMethod: customerData.paymentMethod || 'Online (Razorpay / UPI)',
+      paymentStatus: customerData.paymentStatus || 'Payment Confirmed',
       items: [...this.cart],
       subtotal,
       discount,
-      shippingCharge,
+      shippingCharge: 0,
       totalAmount,
-      status: 'Pending',
+      status: 'Order Placed',
       createdAt: new Date().toISOString()
     };
 
@@ -433,15 +556,14 @@ class PrintoraStore {
             special_instructions: orderRecord.specialInstructions,
             subtotal,
             discount,
-            shipping_charge: shippingCharge,
+            shipping_charge: 0,
             total_amount: totalAmount,
-            status: 'Pending'
+            status: 'Order Placed'
           }])
           .select()
           .single();
 
         if (!ordErr && dbOrder) {
-          // Insert order items
           const dbItems = this.cart.map(item => ({
             order_id: dbOrder.id,
             product_name: item.name,
@@ -461,7 +583,7 @@ class PrintoraStore {
       }
     }
 
-    // 3. Trigger Method 2 (WhatsApp Cloud API if configured)
+    // 3. Trigger WhatsApp Cloud API if configured
     sendWhatsAppCloudApiNotification(orderRecord, this.settings);
 
     // 4. Clear the cart
@@ -513,7 +635,7 @@ class PrintoraStore {
   }
 
   // ==========================================
-  // ADMIN STORE MANAGEMENT
+  // ORDER STATUS UPDATE (10 Formal Statuses)
   // ==========================================
   updateOrderStatus(orderId, newStatus, internalNotes = '') {
     const order = this.orders.find(o => o.id === orderId || o.orderCode === orderId);
@@ -522,7 +644,7 @@ class PrintoraStore {
       if (internalNotes) order.internalNotes = internalNotes;
       order.updatedAt = new Date().toISOString();
       this.saveOrders();
-      this.showToast(`Order ${order.orderCode} updated to ${newStatus}`, 'success');
+      this.showToast(`Order ${order.orderCode} updated to "${newStatus}"`, 'success');
     }
   }
 
@@ -571,9 +693,7 @@ class PrintoraStore {
   // Filtered and sorted products
   getFilteredProducts() {
     return this.products.filter(prod => {
-      // Category filter
       const matchesCategory = this.activeCategory === 'all' || prod.categoryId === this.activeCategory;
-      // Search filter
       const q = this.searchQuery.toLowerCase().trim();
       const matchesSearch = !q ||
         prod.name.toLowerCase().includes(q) ||
@@ -596,7 +716,6 @@ class PrintoraStore {
       if (this.sortBy === 'name') {
         return a.name.localeCompare(b.name);
       }
-      // 'featured'
       if (a.isFeatured && !b.isFeatured) return -1;
       if (!a.isFeatured && b.isFeatured) return 1;
       return 0;
