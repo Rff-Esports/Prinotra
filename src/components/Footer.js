@@ -82,7 +82,6 @@ export function renderFooter() {
             <h4 class="text-xs font-bold uppercase tracking-[0.25em] text-[#FF6B35] font-heading">Navigation</h4>
             <ul class="text-xs space-y-2 text-[#AAAAAA]">
               <li><a href="#catalogue" class="hover:text-white transition-colors">Shop All Products</a></li>
-              <li><a href="#custom-studio" class="hover:text-white transition-colors">Customization Studio</a></li>
               <li><a href="#custom-jersey" class="hover:text-white transition-colors">Custom Jerseys (₹499)</a></li>
               <li><a href="#bulk-orders" class="hover:text-white transition-colors">Corporate Gifting</a></li>
             </ul>

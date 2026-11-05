@@ -59,10 +59,6 @@ export function renderNavbar() {
             <a href="#catalogue" class="hover:text-[#FF6B35] transition-colors py-2 font-heading">
               Shop
             </a>
-            <a href="#custom-studio" class="hover:text-[#FF6B35] transition-colors py-2 font-heading flex items-center gap-1">
-              <span>Customize</span>
-              <span class="bg-[#111] text-white text-[9px] px-1.5 py-0.5 rounded-full">STUDIO</span>
-            </a>
             <a href="#custom-jersey" class="hover:text-[#FF6B35] transition-colors py-2 font-heading flex items-center gap-1">
               <span>Custom Jerseys</span>
               <span class="text-[#FF6B35] font-mono">₹499</span>
@@ -125,10 +121,6 @@ export function renderNavbar() {
     <div id="mobile-menu-drawer" class="hidden lg:hidden bg-white border-b border-[#DDD4C4] px-6 py-6 space-y-3.5 text-xs font-bold uppercase tracking-wider text-[#333] shadow-xl animate-fade-in font-heading">
       <a href="#" class="block py-2 border-b border-[#F0EAE1] hover:text-[#FF6B35]">Home</a>
       <a href="#catalogue" class="block py-2 border-b border-[#F0EAE1] hover:text-[#FF6B35]">Shop All Products</a>
-      <a href="#custom-studio" class="block py-2 border-b border-[#F0EAE1] text-[#FF6B35] flex items-center justify-between">
-        <span>Customize Studio</span>
-        <span class="bg-[#FF6B35] text-white text-[9px] px-1.5 py-0.5 rounded-full">STUDIO</span>
-      </a>
       <a href="#custom-jersey" class="block py-2 border-b border-[#F0EAE1] hover:text-[#FF6B35] flex items-center justify-between">
         <span>Custom Team Jerseys</span>
         <span class="font-mono text-[#FF6B35]">₹499</span>

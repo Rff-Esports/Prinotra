@@ -42,9 +42,9 @@ export function renderHeroBanner() {
                   ${renderIcon('arrowRight', 'w-4 h-4')}
                 </a>
 
-                <a href="#custom-studio" class="bg-white hover:bg-[#FAF8F5] text-[#111111] hover:border-black font-extrabold text-xs uppercase tracking-widest px-8 py-4 rounded-2xl transition-all duration-300 border-2 border-[#DDD4C4] flex items-center gap-2.5 shadow-sm font-heading">
+                <a href="#custom-jersey" class="bg-white hover:bg-[#FAF8F5] text-[#111111] hover:border-black font-extrabold text-xs uppercase tracking-widest px-8 py-4 rounded-2xl transition-all duration-300 border-2 border-[#DDD4C4] flex items-center gap-2.5 shadow-sm font-heading">
                   ${renderIcon('shirt', 'w-4 h-4 text-[#FF6B35]')}
-                  <span>CUSTOMIZE YOUR PRODUCT</span>
+                  <span>CUSTOM JERSEYS (₹499)</span>
                 </a>
               </div>
 
@@ -130,8 +130,8 @@ export function renderHeroBanner() {
 
                   <!-- Festive Action CTAs -->
                   <div class="relative z-10 grid grid-cols-2 gap-2 mt-2">
-                    <a href="#custom-studio" class="bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs py-2.5 px-3 rounded-xl transition-colors flex items-center justify-center gap-1">
-                      <span>👕 Design Tee</span>
+                    <a href="#custom-jersey" class="bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs py-2.5 px-3 rounded-xl transition-colors flex items-center justify-center gap-1">
+                      <span>🎽 Custom Jerseys</span>
                     </a>
                     <a href="#catalogue" class="bg-[#FFE600] hover:bg-[#FFD166] text-black font-black text-xs py-2.5 px-3 rounded-xl transition-colors flex items-center justify-center gap-1 shadow-lg">
                       <span>Claim 10% Off →</span>
@@ -176,8 +176,8 @@ export function renderHeroBanner() {
               </div>
               <div class="bg-white p-5 rounded-2xl border border-[#DDD4C4] shadow-sm space-y-2">
                 <span class="w-8 h-8 rounded-full bg-[#111] text-[#FF6B35] flex items-center justify-center font-bold text-xs font-mono">02</span>
-                <h4 class="font-heading text-base font-bold text-black">Personalize Live in Studio</h4>
-                <p class="text-xs text-[#666] leading-relaxed">Enter your name, lucky number, pick from 12 Google fonts, or upload your team artwork with instant preview.</p>
+                <h4 class="font-heading text-base font-bold text-black">Personalize Your Order</h4>
+                <p class="text-xs text-[#666] leading-relaxed">Add your name, number, custom artwork, or phone model directly when selecting your product or at checkout.</p>
               </div>
               <div class="bg-white p-5 rounded-2xl border border-[#DDD4C4] shadow-sm space-y-2">
                 <span class="w-8 h-8 rounded-full bg-[#111] text-[#FF6B35] flex items-center justify-center font-bold text-xs font-mono">03</span>
