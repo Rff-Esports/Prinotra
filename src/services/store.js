@@ -63,7 +63,11 @@ class PrintoraStore {
     const saved = safeGetItem('printora_custom_products');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        return INITIAL_PRODUCTS.map(initial => {
+          const custom = parsed.find(p => p.id === initial.id);
+          return custom ? { ...initial, ...custom, images: initial.images } : initial;
+        });
       } catch (e) {
         console.error(e);
       }

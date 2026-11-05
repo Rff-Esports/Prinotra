@@ -24,7 +24,7 @@ export async function sendBrevoEmail({
   toName = "Valued Customer",
   subject,
   htmlContent,
-  senderEmail = "support@printoracustom.in",
+  senderEmail = "manikantalakshmareddy@gmail.com",
   senderName = "PRINTORA"
 }) {
   if (!apiKey || !apiKey.trim()) {

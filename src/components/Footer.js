@@ -15,9 +15,12 @@ export function renderFooter() {
           
           <!-- Brand Column (Cols 1-4) -->
           <div class="lg:col-span-4 space-y-4">
-            <div class="flex flex-col">
-              <span class="font-heading text-2xl font-black tracking-[0.15em] text-white">PRINTORA</span>
-              <span class="text-[9px] tracking-[0.3em] text-[#FF6B35] uppercase font-bold font-heading">YOU IMAGINE. WE PRINT.</span>
+            <div class="flex items-center gap-3">
+              <img src="/assets/logo.png" alt="PRINTORA" class="h-12 w-auto object-contain rounded-xl bg-white p-1">
+              <div class="flex flex-col">
+                <span class="font-heading text-2xl font-black tracking-[0.15em] text-white">PRINTORA</span>
+                <span class="text-[9px] tracking-[0.3em] text-[#FF6B35] uppercase font-bold font-heading">CUSTOMISED CLOTHING • WEAR YOUR STORY</span>
+              </div>
             </div>
             
             <p class="text-xs text-[#AAAAAA] leading-relaxed max-w-sm">

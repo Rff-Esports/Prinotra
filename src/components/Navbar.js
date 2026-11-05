@@ -12,11 +12,24 @@ export function renderNavbar() {
   const wishlistCount = store.getWishlistCount();
   const settings = store.settings;
 
+  const user = store.currentUser || (typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem('printora_customer_user') || 'null') : null);
+  const rawName = user?.name || user?.fullName || (typeof localStorage !== 'undefined' ? localStorage.getItem('printora_customer_name') : null);
+  const userName = rawName ? rawName.trim().split(' ')[0] : null;
+
   return `
-    <!-- Top Announcement Bar (Strict Free Delivery Notice & Coupon) -->
-    <aside class="bg-[#111111] text-[#FF6B35] text-[11px] font-bold py-2 px-4 text-center tracking-wider border-b border-[#222] flex items-center justify-center gap-2 font-heading" aria-label="Announcement">
-      <span class="w-1.5 h-1.5 rounded-full bg-[#FF6B35] animate-pulse"></span>
-      <span class="text-white">${settings.announcementBanner || "FREE SHIPPING ACROSS INDIA • USE COUPON 'PRINTORA 25' FOR FLAT ₹25 OFF ON MRP!"}</span>
+    <!-- Top Announcement Bar (Strict Free Delivery Notice, Coupon & User Greeting) -->
+    <aside class="bg-[#111111] text-[#FF6B35] text-[11px] font-bold py-2 px-4 tracking-wider border-b border-[#222] flex items-center justify-between font-heading" aria-label="Announcement">
+      <div class="hidden md:flex items-center gap-1.5 text-white text-[11px]">
+        <span class="text-[#FF6B35]">👋</span>
+        <span id="top-announcement-greeting" class="font-bold text-white">${userName ? `Hi, ${userName}!` : 'Welcome to PRINTORA'}</span>
+      </div>
+      <div class="flex items-center justify-center gap-2 mx-auto md:mx-0">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#FF6B35] animate-pulse"></span>
+        <span class="text-white">${settings.announcementBanner || "FREE SHIPPING ACROSS INDIA • USE COUPON 'PRINTORA 25' FOR FLAT ₹25 OFF ON MRP!"}</span>
+      </div>
+      <div class="hidden md:flex items-center gap-2 text-emerald-400 text-[10px]">
+        <span>✓ Free Pan-India Delivery</span>
+      </div>
     </aside>
 
     <!-- Main Sticky Navigation -->
@@ -31,15 +44,18 @@ export function renderNavbar() {
             </button>
           </div>
 
-          <!-- Brand Logo & Identity -->
+          <!-- Brand Logo & Identity (Official Coat Hanger + Sparkle Brandmark) -->
           <div class="flex items-center">
-            <a href="#" class="flex flex-col items-center sm:items-start group">
-              <span class="font-heading text-2xl sm:text-3xl font-black tracking-[0.15em] text-[#111111] group-hover:text-[#FF6B35] transition-colors">
-                PRINTORA
-              </span>
-              <span class="text-[9px] tracking-[0.3em] text-[#777] uppercase font-bold -mt-1 group-hover:text-black transition-colors font-heading">
-                YOU IMAGINE. WE PRINT.
-              </span>
+            <a href="#" class="flex items-center gap-3 group">
+              <img src="/assets/logo.png" alt="PRINTORA - Customised Clothing" class="h-11 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105 rounded-xl shadow-sm">
+              <div class="hidden sm:flex flex-col">
+                <span class="font-heading text-xl sm:text-2xl font-black tracking-[0.15em] text-[#111111] group-hover:text-[#FF6B35] transition-colors leading-tight">
+                  PRINTORA
+                </span>
+                <span class="text-[8px] tracking-[0.25em] text-[#777] uppercase font-bold group-hover:text-black transition-colors font-heading">
+                  CUSTOMISED CLOTHING
+                </span>
+              </div>
             </a>
           </div>
 
@@ -93,9 +109,14 @@ export function renderNavbar() {
               </span>
             </button>
 
-            <!-- Account Trigger -->
-            <button id="nav-account-btn" class="p-2 text-[#333] hover:text-[#FF6B35] rounded-full hover:bg-[#F5F5F5] transition-colors" title="My Account" aria-label="My Account">
-              ${renderIcon('user', 'w-5 h-5')}
+            <!-- User Greeting & Account Trigger (Shows "Hi, [Name]" as user inputs) -->
+            <button id="nav-account-btn" class="flex items-center gap-1.5 py-1.5 px-3 rounded-full hover:bg-[#F5F5F5] border border-[#DDD4C4]/60 hover:border-[#FF6B35] transition-all text-[#333] hover:text-[#FF6B35] cursor-pointer" title="My Account" aria-label="My Account">
+              <span class="w-6 h-6 rounded-full bg-[#111] text-white flex items-center justify-center text-[10px] font-bold font-mono">
+                ${userName ? userName.charAt(0).toUpperCase() : '👤'}
+              </span>
+              <span id="nav-user-greeting" class="text-xs font-bold font-heading">
+                ${userName ? `Hi, ${userName}` : 'Hi, Sign In'}
+              </span>
             </button>
 
             <!-- Shopping Cart Trigger -->

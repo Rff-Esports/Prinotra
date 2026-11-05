@@ -65,10 +65,8 @@ function renderAdminLoginGate() {
     <div id="admin-login-barrier" class="min-h-screen bg-[#0A0A0A] text-white flex flex-col items-center justify-center p-4 sm:p-6 font-sans">
       <div class="w-full max-w-md bg-[#141414] border border-[#2B2B2B] rounded-3xl p-8 sm:p-10 shadow-2xl relative">
         
-        <div class="text-center mb-8">
-          <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#FF6B35]/15 border border-[#FF6B35]/30 text-[#FF6B35] mb-4">
-            ${renderIcon('shieldCheck', 'w-7 h-7')}
-          </div>
+        <div class="text-center mb-8 flex flex-col items-center">
+          <img src="/assets/logo.png" alt="PRINTORA" class="h-16 w-auto object-contain rounded-2xl bg-white p-1 mb-3 shadow-xl">
           <span class="text-[10px] text-[#FF6B35] font-bold uppercase tracking-[0.3em] font-heading block">RESTRICTED ACCESS</span>
           <h2 class="text-2xl font-bold font-heading text-white mt-1">PRINTORA Control Center</h2>
           <p class="text-xs text-[#888] mt-1.5">Authorized Store Administrator Authentication</p>
@@ -140,6 +138,7 @@ export function renderAdminDashboard() {
               <span>← Back to Store</span>
             </a>
             <span class="text-[#333]">|</span>
+            <img src="/assets/logo.png" alt="PRINTORA" class="h-8 w-auto object-contain rounded-lg bg-white p-0.5">
             <span class="font-heading text-lg font-bold tracking-wider text-white">PRINTORA ADMIN</span>
             <span class="text-[10px] bg-[#FF6B35]/20 text-[#FF6B35] px-2 py-0.5 rounded font-mono font-bold">CONTROL CENTER</span>
           </div>

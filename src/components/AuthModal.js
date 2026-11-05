@@ -4,6 +4,7 @@
 import { renderIcon } from '../utils/icons.js';
 import { supabase, isSupabaseConfigured } from '../services/supabase.js';
 import { store } from '../services/store.js';
+import { sendBrevoOtpEmail } from '../services/brevo.js';
 
 export function renderAuthModal() {
   return `
@@ -213,6 +214,24 @@ export function initAuthModalEvents() {
     // Generate secure 6-digit OTP
     currentGeneratedOtp = Math.floor(100000 + Math.random() * 900000).toString();
 
+    // Dispatch real Brevo Transactional OTP email
+    if (method === 'email') {
+      const apiKey = store.settings.brevoApiKey || "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";
+      sendBrevoOtpEmail({
+        apiKey,
+        toEmail: contact,
+        toName: "PRINTORA Shopper",
+        otpCode: currentGeneratedOtp,
+        purpose: "Customer Account Verification",
+        senderEmail: "manikantalakshmareddy@gmail.com",
+        senderName: "PRINTORA"
+      }).then(res => {
+        if (!res.success) {
+          console.warn("Brevo OTP notice:", res.error);
+        }
+      }).catch(err => console.warn(err));
+    }
+
     // Trigger Supabase Auth OTP in background if configured
     if (isSupabaseConfigured() && supabase) {
       if (method === 'email') {
@@ -320,6 +339,14 @@ export function initAuthModalEvents() {
 
         store.setUser(user);
         store.showToast(`Welcome, ${user.name}! You are now signed in.`, 'success');
+
+        const firstName = user.name.split(' ')[0];
+        const greetingEl = document.getElementById('nav-user-greeting');
+        if (greetingEl) greetingEl.textContent = `Hi, ${firstName}`;
+        const topGreetingEl = document.getElementById('top-announcement-greeting');
+        if (topGreetingEl) topGreetingEl.textContent = `Hi, ${firstName}!`;
+        try { localStorage.setItem('printora_customer_name', firstName); } catch (e) {}
+
         closeAuthModal();
 
         if (window._authSuccessCallback) {
