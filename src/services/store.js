@@ -169,12 +169,24 @@ class PrintoraStore {
   }
 
   loadCoupons() {
-    const saved = safeGetItem('printora_coupons');
-    return saved ? JSON.parse(saved) : [
-      { code: "PRINTORA50", discountType: "fixed", value: 50, minOrder: 499, description: "Flat ₹50 OFF on orders above ₹499" },
+    const defaultCoupons = [
+      { code: "PRINTORA 25", alias: "PRINTORA25", discountType: "fixed", value: 25, minOrder: 0, description: "Flat ₹25 OFF on MRP" },
+      { code: "PRINTORA50", alias: "PRINTORA 50", discountType: "fixed", value: 50, minOrder: 499, description: "Flat ₹50 OFF on orders above ₹499" },
       { code: "WELCOME10", discountType: "percent", value: 10, minOrder: 0, description: "10% OFF for new customers" },
       { code: "BULK20", discountType: "percent", value: 20, minOrder: 2499, description: "20% OFF on team and bulk orders above ₹2499" }
     ];
+
+    const saved = safeGetItem('printora_coupons');
+    if (!saved) return defaultCoupons;
+    try {
+      const list = JSON.parse(saved);
+      if (!list.some(c => c.code.replace(/\s+/g, '').toUpperCase() === 'PRINTORA25')) {
+        list.unshift(defaultCoupons[0]);
+      }
+      return list;
+    } catch (e) {
+      return defaultCoupons;
+    }
   }
 
   saveCoupons() {
@@ -183,8 +195,14 @@ class PrintoraStore {
   }
 
   validateCoupon(code, subtotal) {
-    if (!code) return { valid: false, message: "Enter coupon code" };
-    const coupon = this.coupons.find(c => c.code.toUpperCase() === code.trim().toUpperCase());
+    if (!code) return { valid: false, message: "Please enter a coupon code" };
+    const normalizedInput = code.trim().toUpperCase().replace(/\s+/g, '');
+    const coupon = this.coupons.find(c => {
+      const normCode = c.code.toUpperCase().replace(/\s+/g, '');
+      const normAlias = c.alias ? c.alias.toUpperCase().replace(/\s+/g, '') : '';
+      return normCode === normalizedInput || normAlias === normalizedInput;
+    });
+
     if (!coupon) {
       return { valid: false, message: "Invalid coupon code" };
     }
@@ -198,7 +216,7 @@ class PrintoraStore {
       valid: true,
       code: coupon.code,
       discount: Math.min(discount, subtotal),
-      message: `${coupon.code} applied! Saved ₹${Math.min(discount, subtotal)}`
+      message: `🎉 Coupon "${coupon.code}" applied! Saved ₹${Math.min(discount, subtotal)} on MRP.`
     };
   }
 
@@ -332,7 +350,7 @@ class PrintoraStore {
 
   loadSettings() {
     const saved = safeGetItem('printora_store_settings');
-    return saved ? JSON.parse(saved) : {
+    const defaults = {
       brandName: "PRINTORA",
       tagline: "YOU IMAGINE. WE PRINT.",
       whatsappNumber: "+91 8106992102",
@@ -341,11 +359,18 @@ class PrintoraStore {
       businessLocation: "India (Pan-India Free Shipping)",
       shippingFlatFee: 0,
       freeShippingThreshold: 0,
-      announcementBanner: "FREE SHIPPING ACROSS INDIA – NO DELIVERY CHARGES!",
+      announcementBanner: "FREE SHIPPING ACROSS INDIA • USE COUPON 'PRINTORA 25' FOR FLAT ₹25 OFF ON MRP!",
       whatsappCloudApiToken: "",
       whatsappPhoneNumberId: "",
       razorpayKeyId: safeGetItem('printora_razorpay_key_id') || "rzp_test_Tw51XlubBFx1y1"
     };
+    if (!saved) return defaults;
+    try {
+      const parsed = JSON.parse(saved);
+      return { ...defaults, ...parsed, announcementBanner: "FREE SHIPPING ACROSS INDIA • USE COUPON 'PRINTORA 25' FOR FLAT ₹25 OFF ON MRP!" };
+    } catch(e) {
+      return defaults;
+    }
   }
 
   saveSettings() {

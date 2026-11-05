@@ -58,14 +58,29 @@ export function renderCheckoutModal() {
             </div>
 
             <!-- Coupon Code Form Field -->
-            <div class="mt-3 pt-3 border-t border-[#DDD4C4] flex items-center gap-2">
-              <input type="text" id="chk-coupon-input" placeholder="Coupon Code (e.g. PRINTORA50)" 
-                     class="flex-1 bg-white border border-[#DDD4C4] focus:border-black rounded-xl px-3 py-2 text-xs uppercase font-mono font-bold outline-none">
-              <button type="button" id="chk-apply-coupon-btn" class="bg-[#111] hover:bg-[#FF6B35] text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors">
-                Apply
-              </button>
+            <div class="mt-3 pt-3 border-t border-[#DDD4C4] space-y-2">
+              <div class="flex items-center gap-2">
+                <input type="text" id="chk-coupon-input" value="${appliedCoupon ? appliedCoupon.code : ''}" placeholder="Coupon Code (e.g. PRINTORA 25)" 
+                       class="flex-1 bg-white border border-[#DDD4C4] focus:border-black rounded-xl px-3 py-2 text-xs uppercase font-mono font-bold outline-none">
+                <button type="button" id="chk-apply-coupon-btn" class="bg-[#111] hover:bg-[#FF6B35] text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer">
+                  ${appliedCoupon ? 'Applied ✓' : 'Apply'}
+                </button>
+              </div>
+
+              <!-- Fast One-Click Apply Pill for PRINTORA 25 -->
+              <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
+                <span class="text-[#777] font-medium">Available Offer:</span>
+                <button type="button" id="quick-apply-printora25-btn" onclick="document.getElementById('chk-coupon-input').value = 'PRINTORA 25'; document.getElementById('chk-apply-coupon-btn').click();" class="inline-flex items-center gap-1.5 bg-[#FAF7F2] hover:bg-[#FF6B35] hover:text-white border border-[#DDD4C4] text-black px-2.5 py-1 rounded-lg font-mono font-bold transition-all cursor-pointer shadow-sm">
+                  <span>🏷️ PRINTORA 25</span>
+                  <span class="text-[10px] text-[#FF6B35] group-hover:text-white font-sans font-semibold">• Flat ₹25 OFF</span>
+                  <span class="text-[10px] text-[#111] underline font-sans ml-1">Tap to Apply</span>
+                </button>
+              </div>
+
+              <div id="chk-coupon-msg" class="text-[11px] font-semibold mt-1.5 ${appliedCoupon ? 'text-emerald-700' : 'hidden'}">
+                ${appliedCoupon ? appliedCoupon.message : ''}
+              </div>
             </div>
-            <div id="chk-coupon-msg" class="text-[11px] font-semibold mt-1.5 hidden"></div>
           </div>
 
           <!-- Section 1: Customer Contact Details -->

@@ -117,6 +117,18 @@ export function renderCartDrawer() {
             </div>
           </div>
 
+          <!-- Active Offer Banner for PRINTORA 25 -->
+          <div class="bg-[#FAF7F2] border border-[#DDD4C4] rounded-xl p-3 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2">
+              <span class="text-base">🏷️</span>
+              <div>
+                <strong class="font-mono text-black font-bold">PRINTORA 25</strong>
+                <p class="text-[10px] text-[#666]">Flat ₹25 OFF on MRP applied at checkout</p>
+              </div>
+            </div>
+            <span class="text-[9px] bg-[#111] text-[#FF6B35] font-bold px-2 py-0.5 rounded font-mono uppercase tracking-wider">ACTIVE</span>
+          </div>
+
           <!-- Checkout Trigger Button -->
           <button id="cart-proceed-checkout-btn" class="w-full bg-[#111111] hover:bg-[#FF6B35] text-white font-extrabold py-4 px-6 rounded-2xl text-xs uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 shadow-xl font-heading cursor-pointer">
             <span>Proceed to Checkout</span>

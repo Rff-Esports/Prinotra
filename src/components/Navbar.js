@@ -13,10 +13,10 @@ export function renderNavbar() {
   const settings = store.settings;
 
   return `
-    <!-- Top Announcement Bar (Strict Free Delivery Notice) -->
+    <!-- Top Announcement Bar (Strict Free Delivery Notice & Coupon) -->
     <aside class="bg-[#111111] text-[#FF6B35] text-[11px] font-bold py-2 px-4 text-center tracking-wider border-b border-[#222] flex items-center justify-center gap-2 font-heading" aria-label="Announcement">
       <span class="w-1.5 h-1.5 rounded-full bg-[#FF6B35] animate-pulse"></span>
-      <span class="text-white">${settings.announcementBanner || 'FREE SHIPPING ACROSS INDIA – NO DELIVERY CHARGES!'}</span>
+      <span class="text-white">${settings.announcementBanner || "FREE SHIPPING ACROSS INDIA • USE COUPON 'PRINTORA 25' FOR FLAT ₹25 OFF ON MRP!"}</span>
     </aside>
 
     <!-- Main Sticky Navigation -->
