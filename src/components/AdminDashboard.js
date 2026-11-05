@@ -1108,8 +1108,8 @@ ON CONFLICT (user_id) DO UPDATE SET role = 'admin';</pre>
               <button type="button" id="cancel-edit-prod-btn" class="px-4 py-2.5 rounded-xl border border-[#DDD4C4] text-[#666] font-bold hover:bg-[#F0EAE1] cursor-pointer">
                 Cancel
               </button>
-              <button type="submit" class="bg-[#111] hover:bg-[#FF6B35] text-white font-bold px-6 py-2.5 rounded-xl transition-colors shadow-md cursor-pointer">
-                Save Product Changes
+              <button type="submit" id="save-prod-changes-btn" class="bg-[#111] hover:bg-[#FF6B35] text-white font-bold px-6 py-2.5 rounded-xl transition-all shadow-md cursor-pointer flex items-center justify-center gap-2 min-w-[170px]">
+                <span id="save-prod-btn-text">Save Product Changes</span>
               </button>
             </div>
           </form>
@@ -1539,17 +1539,29 @@ export function initAdminEvents() {
     if (e.target && e.target.id === 'edit-prod-file-input') {
       const file = e.target.files?.[0];
       if (file) {
+        const submitBtn = document.getElementById('save-prod-changes-btn');
+        const btnText = document.getElementById('save-prod-btn-text');
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          if (btnText) btnText.textContent = '⏳ Processing Photo...';
+        }
+
         try {
-          store.showToast('Optimizing photo from gallery...', 'info');
-          const dataUrl = await compressImageFile(file, 800, 800, 0.82);
+          store.showToast('Optimizing photo for fast global sync...', 'info');
+          const dataUrl = await compressImageFile(file, 500, 500, 0.68);
           const imgIn = document.getElementById('edit-prod-image');
           const imgPrev = document.getElementById('edit-prod-img-preview');
           if (imgIn) imgIn.value = dataUrl;
           if (imgPrev) imgPrev.src = dataUrl;
           store.showToast('✓ Photo ready! Click "Save Product Changes" to publish across all devices.', 'success');
         } catch (err) {
-          console.error(err);
+          console.error('Image optimization failed:', err);
           store.showToast('Failed to process image: ' + err.message, 'warning');
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            if (btnText) btnText.textContent = 'Save Product Changes';
+          }
         }
       }
     }
@@ -1566,7 +1578,6 @@ export function initAdminEvents() {
       syncAllBtn.textContent = '🚀 Publish All Live';
     });
   }
-
 
   // Delegated Open Edit Product Modal on button click (100% reliable across tab switches)
   document.addEventListener('click', (e) => {
@@ -1587,6 +1598,8 @@ export function initAdminEvents() {
     const extraImgsIn = document.getElementById('edit-prod-extra-images');
     const availIn = document.getElementById('edit-prod-available');
     const titleEl = document.getElementById('edit-prod-modal-title');
+    const submitBtn = document.getElementById('save-prod-changes-btn');
+    const btnText = document.getElementById('save-prod-btn-text');
 
     if (idIn) idIn.value = prod.id;
     if (nameIn) nameIn.value = prod.name;
@@ -1601,26 +1614,43 @@ export function initAdminEvents() {
     if (extraImgsIn) extraImgsIn.value = extraImgs;
 
     if (availIn) availIn.checked = prod.isAvailable !== false;
-
     if (titleEl) titleEl.textContent = `Edit Product: ${prod.name}`;
+
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      if (btnText) btnText.textContent = 'Save Product Changes';
+    }
 
     if (modalEl) modalEl.classList.remove('hidden');
   });
 
+  // Handle Edit Product Form Submission (Delegated to guarantee 100% execution)
+  document.addEventListener('submit', async (e) => {
+    const form = e.target.closest('#admin-edit-prod-form');
+    if (!form) return;
+    e.preventDefault();
 
-  // Handle Edit Product Form Submission
-  if (editForm) {
-    editForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const id = editIdInput?.value;
-      if (!id) return;
+    const submitBtn = form.querySelector('#save-prod-changes-btn') || form.querySelector('button[type="submit"]');
+    const btnText = form.querySelector('#save-prod-btn-text');
+    const idInput = form.querySelector('#edit-prod-id');
+    const id = idInput?.value;
+    if (!id) {
+      store.showToast('Product ID missing', 'warning');
+      return;
+    }
 
-      const name = editNameInput?.value.trim();
-      const priceVal = editPriceInput?.value.trim();
-      const origPriceVal = editOrigPriceInput?.value.trim();
-      const primaryImg = editImgInput?.value.trim();
-      const extraImgsStr = editExtraImgsInput?.value.trim();
-      const isAvailable = editAvailableInput?.checked !== false;
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      if (btnText) btnText.textContent = '⏳ Publishing Globally...';
+    }
+
+    try {
+      const name = form.querySelector('#edit-prod-name')?.value.trim();
+      const priceVal = form.querySelector('#edit-prod-price')?.value.trim();
+      const origPriceVal = form.querySelector('#edit-prod-orig-price')?.value.trim();
+      const primaryImg = form.querySelector('#edit-prod-image')?.value.trim();
+      const extraImgsStr = form.querySelector('#edit-prod-extra-images')?.value.trim();
+      const isAvailable = form.querySelector('#edit-prod-available')?.checked !== false;
 
       const price = priceVal !== '' ? Number(priceVal) : null;
       const originalPrice = origPriceVal !== '' ? Number(origPriceVal) : null;
@@ -1631,7 +1661,9 @@ export function initAdminEvents() {
         images = [...images, ...extras];
       }
 
-      store.updateProduct(id, {
+      store.showToast(`Publishing "${name}" live across all devices...`, 'info');
+
+      await store.updateProduct(id, {
         name,
         price,
         originalPrice,
@@ -1640,14 +1672,27 @@ export function initAdminEvents() {
         isQuoteOnly: price === null
       });
 
-      store.showToast(`Product "${name}" updated successfully!`, 'success');
-      closeEditModal();
-      window._adminActiveTab = 'products';
-      if (window.printoraApp) {
-        window.printoraApp.renderAdminOnly();
+      if (btnText) btnText.textContent = '✓ Saved Live Globally!';
+      store.showToast(`✓ Product "${name}" updated & published globally!`, 'success');
+
+      setTimeout(() => {
+        const modal = document.getElementById('admin-edit-product-modal');
+        if (modal) modal.classList.add('hidden');
+        window._adminActiveTab = 'products';
+        if (window.printoraApp) {
+          window.printoraApp.renderAdminOnly();
+        }
+      }, 500);
+
+    } catch (err) {
+      console.error('Update product error:', err);
+      store.showToast('Save failed: ' + err.message, 'warning');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        if (btnText) btnText.textContent = 'Save Product Changes';
       }
-    });
-  }
+    }
+  });
 
   // Handle Delete Product Button
   document.querySelectorAll('.admin-delete-prod-btn').forEach(btn => {

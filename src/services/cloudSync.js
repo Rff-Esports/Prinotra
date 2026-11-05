@@ -37,18 +37,18 @@ export function getCloudOverrides() {
 }
 
 // Client-side image compression for gallery / file manager uploads
-// Resizes high-res phone camera photos (which can be 5-10MB) to optimized ~800px Web-ready JPEG (~30KB-50KB)
-export function compressImageFile(file, maxWidth = 800, maxHeight = 800, quality = 0.82) {
+// Resizes high-res phone camera photos (which can be 5-10MB) to optimized ~480px Web-ready JPEG (~15KB-25KB)
+export function compressImageFile(file, maxWidth = 500, maxHeight = 500, quality = 0.68) {
   return new Promise((resolve, reject) => {
-    if (!file || !file.type.startsWith('image/')) {
-      return reject(new Error('Invalid image file'));
+    if (!file) {
+      return reject(new Error('No file provided'));
     }
 
     const reader = new FileReader();
-    reader.onerror = reject;
+    reader.onerror = () => reject(new Error('Failed to read file from storage'));
     reader.onload = (e) => {
       const img = new Image();
-      img.onerror = reject;
+      img.onerror = () => reject(new Error('Selected file is not a supported image format'));
       img.onload = () => {
         let width = img.width;
         let height = img.height;
@@ -163,7 +163,7 @@ export async function pushGlobalCloudState(partialState = {}) {
     } catch (e) {}
   }
 
-  const scriptContent = `<script>window.__PRINTORA_GLOBAL_CLOUD__ = ${JSON.stringify(updatedState)}; window.__PRINTORA_LIVE_OVERRIDES__ = window.__PRINTORA_GLOBAL_CLOUD__.products || {};</script>`;
+  const scriptContent = `<script>window.__PRINTORA_GLOBAL_CLOUD__ = ${JSON.stringify(updatedState).replace(/<\/script/gi, '<\\/script')}; window.__PRINTORA_LIVE_OVERRIDES__ = window.__PRINTORA_GLOBAL_CLOUD__.products || {};</script>`;
 
   const payload = {
     title: SNIPPET_TITLE,
@@ -193,6 +193,9 @@ export async function pushGlobalCloudState(partialState = {}) {
           },
           body: JSON.stringify(payload)
         });
+        if (!putRes.ok) {
+          console.warn('Netlify snippet PUT returned status:', putRes.status);
+        }
         return putRes.ok;
       } else {
         const postRes = await fetch(`https://api.netlify.com/api/v1/sites/${NETLIFY_SITE_ID}/snippets`, {

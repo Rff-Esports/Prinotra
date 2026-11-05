@@ -10,9 +10,26 @@ import { formatWhatsAppOrderMessage, generateWhatsAppUrl, sendWhatsAppCloudApiNo
 import { getCloudOverrides, pushOverridesToCloud, fetchLiveCloudOverrides, getGlobalCloudState, fetchLiveGlobalCloud, pushGlobalCloudState } from './cloudSync.js';
 
 const isBrowser = typeof window !== 'undefined' && typeof localStorage !== 'undefined';
-const safeGetItem = (k) => isBrowser ? localStorage.getItem(k) : null;
-const safeSetItem = (k, v) => isBrowser ? localStorage.setItem(k, v) : null;
-const safeRemoveItem = (k) => isBrowser ? localStorage.removeItem(k) : null;
+const safeGetItem = (k) => {
+  if (!isBrowser) return null;
+  try { return localStorage.getItem(k); } catch (e) { return null; }
+};
+const safeSetItem = (k, v) => {
+  if (!isBrowser) return null;
+  try {
+    localStorage.setItem(k, v);
+  } catch (err) {
+    console.warn(`[STORAGE QUOTA] Could not save ${k}:`, err.message);
+    try {
+      localStorage.removeItem('printora_custom_products');
+      localStorage.setItem(k, v);
+    } catch (e) {}
+  }
+};
+const safeRemoveItem = (k) => {
+  if (!isBrowser) return null;
+  try { localStorage.removeItem(k); } catch (e) {}
+};
 
 class PrintoraStore {
   constructor() {
@@ -83,7 +100,7 @@ class PrintoraStore {
       }
     }
 
-    return INITIAL_PRODUCTS.map(p => {
+    const mergedProducts = INITIAL_PRODUCTS.map(p => {
       // Cloud overrides have top priority so any update made on laptop/mobile reflects on ALL devices
       const ed = cloudOverrides[p.id] || localSavedMap.get(p.id);
       if (ed) {
@@ -99,6 +116,21 @@ class PrintoraStore {
       }
       return { ...p };
     });
+
+    // Also include any custom items added by admin that are not in INITIAL_PRODUCTS
+    const initialIdSet = new Set(INITIAL_PRODUCTS.map(p => p.id));
+    for (const [id, prod] of localSavedMap.entries()) {
+      if (!initialIdSet.has(id) && !mergedProducts.some(p => p.id === id)) {
+        mergedProducts.push(prod);
+      }
+    }
+    for (const [id, ov] of Object.entries(cloudOverrides)) {
+      if (!initialIdSet.has(id) && !mergedProducts.some(p => p.id === id)) {
+        mergedProducts.push(ov);
+      }
+    }
+
+    return mergedProducts;
   }
 
   saveProducts() {
@@ -106,7 +138,7 @@ class PrintoraStore {
     this.notify();
   }
 
-  updateProduct(productId, updates) {
+  async updateProduct(productId, updates) {
     const idx = this.products.findIndex(p => p.id === productId);
     if (idx !== -1) {
       this.products[idx] = { ...this.products[idx], ...updates };
@@ -124,15 +156,13 @@ class PrintoraStore {
         isQuoteOnly: this.products[idx].isQuoteOnly
       };
 
-      pushOverridesToCloud(currentOverrides).then(success => {
-        if (success) {
-          console.log(`✅ [PRINTORA CLOUD] Product "${this.products[idx].name}" synced live for ALL devices!`);
-        }
-      });
-
-      return this.products[idx];
+      const success = await pushOverridesToCloud(currentOverrides);
+      if (success) {
+        console.log(`✅ [PRINTORA CLOUD] Product "${this.products[idx].name}" synced live for ALL devices!`);
+      }
+      return { success, product: this.products[idx] };
     }
-    return null;
+    return { success: false, product: null };
   }
 
   // Publish all current products, orders & coupons live to Netlify Cloud for all devices
