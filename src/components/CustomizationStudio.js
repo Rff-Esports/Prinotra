@@ -71,37 +71,43 @@ export function renderCustomizationStudioSection() {
             </div>
 
             <!-- Garment Visualizer Stage -->
-            <div class="relative w-72 h-88 sm:w-80 sm:h-96 md:w-96 md:h-104 flex items-center justify-center my-auto rounded-2xl overflow-hidden bg-white/60 border border-[#E0DCD3] shadow-inner">
+            <div id="studio-stage-container" class="relative w-72 h-88 sm:w-80 sm:h-96 md:w-96 md:h-104 flex items-center justify-center my-auto rounded-2xl overflow-hidden bg-white/70 border border-[#E0DCD3] shadow-inner select-none">
               
-              <!-- Real Garment Mockup Image (Width 200%, Left 0% for Front, Left -100% for Back) -->
-              <div class="relative w-full h-full overflow-hidden flex items-center justify-center pointer-events-none select-none">
+              <!-- Real Garment Mockup Image (Perfect Centered Single Image) -->
+              <div id="studio-mockup-frame" class="relative w-full h-full flex items-center justify-center p-2 pointer-events-none select-none">
                 <img id="studio-real-mockup"
-                     src="/assets/mockups/tshirt_crewneck.png"
+                     src="/assets/mockups/tshirt_crewneck_front.png"
                      alt="Real Garment Mockup"
-                     class="absolute top-0 h-full w-[200%] max-w-none object-contain transition-all duration-300 pointer-events-none"
-                     style="left: 0%; filter: none;">
+                     class="w-full h-full object-contain transition-all duration-300 pointer-events-none select-none"
+                     style="filter: none;">
               </div>
 
-              <!-- Dynamic Personalization Text Overlay -->
-              <div id="studio-preview-overlay" class="absolute flex flex-col items-center justify-center pointer-events-none select-none transition-all duration-300 z-10"
-                   style="top: 26%; left: 50%; transform: translateX(-50%); width: 50%;">
+              <!-- Movable & Draggable Personalization Text Overlay -->
+              <div id="studio-preview-overlay" class="absolute flex flex-col items-center justify-center cursor-grab active:cursor-grabbing select-none z-20 group p-2 rounded-xl border border-dashed border-transparent hover:border-[#FF6B35]/80 active:border-[#FF6B35] bg-black/5 hover:bg-black/10 transition-colors"
+                   style="top: 28%; left: 50%; transform: translate(-50%, -50%); width: 48%; touch-action: none;" title="Click & Drag to move anywhere on t-shirt">
                 
+                <!-- Tiny Drag Indicator Handle -->
+                <div class="opacity-0 group-hover:opacity-100 transition-opacity bg-black/80 text-white text-[9px] px-2 py-0.5 rounded-full mb-1 flex items-center gap-1 shadow-md pointer-events-none font-sans">
+                  <span>✥</span>
+                  <span>Drag to Move</span>
+                </div>
+
                 <!-- Uploaded Logo / Artwork -->
-                <div id="studio-overlay-logo" class="hidden mb-2 max-w-[75px] max-h-[75px]">
+                <div id="studio-overlay-logo" class="hidden mb-1.5 max-w-[70px] max-h-[70px] pointer-events-none">
                   <img id="studio-overlay-logo-img" src="" alt="Custom Logo" class="max-w-full max-h-full object-contain drop-shadow-md">
                 </div>
 
                 <!-- Custom Main Name / Text -->
-                <div id="studio-overlay-text-wrapper" class="text-center transition-all duration-150 transform w-full">
-                  <div id="studio-overlay-text" class="text-xl sm:text-2xl font-bold uppercase tracking-wider text-white transition-all break-words leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]"
+                <div id="studio-overlay-text-wrapper" class="text-center transition-all duration-150 transform w-full pointer-events-none">
+                  <div id="studio-overlay-text" class="text-xl sm:text-2xl font-bold uppercase tracking-wider text-white transition-all break-words leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"
                        style="font-family: 'Space Grotesk', sans-serif; color: #FFFFFF;">
                     PRINTORA
                   </div>
                 </div>
 
                 <!-- Custom Number -->
-                <div id="studio-overlay-number-wrapper" class="text-center mt-1.5 transition-all duration-150 w-full">
-                  <div id="studio-overlay-number" class="text-4xl sm:text-5xl font-black text-white font-mono leading-none tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]"
+                <div id="studio-overlay-number-wrapper" class="text-center mt-1 transition-all duration-150 w-full pointer-events-none">
+                  <div id="studio-overlay-number" class="text-4xl sm:text-5xl font-black text-white font-mono leading-none tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"
                        style="font-family: 'Bebas Neue', sans-serif; color: #FFFFFF;">
                     07
                   </div>
@@ -254,16 +260,33 @@ export function renderCustomizationStudioSection() {
               </div>
             </div>
 
-            <!-- 5. Placement Selection (Left Chest & Right Chest & Center Chest & Full Front) -->
+            <!-- 5. Placement Selection & Free Text Movement -->
             <div>
-              <label class="block text-xs font-bold uppercase tracking-wider text-[#111] font-heading mb-1.5">
-                5. Placement Zone
-              </label>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="block text-xs font-bold uppercase tracking-wider text-[#111] font-heading">
+                  5. Placement Zone & Free Movement
+                </label>
+                <span class="text-[10px] text-[#FF6B35] font-bold">✥ Drag on shirt</span>
+              </div>
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5" id="studio-placement-options">
                 <button type="button" class="studio-placement-btn py-2 px-2 rounded-lg border-2 border-black bg-white text-[11px] font-bold text-black transition-all" data-placement="center-chest">Center Chest</button>
                 <button type="button" class="studio-placement-btn py-2 px-2 rounded-lg border border-[#DDD4C4] bg-white text-[11px] font-bold text-[#666] hover:text-black transition-all" data-placement="left-chest">Left Chest</button>
                 <button type="button" class="studio-placement-btn py-2 px-2 rounded-lg border border-[#DDD4C4] bg-white text-[11px] font-bold text-[#666] hover:text-black transition-all" data-placement="right-chest">Right Chest</button>
                 <button type="button" class="studio-placement-btn py-2 px-2 rounded-lg border border-[#DDD4C4] bg-white text-[11px] font-bold text-[#666] hover:text-black transition-all" data-placement="full-front">Full Front</button>
+              </div>
+
+              <!-- Movable Text Precision Nudge Bar -->
+              <div class="mt-2.5 p-2 bg-[#FAF8F5] border border-[#E5DFD4] rounded-xl flex items-center justify-between text-xs">
+                <span class="text-[10px] text-[#666] font-semibold flex items-center gap-1">
+                  <span>✥</span> Nudge Position:
+                </span>
+                <div class="flex items-center gap-1">
+                  <button type="button" class="studio-nudge-btn w-6 h-6 rounded bg-white border border-[#DDD4C4] hover:border-black font-bold flex items-center justify-center text-xs text-black transition-all" data-dir="up" title="Move Up">↑</button>
+                  <button type="button" class="studio-nudge-btn w-6 h-6 rounded bg-white border border-[#DDD4C4] hover:border-black font-bold flex items-center justify-center text-xs text-black transition-all" data-dir="down" title="Move Down">↓</button>
+                  <button type="button" class="studio-nudge-btn w-6 h-6 rounded bg-white border border-[#DDD4C4] hover:border-black font-bold flex items-center justify-center text-xs text-black transition-all" data-dir="left" title="Move Left">←</button>
+                  <button type="button" class="studio-nudge-btn w-6 h-6 rounded bg-white border border-[#DDD4C4] hover:border-black font-bold flex items-center justify-center text-xs text-black transition-all" data-dir="right" title="Move Right">→</button>
+                  <button type="button" class="studio-nudge-btn px-2 h-6 rounded bg-white border border-[#DDD4C4] hover:border-black text-[10px] font-bold flex items-center justify-center text-[#555] hover:text-black transition-all" data-dir="center" title="Re-center text">Re-center</button>
+                </div>
               </div>
             </div>
 
@@ -288,11 +311,20 @@ export function renderCustomizationStudioSection() {
   `;
 }
 
-// Mockup images and color filter configurations
+// Mockup images (separated front & back for 100% centered alignment)
 const MOCKUP_IMAGES = {
-  'round-neck': '/assets/mockups/tshirt_crewneck.png',
-  'oversized': '/assets/mockups/tshirt_oversized.png',
-  'hoodie': '/assets/mockups/hoodie.png'
+  'round-neck': {
+    front: '/assets/mockups/tshirt_crewneck_front.png',
+    back: '/assets/mockups/tshirt_crewneck_back.png'
+  },
+  'oversized': {
+    front: '/assets/mockups/tshirt_oversized_front.png',
+    back: '/assets/mockups/tshirt_oversized_back.png'
+  },
+  'hoodie': {
+    front: '/assets/mockups/hoodie_front.png',
+    back: '/assets/mockups/hoodie_back.png'
+  }
 };
 
 const GARMENT_COLOR_FILTERS = {
@@ -322,6 +354,8 @@ let studioState = {
     rotation: 0,
     alignment: 'center',
     placement: 'center-chest',
+    posX: 50, // % from left
+    posY: 28, // % from top
     logoUrl: null
   },
   back: {
@@ -334,6 +368,8 @@ let studioState = {
     rotation: 0,
     alignment: 'center',
     placement: 'full-front',
+    posX: 50, // % from left
+    posY: 28, // % from top
     logoUrl: null
   }
 };
@@ -355,47 +391,37 @@ export function initCustomizationStudioEvents() {
   const overlayTextWrapper = document.getElementById('studio-overlay-text-wrapper');
   const previewOverlay = document.getElementById('studio-preview-overlay');
   const mockupImg = document.getElementById('studio-real-mockup');
+  const stageContainer = document.getElementById('studio-stage-container');
   const viewLabel = document.getElementById('studio-active-view-label');
 
   function renderCurrentView() {
     const current = studioState[studioState.currentView];
     
-    // 1. Update Real Mockup Image & Perspective Slice
+    // 1. Update Real Mockup Image using separate front/back cropped images (100% centered)
     if (mockupImg) {
-      const expectedSrc = MOCKUP_IMAGES[studioState.productKey] || MOCKUP_IMAGES['round-neck'];
+      const prodConfig = MOCKUP_IMAGES[studioState.productKey] || MOCKUP_IMAGES['round-neck'];
+      const expectedSrc = studioState.currentView === 'front' ? prodConfig.front : prodConfig.back;
       if (!mockupImg.src.includes(expectedSrc.replace(/^\//, ''))) {
         mockupImg.src = expectedSrc;
       }
-      mockupImg.style.left = studioState.currentView === 'front' ? '0%' : '-100%';
       mockupImg.style.filter = GARMENT_COLOR_FILTERS[studioState.garmentColor] || 'none';
     }
 
-    // 2. Update Placement Zone Position (Center Chest, Left Chest, Right Chest, Full Front)
-    const placement = current.placement || 'center-chest';
+    // 2. Position Overlay dynamically according to movable posX & posY percentages
     if (previewOverlay) {
-      if (placement === 'left-chest') {
-        // Wearer's Left Chest (Viewer's Right)
-        previewOverlay.style.top = '22%';
-        previewOverlay.style.left = '64%';
-        previewOverlay.style.transform = 'translateX(-50%)';
-        previewOverlay.style.width = '30%';
-      } else if (placement === 'right-chest') {
-        // Wearer's Right Chest (Viewer's Left)
-        previewOverlay.style.top = '22%';
-        previewOverlay.style.left = '36%';
-        previewOverlay.style.transform = 'translateX(-50%)';
-        previewOverlay.style.width = '30%';
+      const posX = current.posX !== undefined ? current.posX : 50;
+      const posY = current.posY !== undefined ? current.posY : 28;
+      previewOverlay.style.left = `${posX}%`;
+      previewOverlay.style.top = `${posY}%`;
+      previewOverlay.style.transform = 'translate(-50%, -50%)';
+
+      const placement = current.placement || 'center-chest';
+      if (placement === 'left-chest' || placement === 'right-chest') {
+        previewOverlay.style.width = '34%';
       } else if (placement === 'full-front') {
-        previewOverlay.style.top = '25%';
-        previewOverlay.style.left = '50%';
-        previewOverlay.style.transform = 'translateX(-50%)';
-        previewOverlay.style.width = '62%';
+        previewOverlay.style.width = '64%';
       } else {
-        // center-chest
-        previewOverlay.style.top = '25%';
-        previewOverlay.style.left = '50%';
-        previewOverlay.style.transform = 'translateX(-50%)';
-        previewOverlay.style.width = '50%';
+        previewOverlay.style.width = '48%';
       }
     }
 
@@ -430,6 +456,7 @@ export function initCustomizationStudioEvents() {
     }
 
     if (viewLabel) {
+      const placement = current.placement || 'center-chest';
       viewLabel.textContent = `Currently Viewing: ${studioState.currentView === 'front' ? 'Front Side' : 'Back Side'} (${placement.replace('-', ' ').toUpperCase()})`;
     }
   }
@@ -588,7 +615,23 @@ export function initCustomizationStudioEvents() {
     btn.addEventListener('click', (e) => {
       pushHistory();
       const placement = e.currentTarget.getAttribute('data-placement');
-      studioState[studioState.currentView].placement = placement;
+      const current = studioState[studioState.currentView];
+      current.placement = placement;
+
+      if (placement === 'left-chest') {
+        current.posX = 65;
+        current.posY = 24;
+      } else if (placement === 'right-chest') {
+        current.posX = 35;
+        current.posY = 24;
+      } else if (placement === 'full-front') {
+        current.posX = 50;
+        current.posY = 32;
+      } else {
+        // center-chest
+        current.posX = 50;
+        current.posY = 28;
+      }
 
       document.querySelectorAll('.studio-placement-btn').forEach(b => {
         b.classList.remove('border-2', 'border-black', 'text-black');
@@ -600,6 +643,119 @@ export function initCustomizationStudioEvents() {
       renderCurrentView();
     });
   });
+
+  // Movable Text Nudge Direction Buttons (↑, ↓, ←, →, Re-center)
+  document.querySelectorAll('.studio-nudge-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      pushHistory();
+      const dir = e.currentTarget.getAttribute('data-dir');
+      const current = studioState[studioState.currentView];
+      let posX = current.posX !== undefined ? current.posX : 50;
+      let posY = current.posY !== undefined ? current.posY : 28;
+
+      if (dir === 'up') posY = Math.max(15, posY - 4);
+      else if (dir === 'down') posY = Math.min(82, posY + 4);
+      else if (dir === 'left') posX = Math.max(18, posX - 4);
+      else if (dir === 'right') posX = Math.min(82, posX + 4);
+      else if (dir === 'center') {
+        posX = 50;
+        posY = 28;
+      }
+
+      current.posX = posX;
+      current.posY = posY;
+      renderCurrentView();
+    });
+  });
+
+  // Interactive Drag & Drop Movable Text System (Mouse & Touch)
+  let isDragging = false;
+  let dragStartX = 0;
+  let dragStartY = 0;
+  let elemStartPosX = 50;
+  let elemStartPosY = 28;
+
+  function onDragStart(clientX, clientY) {
+    isDragging = true;
+    dragStartX = clientX;
+    dragStartY = clientY;
+    const current = studioState[studioState.currentView];
+    elemStartPosX = current.posX !== undefined ? current.posX : 50;
+    elemStartPosY = current.posY !== undefined ? current.posY : 28;
+    if (previewOverlay) {
+      previewOverlay.classList.add('cursor-grabbing');
+      previewOverlay.classList.remove('cursor-grab');
+    }
+  }
+
+  function onDragMove(clientX, clientY) {
+    if (!isDragging || !stageContainer || !previewOverlay) return;
+    const rect = stageContainer.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
+
+    const deltaX = clientX - dragStartX;
+    const deltaY = clientY - dragStartY;
+
+    const deltaPercentX = (deltaX / rect.width) * 100;
+    const deltaPercentY = (deltaY / rect.height) * 100;
+
+    let newPosX = Math.max(18, Math.min(82, elemStartPosX + deltaPercentX));
+    let newPosY = Math.max(15, Math.min(82, elemStartPosY + deltaPercentY));
+
+    const current = studioState[studioState.currentView];
+    current.posX = Math.round(newPosX);
+    current.posY = Math.round(newPosY);
+
+    previewOverlay.style.left = `${current.posX}%`;
+    previewOverlay.style.top = `${current.posY}%`;
+  }
+
+  function onDragEnd() {
+    if (isDragging) {
+      isDragging = false;
+      if (previewOverlay) {
+        previewOverlay.classList.remove('cursor-grabbing');
+        previewOverlay.classList.add('cursor-grab');
+      }
+      pushHistory();
+    }
+  }
+
+  if (previewOverlay) {
+    // Mouse Dragging
+    previewOverlay.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      onDragStart(e.clientX, e.clientY);
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (isDragging) {
+        e.preventDefault();
+        onDragMove(e.clientX, e.clientY);
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (isDragging) onDragEnd();
+    });
+
+    // Touch Dragging (Mobile Phones & Tablets)
+    previewOverlay.addEventListener('touchstart', (e) => {
+      if (e.touches && e.touches[0]) {
+        onDragStart(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    }, { passive: true });
+
+    window.addEventListener('touchmove', (e) => {
+      if (isDragging && e.touches && e.touches[0]) {
+        onDragMove(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    }, { passive: true });
+
+    window.addEventListener('touchend', () => {
+      if (isDragging) onDragEnd();
+    });
+  }
 
   // Product Switcher (Round neck, Oversized, Hoodie)
   document.querySelectorAll('.studio-product-pick').forEach(btn => {
@@ -677,6 +833,9 @@ export function initCustomizationStudioEvents() {
       studioState[studioState.currentView].text = 'PRINTORA';
       studioState[studioState.currentView].number = '07';
       studioState[studioState.currentView].rotation = 0;
+      studioState[studioState.currentView].posX = 50;
+      studioState[studioState.currentView].posY = 28;
+      studioState[studioState.currentView].placement = 'center-chest';
       studioState[studioState.currentView].logoUrl = null;
       renderCurrentView();
     });
