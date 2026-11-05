@@ -1,6 +1,11 @@
 // PRINTORA Master Application Orchestrator
+// Brand: PRINTORA | Tagline: "YOU IMAGINE. WE PRINT."
+// Official Domain: https://printoracustom.in | WhatsApp: +91 8106992102
+
 import { renderNavbar, initNavbarEvents } from './components/Navbar.js';
 import { renderHeroBanner, initHeroBannerEvents } from './components/HeroBanner.js';
+import { renderProductViewer3DSection, initProductViewer3D } from './components/ProductViewer3D.js';
+import { renderCustomizationStudioSection, initCustomizationStudioEvents } from './components/CustomizationStudio.js';
 import { renderProductCatalogue, initProductCatalogueEvents } from './components/ProductCatalogue.js';
 import { renderJerseyStudio, initJerseyCustomizerEvents } from './components/JerseyCustomizer.js';
 import { renderBulkOrderSection, initBulkOrderEvents } from './components/BulkOrderSection.js';
@@ -8,20 +13,21 @@ import { renderFooter } from './components/Footer.js';
 import { renderCartDrawer, initCartDrawerEvents } from './components/CartDrawer.js';
 import { renderCheckoutModal, initCheckoutModalEvents } from './components/CheckoutModal.js';
 import { renderProductDetailModal, openProductDetail, initProductDetailModalEvents } from './components/ProductDetailModal.js';
+import { renderCustomerAccountModal, openCustomerAccountModal, initCustomerAccountEvents } from './components/CustomerAccountModal.js';
 import { renderPolicyModal, openPolicy, initPolicyModalEvents } from './components/PolicyModal.js';
-import { renderAuthModal, initAuthModalEvents } from './components/AuthModal.js';
+import { renderAuthModal, openAuthModal, initAuthModalEvents } from './components/AuthModal.js';
 import { renderAdminDashboard, initAdminEvents } from './components/AdminDashboard.js';
 import { renderShirtFlipLoader, hideShirtLoader } from './components/ShirtFlipLoader.js';
+import { renderProductCard } from './components/ProductCard.js';
 import { store } from './services/store.js';
 
 // Expose global helper methods for inline click handlers
 window.openProductDetail = openProductDetail;
+window.openCustomerAccountModal = openCustomerAccountModal;
+window.openAuthModal = openAuthModal;
 window.openPolicy = openPolicy;
-window.renderProductCard = (p) => {
-  import('./components/ProductCard.js').then(m => m.renderProductCard(p));
-};
-import { renderProductCard } from './components/ProductCard.js';
 window.renderProductCard = renderProductCard;
+
 window.filterCategory = (cat) => {
   store.activeCategory = cat;
   store.notify();
@@ -29,10 +35,21 @@ window.filterCategory = (cat) => {
   if (catSection) catSection.scrollIntoView({ behavior: 'smooth' });
 };
 
+window.toggleWishlist = (productId) => {
+  const prod = store.products.find(p => p.id === productId);
+  if (!prod) return;
+  if (store.isInWishlist(productId)) {
+    store.removeFromWishlist(productId);
+  } else {
+    store.addToWishlist(prod);
+  }
+  store.notify();
+};
+
 class PrintoraApp {
   constructor() {
     this.appContainer = document.getElementById('app');
-    this.currentHash = window.location.hash || '#catalogue';
+    this.currentHash = window.location.hash || '';
     
     // Subscribe to store updates
     store.subscribe(() => this.handleStoreUpdate());
@@ -47,26 +64,14 @@ class PrintoraApp {
   }
 
   init() {
-    try {
-      // Show branded 3D shirt flip loading animation on initial load
-      if (document.body) {
-        document.body.insertAdjacentHTML('afterbegin', renderShirtFlipLoader(true));
-      }
-      
-      this.render();
+    // Show branded shirt flip loading animation on initial load
+    document.body.insertAdjacentHTML('afterbegin', renderShirtFlipLoader(true));
+    
+    this.render();
+    this.attachEventListeners();
 
-      try {
-        this.attachEventListeners();
-      } catch (evtErr) {
-        console.warn('Non-fatal event attachment notice:', evtErr);
-      }
-
-      // Dismiss loader smoothly
-      hideShirtLoader(800);
-    } catch (e) {
-      console.error('PrintoraApp init error:', e);
-      hideShirtLoader(0);
-    }
+    // Dismiss loader smoothly
+    hideShirtLoader(850);
   }
 
   route() {
@@ -76,13 +81,14 @@ class PrintoraApp {
       this.render();
       this.attachEventListeners();
 
-      // Check if hash points to a specific section or policy
       if (this.currentHash.startsWith('#policy-')) {
         const key = this.currentHash.replace('#policy-', '');
         openPolicy(key);
       } else if (this.currentHash.startsWith('#product-')) {
         const id = this.currentHash.replace('#product-', '');
         openProductDetail(id);
+      } else if (this.currentHash === '#account') {
+        openCustomerAccountModal();
       }
     }
   }
@@ -101,8 +107,8 @@ class PrintoraApp {
       <!-- Toast Notification Bar if active -->
       <div id="printora-toast-container" class="fixed top-5 right-5 z-50 pointer-events-none space-y-2">
         ${store.notification ? `
-          <div class="pointer-events-auto bg-[#111111] text-white px-5 py-3 rounded-xl shadow-2xl text-xs flex items-center gap-3 border border-[#333] animate-fade-in">
-            <span class="w-2 h-2 rounded-full ${store.notification.type === 'success' ? 'bg-emerald-400' : 'bg-[#C5A880]'}"></span>
+          <div class="pointer-events-auto bg-[#111111] text-white px-5 py-3 rounded-2xl shadow-2xl text-xs flex items-center gap-3 border border-[#333] animate-fade-in font-medium">
+            <span class="w-2 h-2 rounded-full ${store.notification.type === 'success' ? 'bg-emerald-400' : 'bg-[#FF6B35]'}"></span>
             <span>${store.notification.message}</span>
           </div>
         ` : ''}
@@ -114,6 +120,8 @@ class PrintoraApp {
       <!-- Main Storefront Sections -->
       <main>
         ${renderHeroBanner()}
+        ${renderCustomizationStudioSection()}
+        ${renderProductViewer3DSection()}
         ${renderProductCatalogue()}
         ${renderJerseyStudio()}
         ${renderBulkOrderSection()}
@@ -126,6 +134,7 @@ class PrintoraApp {
       ${renderCartDrawer()}
       ${renderCheckoutModal()}
       ${renderProductDetailModal()}
+      ${renderCustomerAccountModal()}
       ${renderPolicyModal()}
       ${renderAuthModal()}
     `;
@@ -134,30 +143,41 @@ class PrintoraApp {
   attachEventListeners() {
     initNavbarEvents();
     initHeroBannerEvents();
+    initCustomizationStudioEvents();
+    initProductViewer3D();
     initProductCatalogueEvents();
     initJerseyCustomizerEvents();
     initBulkOrderEvents();
     initCartDrawerEvents();
     initCheckoutModalEvents();
     initProductDetailModalEvents();
+    initCustomerAccountEvents();
     initPolicyModalEvents();
     initAuthModalEvents();
   }
 
   handleStoreUpdate() {
-    // If on admin view, re-render admin
     if (this.currentHash === '#admin') {
       this.renderAdminOnly();
       return;
     }
 
     // Update cart badge in navbar
-    const badge = document.getElementById('nav-cart-badge');
-    const count = store.getCartCount();
-    if (badge) {
-      badge.textContent = count;
-      if (count === 0) badge.classList.add('hidden');
-      else badge.classList.remove('hidden');
+    const cartBadge = document.getElementById('nav-cart-badge');
+    const cartCount = store.getCartCount();
+    if (cartBadge) {
+      cartBadge.textContent = cartCount;
+      if (cartCount === 0) cartBadge.classList.add('hidden');
+      else cartBadge.classList.remove('hidden');
+    }
+
+    // Update wishlist badge in navbar
+    const wishBadge = document.getElementById('nav-wishlist-badge');
+    const wishCount = store.getWishlistCount();
+    if (wishBadge) {
+      wishBadge.textContent = wishCount;
+      if (wishCount === 0) wishBadge.classList.add('hidden');
+      else wishBadge.classList.remove('hidden');
     }
 
     // Re-render catalogue grid without disrupting whole page scroll
@@ -167,9 +187,9 @@ class PrintoraApp {
       const filtered = store.getFilteredProducts();
       if (countDisplay) countDisplay.textContent = filtered.length;
       grid.innerHTML = filtered.length === 0 ? `
-        <div class="col-span-full py-20 text-center bg-white rounded-2xl border border-[#DDD4C4] p-8">
-          <h3 class="font-serif text-2xl font-medium text-black">No products found</h3>
-          <p class="text-xs text-[#787673] mt-1">Try another search keyword or reset category filter.</p>
+        <div class="col-span-full py-20 text-center bg-white rounded-3xl border border-[#DDD4C4] p-8">
+          <h3 class="font-heading text-2xl font-bold text-black">No products found</h3>
+          <p class="text-xs text-[#777] mt-1">Try another search keyword or reset category filter.</p>
         </div>
       ` : filtered.map(p => window.renderProductCard ? window.renderProductCard(p) : '').join('');
     }
@@ -187,35 +207,7 @@ class PrintoraApp {
   }
 }
 
-// Robust boot sequence handling all document ready states (loading, interactive, complete)
-function bootPrintora() {
-  if (window.__printoraApp) return;
-  try {
-    window.__printoraApp = new PrintoraApp();
-  } catch (err) {
-    console.error('Fatal initialization error:', err);
-    hideShirtLoader(0);
-    const appEl = document.getElementById('app');
-    if (appEl && (!appEl.innerHTML || appEl.innerHTML.trim() === '')) {
-      appEl.innerHTML = `
-        <div class="min-h-screen flex items-center justify-center bg-[#0A0A0A] text-white p-6 text-center">
-          <div>
-            <h1 class="text-2xl font-bold tracking-widest text-[#C5A880] mb-2">PRINTORA</h1>
-            <p class="text-xs text-[#AAA] uppercase tracking-wider mb-6">MAKE IT YOURS.</p>
-            <p class="text-sm text-neutral-300 max-w-md mx-auto mb-6">Refreshing store components...</p>
-            <button onclick="window.location.reload(true)" class="bg-[#C5A880] text-black text-xs font-bold px-6 py-3 rounded-xl uppercase tracking-wider">
-              Reload Storefront
-            </button>
-          </div>
-        </div>
-      `;
-    }
-  }
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', bootPrintora);
-} else {
-  // If document is already interactive or complete, boot immediately
-  bootPrintora();
-}
+// Instantiate on DOM load
+document.addEventListener('DOMContentLoaded', () => {
+  new PrintoraApp();
+});
