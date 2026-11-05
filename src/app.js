@@ -295,6 +295,13 @@ class PrintoraApp {
       ` : filtered.map(p => window.renderProductCard ? window.renderProductCard(p) : '').join('');
     }
 
+    // Update gender recommendations block if present
+    const genderContainer = document.getElementById('gender-recommendations');
+    if (genderContainer && typeof window.renderGenderRecommendations === 'function') {
+      genderContainer.outerHTML = window.renderGenderRecommendations(store.getUserGender());
+    }
+
+
     // Update cart drawer contents
     const drawerContainer = document.getElementById('cart-drawer');
     if (drawerContainer) {

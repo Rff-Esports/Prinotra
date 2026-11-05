@@ -96,6 +96,12 @@ export function renderProductDetailModal() {
             <div class="bg-[#FAF8F5] border border-[#DDD4C4] rounded-2xl p-4 space-y-3">
               <span class="text-[10px] uppercase tracking-wider font-extrabold text-[#FF6B35] block font-heading">Personalization Options</span>
               
+              <div id="prod-modal-model-group" class="hidden">
+                <label class="block text-[11px] font-bold text-[#FF6B35] mb-1">📱 Phone Model (e.g. iPhone 15 Pro, Samsung S24 Ultra) *</label>
+                <input type="text" id="prod-modal-input-model" placeholder="Enter your exact mobile brand & model" 
+                       class="w-full bg-white border-2 border-[#FF6B35]/40 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:border-[#FF6B35]">
+              </div>
+
               <div id="prod-modal-name-group">
                 <label class="block text-[11px] font-bold text-[#444] mb-1">Custom Name to Print</label>
                 <input type="text" id="prod-modal-input-name" placeholder="e.g. RAHUL or TITANS" 
@@ -222,6 +228,18 @@ export function openProductDetail(productId) {
   if (mainImg) mainImg.src = product.images?.[0] || '';
   if (qtyVal) qtyVal.textContent = '1';
   if (fileText) fileText.innerHTML = `${renderIcon('upload', 'w-3 h-3 text-[#FF6B35]')} Select Graphic / Artwork`;
+
+  // Phone model input visibility
+  const modelGroup = document.getElementById('prod-modal-model-group');
+  const modelInput = document.getElementById('prod-modal-input-model');
+  if (modelInput) modelInput.value = '';
+  if (modelGroup) {
+    if (product.customization?.allowModel || product.id === 'prn-tch-01' || product.categoryId === 'tech-accessories') {
+      modelGroup.classList.remove('hidden');
+    } else {
+      modelGroup.classList.add('hidden');
+    }
+  }
 
   // Price formatting
   if (product.isQuoteOnly) {
@@ -360,9 +378,21 @@ export function initProductDetailModalEvents() {
   if (addBagBtn) {
     addBagBtn.addEventListener('click', () => {
       if (!currentSelectedProduct) return;
+      const phoneModel = document.getElementById('prod-modal-input-model')?.value.trim() || '';
+      if (currentSelectedProduct.customization?.allowModel || currentSelectedProduct.id === 'prn-tch-01') {
+        if (!phoneModel) {
+          alert("Please enter your mobile phone model (e.g. iPhone 15, Samsung S24) so we print the exact fit.");
+          document.getElementById('prod-modal-input-model')?.focus();
+          return;
+        }
+      }
+
       const customName = document.getElementById('prod-modal-input-name')?.value || '';
       const customNumber = document.getElementById('prod-modal-input-number')?.value || '';
-      const customNotes = document.getElementById('prod-modal-input-notes')?.value || '';
+      let customNotes = document.getElementById('prod-modal-input-notes')?.value || '';
+      if (phoneModel) {
+        customNotes = customNotes ? `Model: ${phoneModel} | ${customNotes}` : `Model: ${phoneModel}`;
+      }
 
       store.addToCart(currentSelectedProduct, {
         size: currentSelectedSize,
@@ -371,6 +401,7 @@ export function initProductDetailModalEvents() {
         customName,
         customNumber,
         customNotes,
+        phoneModel,
         artworkFile: currentUploadedFile
       });
 
@@ -384,9 +415,21 @@ export function initProductDetailModalEvents() {
   if (buyNowBtn) {
     buyNowBtn.addEventListener('click', () => {
       if (!currentSelectedProduct) return;
+      const phoneModel = document.getElementById('prod-modal-input-model')?.value.trim() || '';
+      if (currentSelectedProduct.customization?.allowModel || currentSelectedProduct.id === 'prn-tch-01') {
+        if (!phoneModel) {
+          alert("Please enter your mobile phone model (e.g. iPhone 15, Samsung S24) so we print the exact fit.");
+          document.getElementById('prod-modal-input-model')?.focus();
+          return;
+        }
+      }
+
       const customName = document.getElementById('prod-modal-input-name')?.value || '';
       const customNumber = document.getElementById('prod-modal-input-number')?.value || '';
-      const customNotes = document.getElementById('prod-modal-input-notes')?.value || '';
+      let customNotes = document.getElementById('prod-modal-input-notes')?.value || '';
+      if (phoneModel) {
+        customNotes = customNotes ? `Model: ${phoneModel} | ${customNotes}` : `Model: ${phoneModel}`;
+      }
 
       store.addToCart(currentSelectedProduct, {
         size: currentSelectedSize,
@@ -395,6 +438,7 @@ export function initProductDetailModalEvents() {
         customName,
         customNumber,
         customNotes,
+        phoneModel,
         artworkFile: currentUploadedFile
       });
 
@@ -403,3 +447,4 @@ export function initProductDetailModalEvents() {
     });
   }
 }
+

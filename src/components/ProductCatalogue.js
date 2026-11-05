@@ -6,10 +6,8 @@ import { renderIcon } from '../utils/icons.js';
 import { store } from '../services/store.js';
 import { CATEGORIES } from '../data/products.js';
 
-export function renderProductCatalogue() {
-  const filteredProducts = store.getFilteredProducts();
-  const totalCount = store.products.length;
-  const userGender = store.getUserGender() || 'Unisex';
+export function renderGenderRecommendations(gender) {
+  const userGender = gender || store.getUserGender() || 'Unisex';
 
   let recommendedProducts = [];
   if (userGender === 'Male') {
@@ -24,6 +22,56 @@ export function renderProductCatalogue() {
   }
   if (recommendedProducts.length === 0) {
     recommendedProducts = store.products.slice(0, 4);
+  }
+
+  return `
+    <div id="gender-recommendations" class="mb-10 p-5 sm:p-7 bg-[#141414] text-white rounded-3xl border border-[#2A2A2A] shadow-xl">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <div class="inline-flex items-center gap-1.5 bg-[#FF6B35]/20 text-[#FF6B35] px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider font-heading mb-1">
+            <span>✨ Tailored Recommendations</span>
+          </div>
+          <h3 class="font-heading text-xl sm:text-2xl font-bold text-white">
+            ${userGender === 'Male' ? '🔥 Top Recommendations for Men' : userGender === 'Female' ? '🌸 Curated Picks for Women' : '🌟 Trending Custom Picks'}
+          </h3>
+          <p class="text-xs text-[#888] mt-0.5">
+            ${userGender === 'Male' 
+              ? 'High-performance team jerseys, heavyweight streetwear tees & rugged gym duffles.' 
+              : userGender === 'Female' 
+              ? 'Aesthetic relaxed fits, canvas totes, personalized pillows & memory frames.' 
+              : 'Top customer favorites across personalized clothing and custom gift keepsakes.'}
+          </p>
+        </div>
+
+        <!-- Quick Switcher -->
+        <div class="flex items-center bg-[#222] p-1 rounded-xl border border-[#333] text-xs font-bold font-heading self-start sm:self-auto">
+          <button type="button" class="gender-pill-btn px-3 py-1.5 rounded-lg transition-all cursor-pointer ${userGender === 'Male' ? 'bg-[#FF6B35] text-white shadow-md' : 'text-[#888] hover:text-white'}" data-gender="Male">
+            👨 Men's
+          </button>
+          <button type="button" class="gender-pill-btn px-3 py-1.5 rounded-lg transition-all cursor-pointer ${userGender === 'Female' ? 'bg-[#FF6B35] text-white shadow-md' : 'text-[#888] hover:text-white'}" data-gender="Female">
+            👩 Women's
+          </button>
+          <button type="button" class="gender-pill-btn px-3 py-1.5 rounded-lg transition-all cursor-pointer ${(userGender !== 'Male' && userGender !== 'Female') ? 'bg-[#FF6B35] text-white shadow-md' : 'text-[#888] hover:text-white'}" data-gender="Unisex">
+            🌟 All
+          </button>
+        </div>
+      </div>
+
+      <!-- 4 Recommended Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        ${recommendedProducts.slice(0, 4).map(p => renderProductCard(p)).join('')}
+      </div>
+    </div>
+  `;
+}
+
+export function renderProductCatalogue() {
+  const filteredProducts = store.getFilteredProducts();
+  const totalCount = store.products.length;
+  const userGender = store.getUserGender() || 'Unisex';
+
+  if (typeof window !== 'undefined') {
+    window.renderGenderRecommendations = renderGenderRecommendations;
   }
 
   return `
@@ -73,43 +121,8 @@ export function renderProductCatalogue() {
       </div>
 
       <!-- Personalized Gender-Based Recommendations Block -->
-      <div id="gender-recommendations" class="mb-10 p-5 sm:p-7 bg-[#141414] text-white rounded-3xl border border-[#2A2A2A] shadow-xl">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-          <div>
-            <div class="inline-flex items-center gap-1.5 bg-[#FF6B35]/20 text-[#FF6B35] px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider font-heading mb-1">
-              <span>✨ Tailored Recommendations</span>
-            </div>
-            <h3 class="font-heading text-xl sm:text-2xl font-bold text-white">
-              ${userGender === 'Male' ? '🔥 Top Recommendations for Men' : userGender === 'Female' ? '🌸 Curated Picks for Women' : '🌟 Trending Custom Picks'}
-            </h3>
-            <p class="text-xs text-[#888] mt-0.5">
-              ${userGender === 'Male' 
-                ? 'High-performance team jerseys, heavyweight streetwear tees & rugged gym duffles.' 
-                : userGender === 'Female' 
-                ? 'Aesthetic relaxed fits, canvas totes, personalized pillows & memory frames.' 
-                : 'Top customer favorites across personalized clothing and custom gift keepsakes.'}
-            </p>
-          </div>
+      ${renderGenderRecommendations(userGender)}
 
-          <!-- Quick Switcher -->
-          <div class="flex items-center bg-[#222] p-1 rounded-xl border border-[#333] text-xs font-bold font-heading self-start sm:self-auto">
-            <button type="button" class="gender-pill-btn px-3 py-1.5 rounded-lg transition-all cursor-pointer ${userGender === 'Male' ? 'bg-[#FF6B35] text-white' : 'text-[#888] hover:text-white'}" data-gender="Male">
-              👨 Men's
-            </button>
-            <button type="button" class="gender-pill-btn px-3 py-1.5 rounded-lg transition-all cursor-pointer ${userGender === 'Female' ? 'bg-[#FF6B35] text-white' : 'text-[#888] hover:text-white'}" data-gender="Female">
-              👩 Women's
-            </button>
-            <button type="button" class="gender-pill-btn px-3 py-1.5 rounded-lg transition-all cursor-pointer ${(userGender !== 'Male' && userGender !== 'Female') ? 'bg-[#FF6B35] text-white' : 'text-[#888] hover:text-white'}" data-gender="Unisex">
-              🌟 All
-            </button>
-          </div>
-        </div>
-
-        <!-- 4 Recommended Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          ${recommendedProducts.slice(0, 4).map(p => renderProductCard(p)).join('')}
-        </div>
-      </div>
 
       <!-- Category Filter Pills -->
       <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-8 scrollbar-none font-heading" id="catalogue-filter-bar">
@@ -180,13 +193,19 @@ export function initProductCatalogueEvents() {
     });
   });
 
-  // Gender Switcher Pills
-  document.querySelectorAll('.gender-pill-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const g = btn.getAttribute('data-gender');
-      store.setUserGender(g);
-      store.showToast(`Displaying ${g} recommendations`, 'info');
-      store.notify();
-    });
+  // Gender Switcher Pills (Delegated for 100% responsiveness)
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.gender-pill-btn');
+    if (!btn) return;
+    const g = btn.getAttribute('data-gender');
+    if (!g) return;
+    store.setUserGender(g);
+    const container = document.getElementById('gender-recommendations');
+    if (container) {
+      container.outerHTML = renderGenderRecommendations(g);
+    }
+    store.showToast(`Displaying ${g} recommendations`, 'info');
+    store.notify();
   });
 }
+

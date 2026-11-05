@@ -4,7 +4,8 @@
 import { renderIcon } from '../utils/icons.js';
 import { store } from '../services/store.js';
 import { isSupabaseConfigured, updateSupabaseCredentials } from '../services/supabase.js';
-import { sendBrevoOtpEmail, generate6DigitOtp } from '../services/brevo.js';
+import { sendBrevoOtpEmail, sendPaymentConfirmedEmail, generate6DigitOtp } from '../services/brevo.js';
+
 
 export const ADMIN_ORDER_STATUSES = [
   "Order Placed",
@@ -802,10 +803,13 @@ ON CONFLICT (user_id) DO UPDATE SET role = 'admin';</pre>
             </button>
           </form>
         </div>
+      </div>
+
       <!-- ==========================================
            EDIT PRODUCT DETAILS MODAL (PRICE & IMAGES)
            ========================================== -->
       <div id="admin-edit-product-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+
         <div class="relative w-full max-w-xl bg-white border border-[#DDD4C4] rounded-3xl shadow-2xl p-6 md:p-8 space-y-5 text-[#111] my-8 animate-fade-in">
           <div class="flex items-center justify-between pb-3 border-b border-[#EFECE4]">
             <div>
@@ -998,12 +1002,35 @@ export function initAdminEvents() {
   // 10-Status Lifecycle Dropdown
   const statusSelects = document.querySelectorAll('.admin-order-status-select');
   statusSelects.forEach(sel => {
-    sel.addEventListener('change', (e) => {
+    sel.addEventListener('change', async (e) => {
       const orderId = e.target.getAttribute('data-order-id');
       const newStatus = e.target.value;
       store.updateOrderStatus(orderId, newStatus);
+
+      // Trigger Brevo Confirmation Email when Admin Confirms Payment
+      if (newStatus === 'Payment Confirmed') {
+        const order = store.orders.find(o => o.orderCode === orderId);
+        if (order && order.customerEmail) {
+          const apiKey = store.settings.brevoApiKey || "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";
+          store.showToast(`Dispatching payment confirmation email to ${order.customerEmail}...`, 'info');
+          const res = await sendPaymentConfirmedEmail({
+            apiKey,
+            toEmail: order.customerEmail,
+            toName: order.customerName || "Valued Customer",
+            orderCode: order.orderCode,
+            totalAmount: order.totalAmount,
+            items: order.items || []
+          });
+          if (res.success) {
+            store.showToast(`✓ Payment confirmed email sent to ${order.customerEmail} via Brevo!`, 'success');
+          } else {
+            store.showToast(`Brevo notice: ${res.error || 'Failed to dispatch email'}`, 'warning');
+          }
+        }
+      }
     });
   });
+
 
   // Assign Dealer Modal events
   const assignModal = document.getElementById('assign-dealer-modal');
@@ -1226,33 +1253,45 @@ export function initAdminEvents() {
     });
   }
 
-  // Open Edit Product Modal on button click
-  document.querySelectorAll('.admin-edit-prod-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const prodId = btn.getAttribute('data-prod-id');
-      const prod = store.products.find(p => p.id === prodId);
-      if (!prod) return;
+  // Delegated Open Edit Product Modal on button click (100% reliable across tab switches)
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.admin-edit-prod-btn');
+    if (!btn) return;
 
-      if (editIdInput) editIdInput.value = prod.id;
-      if (editNameInput) editNameInput.value = prod.name;
-      if (editPriceInput) editPriceInput.value = prod.price !== null ? prod.price : '';
-      if (editOrigPriceInput) editOrigPriceInput.value = prod.originalPrice !== null ? prod.originalPrice : '';
-      
-      const primaryImg = prod.images?.[0] || '';
-      if (editImgInput) editImgInput.value = primaryImg;
-      if (editImgPreview) editImgPreview.src = primaryImg;
+    const prodId = btn.getAttribute('data-prod-id');
+    const prod = store.products.find(p => p.id === prodId);
+    if (!prod) return;
 
-      const extraImgs = prod.images && prod.images.length > 1 ? prod.images.slice(1).join(', ') : '';
-      if (editExtraImgsInput) editExtraImgsInput.value = extraImgs;
+    const modalEl = document.getElementById('admin-edit-product-modal');
+    const idIn = document.getElementById('edit-prod-id');
+    const nameIn = document.getElementById('edit-prod-name');
+    const priceIn = document.getElementById('edit-prod-price');
+    const origPriceIn = document.getElementById('edit-prod-orig-price');
+    const imgIn = document.getElementById('edit-prod-image');
+    const imgPrev = document.getElementById('edit-prod-img-preview');
+    const extraImgsIn = document.getElementById('edit-prod-extra-images');
+    const availIn = document.getElementById('edit-prod-available');
+    const titleEl = document.getElementById('edit-prod-modal-title');
 
-      if (editAvailableInput) editAvailableInput.checked = prod.isAvailable !== false;
+    if (idIn) idIn.value = prod.id;
+    if (nameIn) nameIn.value = prod.name;
+    if (priceIn) priceIn.value = prod.price !== null ? prod.price : '';
+    if (origPriceIn) origPriceIn.value = prod.originalPrice !== null ? prod.originalPrice : '';
+    
+    const primaryImg = prod.images?.[0] || '';
+    if (imgIn) imgIn.value = primaryImg;
+    if (imgPrev) imgPrev.src = primaryImg;
 
-      const titleEl = document.getElementById('edit-prod-modal-title');
-      if (titleEl) titleEl.textContent = `Edit Product: ${prod.name}`;
+    const extraImgs = prod.images && prod.images.length > 1 ? prod.images.slice(1).join(', ') : '';
+    if (extraImgsIn) extraImgsIn.value = extraImgs;
 
-      if (editModal) editModal.classList.remove('hidden');
-    });
+    if (availIn) availIn.checked = prod.isAvailable !== false;
+
+    if (titleEl) titleEl.textContent = `Edit Product: ${prod.name}`;
+
+    if (modalEl) modalEl.classList.remove('hidden');
   });
+
 
   // Handle Edit Product Form Submission
   if (editForm) {

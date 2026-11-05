@@ -145,3 +145,121 @@ export async function sendBrevoOtpEmail({
     htmlContent
   });
 }
+
+/**
+ * Sends a payment confirmation transactional email when admin confirms payment
+ */
+export async function sendPaymentConfirmedEmail({
+  apiKey,
+  toEmail,
+  toName = "Valued Customer",
+  orderCode,
+  totalAmount,
+  items = []
+}) {
+  const itemsHtml = items.map(item => `
+    <tr>
+      <td style="padding: 10px 0; border-bottom: 1px solid #222222; font-size: 13px; color: #EEEEEE;">
+        <strong>${item.name}</strong> (${item.selectedSize || 'Standard'}${item.selectedColor ? ` / ${item.selectedColor}` : ''})
+        ${item.customName ? `<br><span style="font-size: 11px; color: #FF6B35;">Custom Name: ${item.customName}</span>` : ''}
+        ${item.customNumber ? `<span style="font-size: 11px; color: #FF6B35;"> • #${item.customNumber}</span>` : ''}
+      </td>
+      <td style="padding: 10px 0; border-bottom: 1px solid #222222; font-size: 13px; text-align: center; color: #AAAAAA;">
+        x${item.quantity}
+      </td>
+      <td style="padding: 10px 0; border-bottom: 1px solid #222222; font-size: 13px; text-align: right; font-weight: bold; color: #FFFFFF;">
+        ₹${item.price * item.quantity}
+      </td>
+    </tr>
+  `).join('');
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Payment Confirmed — PRINTORA</title>
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #0A0A0A; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #FFFFFF;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0A0A0A; padding: 40px 20px;">
+        <tr>
+          <td align="center">
+            <table width="100%" max-width="560px" cellpadding="0" cellspacing="0" style="max-width: 560px; background-color: #141414; border: 1px solid #282828; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+              
+              <!-- Header -->
+              <tr>
+                <td style="background-color: #111111; padding: 32px 30px; text-align: center; border-bottom: 1px solid #222222;">
+                  <h1 style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: 4px; color: #FFFFFF;">PRINTORA</h1>
+                  <p style="margin: 6px 0 0 0; font-size: 11px; font-weight: 600; letter-spacing: 3px; color: #FF6B35; text-transform: uppercase;">YOU IMAGINE. WE PRINT.</p>
+                </td>
+              </tr>
+
+              <!-- Body -->
+              <tr>
+                <td style="padding: 36px 32px;">
+                  <div style="text-align: center; margin-bottom: 24px;">
+                    <span style="display: inline-block; padding: 6px 16px; background-color: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 20px; color: #10B981; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">
+                      ✓ Payment Confirmed
+                    </span>
+                    <h2 style="margin: 16px 0 6px 0; font-size: 22px; font-weight: 800; color: #FFFFFF;">Payment Verified Successfully!</h2>
+                    <p style="margin: 0; font-size: 13px; color: #888888;">Order ID: <strong style="color: #FF6B35;">${orderCode}</strong></p>
+                  </div>
+
+                  <p style="margin: 0 0 20px 0; font-size: 13px; line-height: 1.6; color: #CCCCCC;">
+                    Hello ${toName},<br><br>
+                    Great news! Your payment of <strong style="color: #FFFFFF;">₹${totalAmount}</strong> has been officially verified and confirmed by our PRINTORA administration team.
+                  </p>
+
+                  <div style="background-color: #0E0E0E; border: 1px solid #222222; border-radius: 12px; padding: 18px 20px; margin-bottom: 24px;">
+                    <h3 style="margin: 0 0 12px 0; font-size: 12px; font-weight: 700; color: #FF6B35; text-transform: uppercase; letter-spacing: 1px;">Order Summary</h3>
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      ${itemsHtml}
+                      <tr>
+                        <td colspan="2" style="padding-top: 12px; font-size: 12px; color: #888888;">Delivery Charges</td>
+                        <td style="padding-top: 12px; font-size: 12px; text-align: right; color: #10B981; font-weight: bold;">FREE (₹0)</td>
+                      </tr>
+                      <tr>
+                        <td colspan="2" style="padding-top: 8px; font-size: 14px; font-weight: bold; color: #FFFFFF;">Total Paid</td>
+                        <td style="padding-top: 8px; font-size: 16px; text-align: right; color: #FF6B35; font-weight: 800;">₹${totalAmount}</td>
+                      </tr>
+                    </table>
+                  </div>
+
+                  <p style="margin: 0 0 24px 0; font-size: 13px; line-height: 1.6; color: #CCCCCC;">
+                    Our production masters have queued your custom apparel & merchandise for high-definition digital printing and quality checks. We will notify you once dispatched with tracking details.
+                  </p>
+
+                  <div style="text-align: center;">
+                    <a href="https://printoracustom.in/#account" style="display: inline-block; background-color: #FF6B35; color: #FFFFFF; text-decoration: none; font-size: 12px; font-weight: 700; padding: 14px 28px; border-radius: 12px; text-transform: uppercase; letter-spacing: 1px;">
+                      Track Order Status
+                    </a>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Footer -->
+              <tr>
+                <td style="background-color: #0E0E0E; padding: 20px 30px; text-align: center; border-top: 1px solid #222222; font-size: 11px; color: #666666;">
+                  © 2026 PRINTORA (printoracustom.in) • YOU IMAGINE. WE PRINT.<br>
+                  Questions? Chat directly on WhatsApp: +91 8106992102
+                </td>
+              </tr>
+
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+
+  return sendBrevoEmail({
+    apiKey,
+    toEmail,
+    toName,
+    subject: `✓ Payment Confirmed for Order ${orderCode} — PRINTORA`,
+    htmlContent
+  });
+}
+

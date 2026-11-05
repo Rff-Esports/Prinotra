@@ -78,11 +78,36 @@ export const INITIAL_PRODUCTS = [
     categoryId: "apparel",
     categoryName: "Apparel",
     name: "Round Neck T-shirt",
-    subtitle: "100% Super-Combed Cotton • 180 GSM",
+    subtitle: "Enter Phone Model & Upload Photo • ₹699",
     description: "Our signature classic crewneck crafted from 100% bio-washed super-combed cotton. Ultra-smooth surface engineered for high-definition vibrant print longevity and soft all-day comfort.",
-    price: 499,
+    price: 599,
+    originalPrice: 899,
+    originalPrice: 499,
+    originalPrice: 349,
+    originalPrice: 499,
+    originalPrice: 499,
+    originalPrice: 900,
+    originalPrice: 750,
+    originalPrice: 299,
+    originalPrice: 449,
+    originalPrice: 699,
+    originalPrice: 799,
+    originalPrice: 999,
+    originalPrice: 599,
+    originalPrice: 499,
+    originalPrice: 299,
+    originalPrice: 599,
+    originalPrice: 1499,
+    originalPrice: 1499,
+    originalPrice: 699,
+    originalPrice: 999,
+    originalPrice: 899,
+    originalPrice: 799,
+    originalPrice: 599,
+    originalPrice: 1299,
     originalPrice: 699,
     isQuoteOnly: false,
+    quoteEmail: "printora256@gmail.com",
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1000&q=80",
@@ -103,6 +128,8 @@ export const INITIAL_PRODUCTS = [
       allowNumber: false,
       allowLogo: true,
       allowNotes: true,
+      allowModel: true,
+      allowUpload: true,
       placementOptions: ["Left Chest", "Center Chest", "Full Back", "Sleeve Print"]
     }
   },
@@ -245,8 +272,10 @@ export const INITIAL_PRODUCTS = [
     name: "Sweatshirts",
     subtitle: "300 GSM Brushed Terry Crewneck",
     description: "Minimalist crewneck fleece sweatshirt tailored with athletic raglan cuts, seamless side hems, and durable stitch detailing. Custom manufactured for clubs, colleges, and company winter drops.",
-    price: null,
-    isQuoteOnly: true,
+    price: 899,
+    originalPrice: 1299,
+    originalPrice: 1299,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=1000&q=80",
@@ -275,8 +304,10 @@ export const INITIAL_PRODUCTS = [
     name: "Tank Tops",
     subtitle: "180 GSM Breathable Summer Athletic Cut",
     description: "Deep cut armholes and athletic scoop neck engineered for gyms, summer runs and high intensity training. 100% moisture-absorbent combed cotton.",
-    price: null,
-    isQuoteOnly: true,
+    price: 399,
+    originalPrice: 599,
+    originalPrice: 599,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1618354691438-25bc04584c23?auto=format&fit=crop&w=1000&q=80"
@@ -438,8 +469,10 @@ export const INITIAL_PRODUCTS = [
     name: "Customized Team Uniforms",
     subtitle: "Full Uniform Sets (Jersey + Shorts / Warmup Tracksuits)",
     description: "Complete professional athletic kits including sublimated jerseys, coordinated athletic shorts with drawstrings, and optional zippered warmup jackets for colleges, universities, and corporate sports leagues.",
-    price: null,
-    isQuoteOnly: true,
+    price: 499,
+    originalPrice: 799,
+    originalPrice: 799,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1000&q=80"
@@ -499,8 +532,10 @@ export const INITIAL_PRODUCTS = [
     name: "Gym Bags",
     subtitle: "Water-Resistant Duffle with Dedicated Shoe Compartment",
     description: "Rugged gym and weekend duffle bag made from high-density nylon polyester. Includes segregated ventilated footwear compartment, padded shoulder strap, and internal zipper pouch.",
-    price: null,
-    isQuoteOnly: true,
+    price: 599,
+    originalPrice: 899,
+    originalPrice: 899,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1575428652377-a2d80e2277fc?auto=format&fit=crop&w=1000&q=80"
@@ -527,8 +562,10 @@ export const INITIAL_PRODUCTS = [
     name: "Laptop Bags",
     subtitle: "Padded Executive Briefcase with Organizer",
     description: "Streamlined professional briefcase featuring shock-absorbent foam padding for 15.6\" laptops, water-resistant exterior coating, luggage trolley sleeve, and custom debossed or printed corporate emblem.",
-    price: null,
-    isQuoteOnly: true,
+    price: 699,
+    originalPrice: 999,
+    originalPrice: 999,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=1000&q=80"
@@ -555,8 +592,10 @@ export const INITIAL_PRODUCTS = [
     name: "Jute Bags",
     subtitle: "100% Biodegradable Golden Fiber with Cotton Webbing",
     description: "Laminated natural golden jute bags perfect for corporate conferences, retail shopping, wedding hampers, and sustainable exhibitions. Custom screen printed with single or multi-color graphics.",
-    price: null,
-    isQuoteOnly: true,
+    price: 499,
+    originalPrice: 699,
+    originalPrice: 699,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1614179689702-355944cd0918?auto=format&fit=crop&w=1000&q=80"
@@ -582,8 +621,10 @@ export const INITIAL_PRODUCTS = [
     name: "Rucksack Bags",
     subtitle: "Rugged Roll-Top Weatherproof Exploration Pack",
     description: "Roll-top expandable volume rucksack with heavy-duty clip closures, ergonomically contoured shoulder straps, and modular utility loops. Designed for adventurous lifestyle merchandise.",
-    price: null,
-    isQuoteOnly: true,
+    price: 999,
+    originalPrice: 1499,
+    originalPrice: 1499,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?auto=format&fit=crop&w=1000&q=80"
@@ -610,8 +651,10 @@ export const INITIAL_PRODUCTS = [
     name: "Backpacks",
     subtitle: "Sleek Everyday College & Commuter Daypack",
     description: "Minimalist urban silhouette backpack with dual bottle pockets, internal tech sleeves, padded breathable mesh back panel, and discrete front zipper for easy branding.",
-    price: null,
-    isQuoteOnly: true,
+    price: 999,
+    originalPrice: 1499,
+    originalPrice: 1499,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=1000&q=80"
@@ -759,7 +802,7 @@ export const INITIAL_PRODUCTS = [
     subtitle: "Temperature Display Smart Insulated Flask",
     description: "Smart thermos flask with built-in LED touch temperature display on cap. Double-vacuum stainless steel construction with removable tea infuser mesh basket.",
     price: null,
-    isQuoteOnly: true,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=1000&q=80"
@@ -787,7 +830,7 @@ export const INITIAL_PRODUCTS = [
     subtitle: "Single-Walled Ergonomic Everyday Sports Bottle",
     description: "Lightweight 750ml food-grade 18/8 stainless steel bottle with leakproof threaded bamboo or steel cap. Customized with laser engraving or rotary UV color print.",
     price: null,
-    isQuoteOnly: true,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1536939459926-301728717817?auto=format&fit=crop&w=1000&q=80"
@@ -815,7 +858,7 @@ export const INITIAL_PRODUCTS = [
     subtitle: "BPA-Free Gym Shaker & Infuser Sipper",
     description: "Multi-purpose active sipper with flip spout, integrated carrying loop, and internal protein blending ball. Custom printed with gym logos, names, or team badges.",
     price: null,
-    isQuoteOnly: true,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1570554886111-e80fcca6a029?auto=format&fit=crop&w=1000&q=80"
@@ -905,8 +948,10 @@ export const INITIAL_PRODUCTS = [
     name: "Personalized Wallets",
     subtitle: "Genuine Top-Grain Leather with Engraved Name & Charm",
     description: "Handcrafted slim bifold leather wallet customized with the recipient's laser-engraved name and metal charm. Features RFID blocking technology and multiple card slots.",
-    price: null,
-    isQuoteOnly: true,
+    price: 399,
+    originalPrice: 599,
+    originalPrice: 599,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=1000&q=80"
@@ -934,8 +979,10 @@ export const INITIAL_PRODUCTS = [
     name: "Keychains",
     subtitle: "Laser-Cut Acrylic, Leather & Polished Metal Keyrings",
     description: "Custom engraved metal keychains, hotel-tag style acrylic fobs, and stitched leather loops with personalized names, vehicle plate numbers, or custom emblems.",
-    price: null,
-    isQuoteOnly: true,
+    price: 199,
+    originalPrice: 299,
+    originalPrice: 299,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1614036417651-efe5912149d8?auto=format&fit=crop&w=1000&q=80"
@@ -962,8 +1009,10 @@ export const INITIAL_PRODUCTS = [
     name: "Cushions",
     subtitle: "Soft Satin Cushion with Polyfill Insert (16x16 inch)",
     description: "Plush decorative sofa cushion with seamless edge-to-edge sublimation photo printing and concealed zipper enclosure. Includes hypoallergenic polyfill insert.",
-    price: null,
-    isQuoteOnly: true,
+    price: 299,
+    originalPrice: 499,
+    originalPrice: 499,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&w=1000&q=80"
@@ -989,8 +1038,10 @@ export const INITIAL_PRODUCTS = [
     name: "Personalized Pillows",
     subtitle: "Heart Shape & LED Magic Glow Pillows",
     description: "Special occasion memory pillows customized with intimate portraits and sweet typography. Soft touch fabric that maintains comfort wash after wash.",
-    price: null,
-    isQuoteOnly: true,
+    price: 399,
+    originalPrice: 599,
+    originalPrice: 599,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1616046229478-9901c5536a45?auto=format&fit=crop&w=1000&q=80"
@@ -1016,8 +1067,10 @@ export const INITIAL_PRODUCTS = [
     name: "Acrylic Photo Frames",
     subtitle: "Frameless 8mm Ultra-Clear High Gloss Acrylic Glass",
     description: "Direct UV back-printed ultra-clear crystal acrylic block with polished diamond-cut bevel edges and brushed stainless steel standoffs.",
-    price: null,
-    isQuoteOnly: true,
+    price: 699,
+    originalPrice: 999,
+    originalPrice: 999,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=1000&q=80"
@@ -1043,8 +1096,10 @@ export const INITIAL_PRODUCTS = [
     name: "Posters",
     subtitle: "300 GSM Museum-Grade Fine Art Matte Paper",
     description: "Crisp wall art prints with rich pigment saturation. Ideal for movie fanart, motivational quotes, team achievements, or personal photographic prints.",
-    price: null,
-    isQuoteOnly: true,
+    price: 499,
+    originalPrice: 799,
+    originalPrice: 799,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=1000&q=80"
@@ -1070,8 +1125,10 @@ export const INITIAL_PRODUCTS = [
     name: "Personalized Accessories",
     subtitle: "Custom Passport Covers, Luggage Tags & Cardholders",
     description: "Curated lifestyle travel accessories tailored with metal charms and customized names for frequent flyers, honeymooners, and luxury events.",
-    price: null,
-    isQuoteOnly: true,
+    price: 499,
+    originalPrice: 699,
+    originalPrice: 699,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&w=1000&q=80"
@@ -1188,8 +1245,10 @@ export const INITIAL_PRODUCTS = [
     name: "Diaries",
     subtitle: "Custom Casebound Undated Personal Journal",
     description: "Personalized lifestyle diaries with customizable cover typography, gold foil spine details, and lay-flat Smyth-sewn binding for seamless writing.",
-    price: null,
-    isQuoteOnly: true,
+    price: 299,
+    originalPrice: 449,
+    originalPrice: 449,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1531346878377-a5be20888e57?auto=format&fit=crop&w=1000&q=80"
@@ -1216,8 +1275,10 @@ export const INITIAL_PRODUCTS = [
     name: "Customized Stationery",
     subtitle: "Notepads, Sticky Notes & Desk Planners",
     description: "Daily planner pads, memo sheets, and branded adhesive sticky note cubes customized with company colors and motivational headers.",
-    price: null,
-    isQuoteOnly: true,
+    price: 199,
+    originalPrice: 299,
+    originalPrice: 299,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1583521214690-73421a1829a9?auto=format&fit=crop&w=1000&q=80"
@@ -1244,7 +1305,7 @@ export const INITIAL_PRODUCTS = [
     subtitle: "Metal Rollerball & Twist Action Laser-Engraved Pens",
     description: "Heavy metal body luxury pens with smooth German ink refills. Laser-engraved with employee names, company branding, or commemorative dates.",
     price: null,
-    isQuoteOnly: true,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1585336261026-62c76508006e?auto=format&fit=crop&w=1000&q=80"
@@ -1272,7 +1333,7 @@ export const INITIAL_PRODUCTS = [
     subtitle: "Complete Branded Desk & Supply Set",
     description: "Customized desk organizers, paperweights, branded envelopes, document clips, and conference folders designed for cohesive office aesthetics.",
     price: null,
-    isQuoteOnly: true,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=1000&q=80"
@@ -1330,10 +1391,12 @@ export const INITIAL_PRODUCTS = [
     categoryId: "corporate-merchandise",
     categoryName: "Corporate & Business",
     name: "ID Cards",
-    subtitle: "CR80 PVC High-Gloss / Matte Identity Badges",
+    subtitle: "Pack of 10 Pieces (₹500) • High-Def Thermal PVC",
     description: "Standard credit-card thickness PVC identity cards with high-definition digital thermo-transfer printing, barcode/QR code support, and optional RFID chips.",
-    price: null,
-    isQuoteOnly: true,
+    price: 500,
+    originalPrice: 750,
+    originalPrice: 750,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1579389083078-4e7018379f7e?auto=format&fit=crop&w=1000&q=80"
@@ -1357,10 +1420,12 @@ export const INITIAL_PRODUCTS = [
     categoryId: "corporate-merchandise",
     categoryName: "Corporate & Business",
     name: "Transparent ID Cards with Wearable Tags",
-    subtitle: "Frosted Clear Acrylic Badges with Satin Lanyards",
+    subtitle: "Pack of 10 Pieces with Tags (₹600)",
     description: "Ultra-modern transparent and frosted PET cards paired with custom 20mm heat-transfer printed satin neck lanyards and heavy alloy dog clips.",
-    price: null,
-    isQuoteOnly: true,
+    price: 600,
+    originalPrice: 900,
+    originalPrice: 900,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1000&q=80"
@@ -1384,10 +1449,12 @@ export const INITIAL_PRODUCTS = [
     categoryId: "corporate-merchandise",
     categoryName: "Corporate & Business",
     name: "Visiting Cards",
-    subtitle: "450 GSM Velvet Touch with Spot UV & Foil",
+    subtitle: "Pack of 100 (₹299) • Pack of 500 (₹499) • Pack of 1000 (₹599)",
     description: "Distinguished business cards printed on ultra-thick imported card stock. Upgrades include raised spot UV gloss, gold or silver foil edges, and velvet lamination.",
-    price: null,
-    isQuoteOnly: true,
+    price: 299,
+    originalPrice: 499,
+    originalPrice: 499,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1589078695029-7b4b41933813?auto=format&fit=crop&w=1000&q=80"
@@ -1414,8 +1481,10 @@ export const INITIAL_PRODUCTS = [
     name: "Letterheads",
     subtitle: "100 GSM Alabaster Textured Corporate Bond Paper",
     description: "Official executive stationery guaranteed to run seamlessly through laser and inkjet office printers without curling or smudging.",
-    price: null,
-    isQuoteOnly: true,
+    price: 299,
+    originalPrice: 499,
+    originalPrice: 499,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1607344645866-009c320c5ab8?auto=format&fit=crop&w=1000&q=80"
@@ -1441,8 +1510,10 @@ export const INITIAL_PRODUCTS = [
     name: "Presentation Folders",
     subtitle: "350 GSM Die-Cut Dual Pocket Folders with Card Slot",
     description: "Professional client presentation folders with reinforced spine, matte film lamination, internal document slots, and visiting card slit.",
-    price: null,
-    isQuoteOnly: true,
+    price: 199,
+    originalPrice: 349,
+    originalPrice: 349,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=1000&q=80"
@@ -1468,8 +1539,10 @@ export const INITIAL_PRODUCTS = [
     name: "Corporate Gift Sets",
     subtitle: "Executive Welcome Kit: Diary + Pen + Bottle + Keychain",
     description: "Pre-assembled luxury onboarding welcome kits in customized foam-padded presentation boxes. Tailored for new employee joining packs, festival Diwali hampers, and client appreciation.",
-    price: null,
-    isQuoteOnly: true,
+    price: 299,
+    originalPrice: 499,
+    originalPrice: 499,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=1000&q=80"
@@ -1493,10 +1566,11 @@ export const INITIAL_PRODUCTS = [
     categoryId: "corporate-merchandise",
     categoryName: "Corporate & Business",
     name: "Bulk Merchandise",
-    subtitle: "End-to-End Swag & Promotional Merchandise Production",
+    subtitle: "Bulk Orders • Mail to printora256@gmail.com",
     description: "Complete merchandising support for companies scaling up: customized backpacks, stainless flasks, apparel, and stationery packed and shipped directly to multiple regional offices.",
     price: null,
     isQuoteOnly: true,
+    quoteEmail: "printora256@gmail.com",
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1000&q=80"
@@ -1520,10 +1594,11 @@ export const INITIAL_PRODUCTS = [
     categoryId: "corporate-merchandise",
     categoryName: "Corporate & Business",
     name: "Event Merchandise",
-    subtitle: "Turnkey Collateral for College Fests, Summits & Expos",
+    subtitle: "Event Merchandise • Mail to printora256@gmail.com",
     description: "Fast-track printing of event lanyards, delegate badges, customized volunteer apparel, wristbands, and commemorative mementos.",
     price: null,
     isQuoteOnly: true,
+    quoteEmail: "printora256@gmail.com",
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1000&q=80"
@@ -1551,10 +1626,12 @@ export const INITIAL_PRODUCTS = [
     categoryId: "tech-accessories",
     categoryName: "Tech Accessories",
     name: "Phone Cases",
-    subtitle: "Military-Grade Dual-Layer Hybrid Impact Case",
+    subtitle: "Enter Phone Model & Upload Photo • ₹699",
     description: "Shock-absorbing TPU inner lining coupled with an ultra-tough scratch-resistant polycarbonate backplate. Wrap-around 3D sublimation print with raised bezels to protect camera lenses and screens.",
-    price: null,
-    isQuoteOnly: true,
+    price: 699,
+    originalPrice: 999,
+    originalPrice: 999,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?auto=format&fit=crop&w=1000&q=80"
@@ -1570,7 +1647,9 @@ export const INITIAL_PRODUCTS = [
       allowName: true,
       allowNumber: false,
       allowLogo: true,
-      allowNotes: true
+      allowNotes: true,
+      allowModel: true,
+      allowUpload: true
     }
   },
   {
@@ -1581,8 +1660,10 @@ export const INITIAL_PRODUCTS = [
     name: "Laptop Sleeves",
     subtitle: "High-Density Neoprene with Microfiber Fleece Lining",
     description: "Slim, weather-resistant neoprene laptop envelope case with smooth gliding dual zippers and anti-scratch interior cushioning. Custom printed with high-resolution edge-to-edge artwork.",
-    price: null,
-    isQuoteOnly: true,
+    price: 499,
+    originalPrice: 799,
+    originalPrice: 799,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?auto=format&fit=crop&w=1000&q=80"
@@ -1609,8 +1690,9 @@ export const INITIAL_PRODUCTS = [
     name: "Customized Tech Accessories",
     subtitle: "Mousepads, Cable Organizers & Earphone Cases",
     description: "Customized speed-weave gaming and desk mousepads (up to 900x400mm), leather magnetic cable organizers, and customized silicone AirPods cases.",
-    price: null,
-    isQuoteOnly: true,
+    price: 599,
+    originalPrice: 899,
+    isQuoteOnly: false,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?auto=format&fit=crop&w=1000&q=80"
