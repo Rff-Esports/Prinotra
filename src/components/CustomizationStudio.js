@@ -71,40 +71,37 @@ export function renderCustomizationStudioSection() {
             </div>
 
             <!-- Garment Visualizer Stage -->
-            <div class="relative w-72 h-88 sm:w-80 sm:h-96 md:w-96 md:h-104 flex items-center justify-center my-auto">
+            <div class="relative w-72 h-88 sm:w-80 sm:h-96 md:w-96 md:h-104 flex items-center justify-center my-auto rounded-2xl overflow-hidden bg-white/60 border border-[#E0DCD3] shadow-inner">
               
-              <!-- Garment SVG Base -->
-              <svg id="studio-garment-svg" class="w-full h-full drop-shadow-2xl transition-all duration-300" viewBox="0 0 320 340" fill="none">
-                <!-- Shirt Base Contour -->
-                <path id="studio-svg-base" d="M 105 35 C 125 55 195 55 215 35 L 295 72 C 302 75 305 85 300 92 L 265 145 C 260 152 250 153 243 147 L 228 135 L 228 310 C 228 318 221 325 213 325 L 107 325 C 99 325 92 318 92 310 L 92 135 L 77 147 C 70 153 60 152 55 145 L 20 92 C 15 85 18 75 25 72 Z"
-                      fill="#111111" stroke="#333333" stroke-width="2" />
-                
-                <!-- Collar -->
-                <path id="studio-svg-collar" d="M 105 35 C 125 60 195 60 215 35 C 195 48 125 48 105 35 Z" fill="#202020" stroke="#444444" stroke-width="1.5" />
-                
-                <!-- Sleeve Folds -->
-                <path d="M 68 115 L 92 145 M 252 115 L 228 145" stroke="#262626" stroke-width="2" opacity="0.4" />
-              </svg>
+              <!-- Real Garment Mockup Image (Width 200%, Left 0% for Front, Left -100% for Back) -->
+              <div class="relative w-full h-full overflow-hidden flex items-center justify-center pointer-events-none select-none">
+                <img id="studio-real-mockup"
+                     src="/assets/mockups/tshirt_crewneck.png"
+                     alt="Real Garment Mockup"
+                     class="absolute top-0 h-full w-[200%] max-w-none object-contain transition-all duration-300 pointer-events-none"
+                     style="left: 0%; filter: none;">
+              </div>
 
               <!-- Dynamic Personalization Text Overlay -->
-              <div id="studio-preview-overlay" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none p-6 select-none">
+              <div id="studio-preview-overlay" class="absolute flex flex-col items-center justify-center pointer-events-none select-none transition-all duration-300 z-10"
+                   style="top: 26%; left: 50%; transform: translateX(-50%); width: 50%;">
                 
                 <!-- Uploaded Logo / Artwork -->
-                <div id="studio-overlay-logo" class="hidden mb-3 max-w-[90px] max-h-[90px]">
+                <div id="studio-overlay-logo" class="hidden mb-2 max-w-[75px] max-h-[75px]">
                   <img id="studio-overlay-logo-img" src="" alt="Custom Logo" class="max-w-full max-h-full object-contain drop-shadow-md">
                 </div>
 
                 <!-- Custom Main Name / Text -->
-                <div id="studio-overlay-text-wrapper" class="text-center transition-all duration-150 transform">
-                  <div id="studio-overlay-text" class="text-2xl font-bold uppercase tracking-wider text-white transition-all break-words leading-tight"
+                <div id="studio-overlay-text-wrapper" class="text-center transition-all duration-150 transform w-full">
+                  <div id="studio-overlay-text" class="text-xl sm:text-2xl font-bold uppercase tracking-wider text-white transition-all break-words leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]"
                        style="font-family: 'Space Grotesk', sans-serif; color: #FFFFFF;">
                     PRINTORA
                   </div>
                 </div>
 
                 <!-- Custom Number -->
-                <div id="studio-overlay-number-wrapper" class="text-center mt-2 transition-all duration-150">
-                  <div id="studio-overlay-number" class="text-5xl font-black text-white font-mono leading-none tracking-widest"
+                <div id="studio-overlay-number-wrapper" class="text-center mt-1.5 transition-all duration-150 w-full">
+                  <div id="studio-overlay-number" class="text-4xl sm:text-5xl font-black text-white font-mono leading-none tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]"
                        style="font-family: 'Bebas Neue', sans-serif; color: #FFFFFF;">
                     07
                   </div>
@@ -143,13 +140,21 @@ export function renderCustomizationStudioSection() {
                 </button>
               </div>
 
-              <!-- Garment Fabric Colors -->
-              <div class="flex items-center gap-2" id="studio-garment-colors">
-                <button type="button" class="w-7 h-7 rounded-full border-2 border-black shadow-sm bg-[#111111] studio-garment-color-btn" data-color="#111111" title="Black"></button>
-                <button type="button" class="w-7 h-7 rounded-full border border-[#DDD] shadow-sm bg-[#FFFFFF] studio-garment-color-btn" data-color="#FFFFFF" title="White"></button>
-                <button type="button" class="w-7 h-7 rounded-full border border-transparent shadow-sm bg-[#FF6B35] studio-garment-color-btn" data-color="#FF6B35" title="Orange"></button>
-                <button type="button" class="w-7 h-7 rounded-full border border-transparent shadow-sm bg-[#1E2A38] studio-garment-color-btn" data-color="#1E2A38" title="Navy"></button>
-                <button type="button" class="w-7 h-7 rounded-full border border-transparent shadow-sm bg-[#4A4A4A] studio-garment-color-btn" data-color="#4A4A4A" title="Grey"></button>
+              <!-- Garment Fabric Colors (7 Colors: White, Black, Red, Grey, Blue, Green, Yellow) -->
+              <div class="mt-2">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-[11px] font-semibold text-[#555]">Garment Fabric Color</span>
+                  <span id="studio-active-garment-color-name" class="text-[10px] font-bold text-[#FF6B35]">Black (#111111)</span>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap" id="studio-garment-colors">
+                  <button type="button" class="w-8 h-8 rounded-full border-2 border-black ring-2 ring-offset-2 ring-black shadow-sm bg-[#111111] studio-garment-color-btn transition-transform hover:scale-110" data-color="#111111" data-name="Black" title="Black"></button>
+                  <button type="button" class="w-8 h-8 rounded-full border border-[#DDD] shadow-sm bg-[#FFFFFF] studio-garment-color-btn transition-transform hover:scale-110" data-color="#FFFFFF" data-name="White" title="White"></button>
+                  <button type="button" class="w-8 h-8 rounded-full border border-transparent shadow-sm bg-[#DC2626] studio-garment-color-btn transition-transform hover:scale-110" data-color="#DC2626" data-name="Red" title="Red"></button>
+                  <button type="button" class="w-8 h-8 rounded-full border border-transparent shadow-sm bg-[#9CA3AF] studio-garment-color-btn transition-transform hover:scale-110" data-color="#9CA3AF" data-name="Grey" title="Grey"></button>
+                  <button type="button" class="w-8 h-8 rounded-full border border-transparent shadow-sm bg-[#2563EB] studio-garment-color-btn transition-transform hover:scale-110" data-color="#2563EB" data-name="Blue" title="Blue"></button>
+                  <button type="button" class="w-8 h-8 rounded-full border border-transparent shadow-sm bg-[#16A34A] studio-garment-color-btn transition-transform hover:scale-110" data-color="#16A34A" data-name="Green" title="Green"></button>
+                  <button type="button" class="w-8 h-8 rounded-full border border-transparent shadow-sm bg-[#EAB308] studio-garment-color-btn transition-transform hover:scale-110" data-color="#EAB308" data-name="Yellow" title="Yellow"></button>
+                </div>
               </div>
             </div>
 
@@ -163,20 +168,36 @@ export function renderCustomizationStudioSection() {
                        class="w-full bg-white border border-[#DDD4C4] focus:border-black rounded-xl px-3.5 py-2.5 text-xs font-bold uppercase outline-none transition-colors">
               </div>
 
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label for="studio-input-number" class="block text-[11px] font-semibold text-[#555] mb-1">Number (Optional)</label>
-                  <input type="text" id="studio-input-number" maxlength="3" placeholder="e.g. 07" value="07"
-                         class="w-full bg-white border border-[#DDD4C4] focus:border-black rounded-xl px-3.5 py-2.5 text-xs font-mono font-bold outline-none transition-colors">
+              <div>
+                <label for="studio-input-number" class="block text-[11px] font-semibold text-[#555] mb-1">Number (Optional)</label>
+                <input type="text" id="studio-input-number" maxlength="3" placeholder="e.g. 07" value="07"
+                       class="w-full bg-white border border-[#DDD4C4] focus:border-black rounded-xl px-3.5 py-2.5 text-xs font-mono font-bold outline-none transition-colors">
+              </div>
+
+              <!-- Dedicated Color Board for Text & Numbers -->
+              <div class="pt-2 border-t border-[#E5DFD4]">
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="text-[11px] font-bold text-[#333] font-heading">Color Board for Text</label>
+                  <span id="studio-active-print-color-name" class="text-[10px] text-[#FF6B35] font-mono font-bold">White (#FFFFFF)</span>
                 </div>
-                <div>
-                  <label class="block text-[11px] font-semibold text-[#555] mb-1">Print Color</label>
-                  <div class="flex items-center gap-1.5 pt-1">
-                    <button type="button" class="w-6 h-6 rounded-full border-2 border-black bg-white studio-print-color-btn" data-color="#FFFFFF"></button>
-                    <button type="button" class="w-6 h-6 rounded-full border border-[#DDD] bg-[#111111] studio-print-color-btn" data-color="#111111"></button>
-                    <button type="button" class="w-6 h-6 rounded-full border border-[#DDD] bg-[#FF6B35] studio-print-color-btn" data-color="#FF6B35"></button>
-                    <button type="button" class="w-6 h-6 rounded-full border border-[#DDD] bg-[#C5A880] studio-print-color-btn" data-color="#C5A880"></button>
-                    <button type="button" class="w-6 h-6 rounded-full border border-[#DDD] bg-[#00E5FF] studio-print-color-btn" data-color="#00E5FF"></button>
+                <div class="flex flex-wrap items-center gap-1.5" id="studio-text-color-board">
+                  <button type="button" class="w-6 h-6 rounded-full border-2 border-black bg-[#FFFFFF] shadow-sm studio-print-color-btn transition-transform hover:scale-110" data-color="#FFFFFF" data-name="White" title="White"></button>
+                  <button type="button" class="w-6 h-6 rounded-full border border-[#DDD] bg-[#111111] shadow-sm studio-print-color-btn transition-transform hover:scale-110" data-color="#111111" data-name="Black" title="Black"></button>
+                  <button type="button" class="w-6 h-6 rounded-full border border-[#DDD] bg-[#DC2626] shadow-sm studio-print-color-btn transition-transform hover:scale-110" data-color="#DC2626" data-name="Crimson Red" title="Red"></button>
+                  <button type="button" class="w-6 h-6 rounded-full border border-[#DDD] bg-[#F59E0B] shadow-sm studio-print-color-btn transition-transform hover:scale-110" data-color="#F59E0B" data-name="Warm Gold" title="Gold"></button>
+                  <button type="button" class="w-6 h-6 rounded-full border border-[#DDD] bg-[#FF6B35] shadow-sm studio-print-color-btn transition-transform hover:scale-110" data-color="#FF6B35" data-name="Printora Orange" title="Orange"></button>
+                  <button type="button" class="w-6 h-6 rounded-full border border-[#DDD] bg-[#10B981] shadow-sm studio-print-color-btn transition-transform hover:scale-110" data-color="#10B981" data-name="Emerald Green" title="Green"></button>
+                  <button type="button" class="w-6 h-6 rounded-full border border-[#DDD] bg-[#2563EB] shadow-sm studio-print-color-btn transition-transform hover:scale-110" data-color="#2563EB" data-name="Royal Blue" title="Blue"></button>
+                  <button type="button" class="w-6 h-6 rounded-full border border-[#DDD] bg-[#1E293B] shadow-sm studio-print-color-btn transition-transform hover:scale-110" data-color="#1E293B" data-name="Navy" title="Navy"></button>
+                  <button type="button" class="w-6 h-6 rounded-full border border-[#DDD] bg-[#8B5CF6] shadow-sm studio-print-color-btn transition-transform hover:scale-110" data-color="#8B5CF6" data-name="Purple" title="Purple"></button>
+                  <button type="button" class="w-6 h-6 rounded-full border border-[#DDD] bg-[#EC4899] shadow-sm studio-print-color-btn transition-transform hover:scale-110" data-color="#EC4899" data-name="Hot Pink" title="Pink"></button>
+                  <button type="button" class="w-6 h-6 rounded-full border border-[#DDD] bg-[#06B6D4] shadow-sm studio-print-color-btn transition-transform hover:scale-110" data-color="#06B6D4" data-name="Cyan Blue" title="Cyan"></button>
+                  <button type="button" class="w-6 h-6 rounded-full border border-[#DDD] bg-[#EAB308] shadow-sm studio-print-color-btn transition-transform hover:scale-110" data-color="#EAB308" data-name="Canary Yellow" title="Yellow"></button>
+                  <button type="button" class="w-6 h-6 rounded-full border border-[#DDD] bg-[#9CA3AF] shadow-sm studio-print-color-btn transition-transform hover:scale-110" data-color="#9CA3AF" data-name="Silver Grey" title="Grey"></button>
+                  <!-- Custom Spectrum Color Picker -->
+                  <div class="flex items-center gap-1 pl-1">
+                    <input type="color" id="studio-custom-print-color" value="#FFFFFF" class="w-6 h-6 rounded-lg cursor-pointer border border-[#DDD] p-0 bg-transparent overflow-hidden" title="Custom Color Picker">
+                    <span class="text-[9px] text-[#777] font-semibold">Custom</span>
                   </div>
                 </div>
               </div>
@@ -233,15 +254,16 @@ export function renderCustomizationStudioSection() {
               </div>
             </div>
 
-            <!-- 5. Placement Selection -->
+            <!-- 5. Placement Selection (Left Chest & Right Chest & Center Chest & Full Front) -->
             <div>
               <label class="block text-xs font-bold uppercase tracking-wider text-[#111] font-heading mb-1.5">
                 5. Placement Zone
               </label>
-              <div class="grid grid-cols-3 gap-1.5" id="studio-placement-options">
-                <button type="button" class="studio-placement-btn py-1.5 px-2 rounded-lg border-2 border-black bg-white text-[10px] font-bold text-black" data-placement="center-chest">Center Chest</button>
-                <button type="button" class="studio-placement-btn py-1.5 px-2 rounded-lg border border-[#DDD4C4] bg-white text-[10px] font-bold text-[#666]" data-placement="left-chest">Left Chest</button>
-                <button type="button" class="studio-placement-btn py-1.5 px-2 rounded-lg border border-[#DDD4C4] bg-white text-[10px] font-bold text-[#666]" data-placement="full-front">Full Front</button>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5" id="studio-placement-options">
+                <button type="button" class="studio-placement-btn py-2 px-2 rounded-lg border-2 border-black bg-white text-[11px] font-bold text-black transition-all" data-placement="center-chest">Center Chest</button>
+                <button type="button" class="studio-placement-btn py-2 px-2 rounded-lg border border-[#DDD4C4] bg-white text-[11px] font-bold text-[#666] hover:text-black transition-all" data-placement="left-chest">Left Chest</button>
+                <button type="button" class="studio-placement-btn py-2 px-2 rounded-lg border border-[#DDD4C4] bg-white text-[11px] font-bold text-[#666] hover:text-black transition-all" data-placement="right-chest">Right Chest</button>
+                <button type="button" class="studio-placement-btn py-2 px-2 rounded-lg border border-[#DDD4C4] bg-white text-[11px] font-bold text-[#666] hover:text-black transition-all" data-placement="full-front">Full Front</button>
               </div>
             </div>
 
@@ -266,16 +288,36 @@ export function renderCustomizationStudioSection() {
   `;
 }
 
+// Mockup images and color filter configurations
+const MOCKUP_IMAGES = {
+  'round-neck': '/assets/mockups/tshirt_crewneck.png',
+  'oversized': '/assets/mockups/tshirt_oversized.png',
+  'hoodie': '/assets/mockups/hoodie.png'
+};
+
+const GARMENT_COLOR_FILTERS = {
+  '#111111': 'none',
+  '#FFFFFF': 'invert(0.92) brightness(1.08) contrast(0.95)',
+  '#DC2626': 'invert(0.22) sepia(1) saturate(650%) hue-rotate(330deg) brightness(0.88)',
+  '#9CA3AF': 'invert(0.52) brightness(0.96) contrast(0.9)',
+  '#2563EB': 'invert(0.25) sepia(1) saturate(550%) hue-rotate(195deg) brightness(0.92)',
+  '#16A34A': 'invert(0.22) sepia(1) saturate(480%) hue-rotate(85deg) brightness(0.85)',
+  '#EAB308': 'invert(0.72) sepia(1) saturate(550%) hue-rotate(12deg) brightness(1.08)'
+};
+
 // Studio State & History
 let studioState = {
   currentView: 'front', // 'front' | 'back'
+  productKey: 'round-neck', // 'round-neck' | 'oversized' | 'hoodie'
   selectedProduct: { id: 'prn-app-01', name: 'Round Neck T-shirt', price: 499 },
   garmentColor: '#111111',
+  garmentColorName: 'Black',
   front: {
     text: 'PRINTORA',
     number: '07',
     font: "'Space Grotesk', sans-serif",
     textColor: '#FFFFFF',
+    textColorName: 'White',
     fontSize: 28,
     rotation: 0,
     alignment: 'center',
@@ -287,10 +329,11 @@ let studioState = {
     number: '07',
     font: "'Space Grotesk', sans-serif",
     textColor: '#FFFFFF',
+    textColorName: 'White',
     fontSize: 34,
     rotation: 0,
     alignment: 'center',
-    placement: 'full-back',
+    placement: 'full-front',
     logoUrl: null
   }
 };
@@ -310,13 +353,53 @@ export function initCustomizationStudioEvents() {
   const overlayLogo = document.getElementById('studio-overlay-logo');
   const overlayLogoImg = document.getElementById('studio-overlay-logo-img');
   const overlayTextWrapper = document.getElementById('studio-overlay-text-wrapper');
-  const svgBase = document.getElementById('studio-svg-base');
+  const previewOverlay = document.getElementById('studio-preview-overlay');
+  const mockupImg = document.getElementById('studio-real-mockup');
   const viewLabel = document.getElementById('studio-active-view-label');
 
   function renderCurrentView() {
     const current = studioState[studioState.currentView];
     
-    // Update texts
+    // 1. Update Real Mockup Image & Perspective Slice
+    if (mockupImg) {
+      const expectedSrc = MOCKUP_IMAGES[studioState.productKey] || MOCKUP_IMAGES['round-neck'];
+      if (!mockupImg.src.includes(expectedSrc.replace(/^\//, ''))) {
+        mockupImg.src = expectedSrc;
+      }
+      mockupImg.style.left = studioState.currentView === 'front' ? '0%' : '-100%';
+      mockupImg.style.filter = GARMENT_COLOR_FILTERS[studioState.garmentColor] || 'none';
+    }
+
+    // 2. Update Placement Zone Position (Center Chest, Left Chest, Right Chest, Full Front)
+    const placement = current.placement || 'center-chest';
+    if (previewOverlay) {
+      if (placement === 'left-chest') {
+        // Wearer's Left Chest (Viewer's Right)
+        previewOverlay.style.top = '22%';
+        previewOverlay.style.left = '64%';
+        previewOverlay.style.transform = 'translateX(-50%)';
+        previewOverlay.style.width = '30%';
+      } else if (placement === 'right-chest') {
+        // Wearer's Right Chest (Viewer's Left)
+        previewOverlay.style.top = '22%';
+        previewOverlay.style.left = '36%';
+        previewOverlay.style.transform = 'translateX(-50%)';
+        previewOverlay.style.width = '30%';
+      } else if (placement === 'full-front') {
+        previewOverlay.style.top = '25%';
+        previewOverlay.style.left = '50%';
+        previewOverlay.style.transform = 'translateX(-50%)';
+        previewOverlay.style.width = '62%';
+      } else {
+        // center-chest
+        previewOverlay.style.top = '25%';
+        previewOverlay.style.left = '50%';
+        previewOverlay.style.transform = 'translateX(-50%)';
+        previewOverlay.style.width = '50%';
+      }
+    }
+
+    // 3. Update Text and Typography
     if (overlayText) {
       overlayText.textContent = current.text;
       overlayText.style.fontFamily = current.font;
@@ -328,6 +411,7 @@ export function initCustomizationStudioEvents() {
       }
     }
 
+    // 4. Update Number
     if (overlayNumber) {
       overlayNumber.textContent = current.number;
       overlayNumber.style.color = current.textColor;
@@ -335,7 +419,7 @@ export function initCustomizationStudioEvents() {
       else overlayNumber.classList.remove('hidden');
     }
 
-    // Logo
+    // 5. Logo
     if (overlayLogo && overlayLogoImg) {
       if (current.logoUrl) {
         overlayLogoImg.src = current.logoUrl;
@@ -345,13 +429,8 @@ export function initCustomizationStudioEvents() {
       }
     }
 
-    // Garment color
-    if (svgBase) {
-      svgBase.setAttribute('fill', studioState.garmentColor);
-    }
-
     if (viewLabel) {
-      viewLabel.textContent = `Currently Viewing: ${studioState.currentView === 'front' ? 'Front Side' : 'Back Side'}`;
+      viewLabel.textContent = `Currently Viewing: ${studioState.currentView === 'front' ? 'Front Side' : 'Back Side'} (${placement.replace('-', ' ').toUpperCase()})`;
     }
   }
 
@@ -429,7 +508,7 @@ export function initCustomizationStudioEvents() {
   if (rotSlider) {
     rotSlider.addEventListener('input', (e) => {
       studioState[studioState.currentView].rotation = Number(e.target.value);
-      if (rotLabel) rotLabel.textContent = `${e.target.value}px`;
+      if (rotLabel) rotLabel.textContent = `${e.target.value}°`;
       renderCurrentView();
     });
   }
@@ -448,37 +527,88 @@ export function initCustomizationStudioEvents() {
     });
   });
 
-  // Print Color Buttons
+  // Color Board for Text & Numbers
+  const activePrintColorLabel = document.getElementById('studio-active-print-color-name');
+  const customColorInput = document.getElementById('studio-custom-print-color');
+
   document.querySelectorAll('.studio-print-color-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       pushHistory();
       const color = e.currentTarget.getAttribute('data-color');
+      const name = e.currentTarget.getAttribute('data-name') || color;
       studioState[studioState.currentView].textColor = color;
-      document.querySelectorAll('.studio-print-color-btn').forEach(b => b.classList.remove('border-2', 'border-black'));
-      e.currentTarget.classList.add('border-2', 'border-black');
+      studioState[studioState.currentView].textColorName = name;
+
+      document.querySelectorAll('.studio-print-color-btn').forEach(b => {
+        b.classList.remove('border-2', 'border-black', 'ring-2', 'ring-offset-1', 'ring-black');
+      });
+      e.currentTarget.classList.add('border-2', 'border-black', 'ring-2', 'ring-offset-1', 'ring-black');
+
+      if (activePrintColorLabel) activePrintColorLabel.textContent = `${name} (${color})`;
+      if (customColorInput) customColorInput.value = color;
+
       renderCurrentView();
     });
   });
 
-  // Garment Color Buttons
+  if (customColorInput) {
+    customColorInput.addEventListener('input', (e) => {
+      const color = e.target.value;
+      studioState[studioState.currentView].textColor = color;
+      studioState[studioState.currentView].textColorName = 'Custom';
+      if (activePrintColorLabel) activePrintColorLabel.textContent = `Custom (${color})`;
+      renderCurrentView();
+    });
+    customColorInput.addEventListener('change', () => pushHistory());
+  }
+
+  // Garment Fabric Color Buttons (7 Colors)
+  const activeGarmentColorLabel = document.getElementById('studio-active-garment-color-name');
   document.querySelectorAll('.studio-garment-color-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       pushHistory();
       const color = e.currentTarget.getAttribute('data-color');
+      const name = e.currentTarget.getAttribute('data-name') || color;
       studioState.garmentColor = color;
-      document.querySelectorAll('.studio-garment-color-btn').forEach(b => b.classList.remove('border-2', 'border-black'));
-      e.currentTarget.classList.add('border-2', 'border-black');
+      studioState.garmentColorName = name;
+
+      document.querySelectorAll('.studio-garment-color-btn').forEach(b => {
+        b.classList.remove('border-2', 'border-black', 'ring-2', 'ring-offset-2', 'ring-black');
+      });
+      e.currentTarget.classList.add('border-2', 'border-black', 'ring-2', 'ring-offset-2', 'ring-black');
+
+      if (activeGarmentColorLabel) activeGarmentColorLabel.textContent = `${name} (${color})`;
+
       renderCurrentView();
     });
   });
 
-  // Product Switcher
+  // Placement Selection Buttons (Center Chest, Left Chest, Right Chest, Full Front)
+  document.querySelectorAll('.studio-placement-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      pushHistory();
+      const placement = e.currentTarget.getAttribute('data-placement');
+      studioState[studioState.currentView].placement = placement;
+
+      document.querySelectorAll('.studio-placement-btn').forEach(b => {
+        b.classList.remove('border-2', 'border-black', 'text-black');
+        b.classList.add('border-[#DDD4C4]', 'text-[#666]');
+      });
+      e.currentTarget.classList.add('border-2', 'border-black', 'text-black');
+      e.currentTarget.classList.remove('border-[#DDD4C4]', 'text-[#666]');
+
+      renderCurrentView();
+    });
+  });
+
+  // Product Switcher (Round neck, Oversized, Hoodie)
   document.querySelectorAll('.studio-product-pick').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const prod = e.currentTarget.getAttribute('data-product');
       const price = Number(e.currentTarget.getAttribute('data-price'));
       const name = e.currentTarget.getAttribute('data-name');
       
+      studioState.productKey = prod;
       studioState.selectedProduct = { id: `prn-app-${prod}`, name, price };
 
       document.querySelectorAll('.studio-product-pick').forEach(b => {
@@ -492,6 +622,8 @@ export function initCustomizationStudioEvents() {
       const cartBtnLabel = document.getElementById('studio-cart-btn-label');
       if (priceBadge) priceBadge.textContent = `₹${price} (Free Delivery)`;
       if (cartBtnLabel) cartBtnLabel.textContent = `Add Customized Product to Bag (₹${price})`;
+
+      renderCurrentView();
     });
   });
 
@@ -569,24 +701,27 @@ export function initCustomizationStudioEvents() {
   const addCartBtn = document.getElementById('studio-add-cart-btn');
   if (addCartBtn) {
     addCartBtn.addEventListener('click', () => {
+      const mockupImgSrc = MOCKUP_IMAGES[studioState.productKey] || MOCKUP_IMAGES['round-neck'];
+      const colorLabel = studioState.garmentColorName || 'Custom Color';
+
       const product = {
         id: studioState.selectedProduct.id,
         name: studioState.selectedProduct.name,
         price: studioState.selectedProduct.price,
         originalPrice: studioState.selectedProduct.price + 200,
         categoryName: 'Apparel',
-        images: ['https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1000&q=80'],
+        images: [mockupImgSrc],
         sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-        colors: [{ name: 'Custom Color', hex: studioState.garmentColor }]
+        colors: [{ name: colorLabel, hex: studioState.garmentColor }]
       };
 
       store.addToCart(product, {
         size: 'L',
-        color: studioState.garmentColor,
+        color: colorLabel,
         quantity: 1,
         customName: studioState.front.text,
         customNumber: studioState.front.number,
-        customNotes: `Front: "${studioState.front.text}" (${studioState.front.font}) | Back: "${studioState.back.text}"`,
+        customNotes: `${studioState.selectedProduct.name} (${colorLabel}) | Zone: ${(studioState.front.placement || 'center-chest').replace('-', ' ')} | Front: "${studioState.front.text}" (${studioState.front.font}) | Back: "${studioState.back.text}"`,
         frontDesign: studioState.front,
         backDesign: studioState.back
       });

@@ -45,21 +45,21 @@ export function renderCheckoutModal() {
 
         <!-- 3-Step Stepper Header -->
         <div class="bg-white px-4 py-2.5 border-b border-[#DDD4C4] flex items-center justify-between text-xs font-heading flex-shrink-0">
-          <div class="flex items-center gap-1.5 step-indicator ${currentStep === 1 ? 'text-[#FF6B35] font-extrabold' : currentStep > 1 ? 'text-emerald-700 font-bold' : 'text-[#888]'}">
+          <div id="chk-step-pill-1" class="flex items-center gap-1.5 step-indicator ${currentStep === 1 ? 'text-[#FF6B35] font-extrabold' : currentStep > 1 ? 'text-emerald-700 font-bold' : 'text-[#888]'}">
             <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${currentStep === 1 ? 'bg-[#FF6B35] text-white' : currentStep > 1 ? 'bg-emerald-600 text-white' : 'bg-[#DDD4C4] text-[#666]'}">
               ${currentStep > 1 ? '✓' : '1'}
             </span>
             <span class="text-[11px]">1. Items</span>
           </div>
           <span class="text-[#CCC] text-xs">→</span>
-          <div class="flex items-center gap-1.5 step-indicator ${currentStep === 2 ? 'text-[#FF6B35] font-extrabold' : currentStep > 2 ? 'text-emerald-700 font-bold' : 'text-[#888]'}">
+          <div id="chk-step-pill-2" class="flex items-center gap-1.5 step-indicator ${currentStep === 2 ? 'text-[#FF6B35] font-extrabold' : currentStep > 2 ? 'text-emerald-700 font-bold' : 'text-[#888]'}">
             <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${currentStep === 2 ? 'bg-[#FF6B35] text-white' : currentStep > 2 ? 'bg-emerald-600 text-white' : 'bg-[#DDD4C4] text-[#666]'}">
               ${currentStep > 2 ? '✓' : '2'}
             </span>
             <span class="text-[11px]">2. Address</span>
           </div>
           <span class="text-[#CCC] text-xs">→</span>
-          <div class="flex items-center gap-1.5 step-indicator ${currentStep === 3 ? 'text-[#FF6B35] font-extrabold' : 'text-[#888]'}">
+          <div id="chk-step-pill-3" class="flex items-center gap-1.5 step-indicator ${currentStep === 3 ? 'text-[#FF6B35] font-extrabold' : 'text-[#888]'}">
             <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${currentStep === 3 ? 'bg-[#FF6B35] text-white' : 'bg-[#DDD4C4] text-[#666]'}">
               3
             </span>
@@ -371,6 +371,44 @@ export function initCheckoutModalEvents() {
     const nextBtn = document.getElementById('chk-next-step-btn');
     const confirmBtn = document.getElementById('chk-confirm-whatsapp-btn');
     const backLabel = document.getElementById('checkout-back-label');
+
+    // Dynamically update 3-Step Stepper Header pills
+    const pill1 = document.getElementById('chk-step-pill-1');
+    const pill2 = document.getElementById('chk-step-pill-2');
+    const pill3 = document.getElementById('chk-step-pill-3');
+
+    if (pill1) {
+      if (step === 1) {
+        pill1.className = 'flex items-center gap-1.5 step-indicator text-[#FF6B35] font-extrabold';
+        pill1.innerHTML = `<span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold bg-[#FF6B35] text-white">1</span><span class="text-[11px]">1. Items</span>`;
+      } else {
+        pill1.className = 'flex items-center gap-1.5 step-indicator text-emerald-700 font-bold';
+        pill1.innerHTML = `<span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold bg-emerald-600 text-white">✓</span><span class="text-[11px]">1. Items</span>`;
+      }
+    }
+
+    if (pill2) {
+      if (step === 2) {
+        pill2.className = 'flex items-center gap-1.5 step-indicator text-[#FF6B35] font-extrabold';
+        pill2.innerHTML = `<span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold bg-[#FF6B35] text-white">2</span><span class="text-[11px]">2. Address</span>`;
+      } else if (step > 2) {
+        pill2.className = 'flex items-center gap-1.5 step-indicator text-emerald-700 font-bold';
+        pill2.innerHTML = `<span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold bg-emerald-600 text-white">✓</span><span class="text-[11px]">2. Address</span>`;
+      } else {
+        pill2.className = 'flex items-center gap-1.5 step-indicator text-[#888] font-normal';
+        pill2.innerHTML = `<span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold bg-[#DDD4C4] text-[#666]">2</span><span class="text-[11px]">2. Address</span>`;
+      }
+    }
+
+    if (pill3) {
+      if (step === 3) {
+        pill3.className = 'flex items-center gap-1.5 step-indicator text-[#FF6B35] font-extrabold';
+        pill3.innerHTML = `<span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold bg-[#FF6B35] text-white">3</span><span class="text-[11px]">3. WhatsApp</span>`;
+      } else {
+        pill3.className = 'flex items-center gap-1.5 step-indicator text-[#888] font-normal';
+        pill3.innerHTML = `<span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold bg-[#DDD4C4] text-[#666]">3</span><span class="text-[11px]">3. WhatsApp</span>`;
+      }
+    }
 
     if (s1) s1.className = step === 1 ? 'space-y-4 animate-fade-in block' : 'hidden';
     if (s2) s2.className = step === 2 ? 'space-y-3.5 animate-fade-in block' : 'hidden';

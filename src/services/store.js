@@ -328,6 +328,7 @@ class PrintoraStore {
 
   loadCoupons() {
     const defaultCoupons = [
+      { code: "DIWALI10", alias: "DIWALI 10", discountType: "percent", value: 10, minOrder: 0, description: "Flat 10% OFF on all custom merchandise (Happy Diwali Special)" },
       { code: "PRINTORA 25", alias: "PRINTORA25", discountType: "fixed", value: 25, minOrder: 0, description: "Flat ₹25 OFF on MRP" },
       { code: "PRINTORA50", alias: "PRINTORA 50", discountType: "fixed", value: 50, minOrder: 499, description: "Flat ₹50 OFF on orders above ₹499" },
       { code: "WELCOME10", discountType: "percent", value: 10, minOrder: 0, description: "10% OFF for new customers" },
@@ -336,6 +337,9 @@ class PrintoraStore {
 
     const cloudCoupons = getGlobalCloudState()?.coupons;
     if (Array.isArray(cloudCoupons) && cloudCoupons.length > 0) {
+      if (!cloudCoupons.some(c => c.code.replace(/\s+/g, '').toUpperCase() === 'DIWALI10')) {
+        cloudCoupons.unshift(defaultCoupons[0]);
+      }
       return cloudCoupons;
     }
 
@@ -343,8 +347,11 @@ class PrintoraStore {
     if (!saved) return defaultCoupons;
     try {
       const list = JSON.parse(saved);
-      if (!list.some(c => c.code.replace(/\s+/g, '').toUpperCase() === 'PRINTORA25')) {
+      if (!list.some(c => c.code.replace(/\s+/g, '').toUpperCase() === 'DIWALI10')) {
         list.unshift(defaultCoupons[0]);
+      }
+      if (!list.some(c => c.code.replace(/\s+/g, '').toUpperCase() === 'PRINTORA25')) {
+        list.splice(1, 0, defaultCoupons[1]);
       }
       return list;
     } catch (e) {

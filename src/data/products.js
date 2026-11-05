@@ -85,9 +85,9 @@ export const INITIAL_PRODUCTS = [
     isQuoteOnly: false,
     isOnwards: false,
     images: [
+      "/assets/mockups/tshirt_crewneck.png",
       "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1562157873-818bc0726f68?auto=format&fit=crop&w=1000&q=80"
+      "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=1000&q=80"
     ],
     sizes: ["S", "M", "L", "XL", "XXL"],
     colors: [
@@ -154,8 +154,8 @@ export const INITIAL_PRODUCTS = [
     isQuoteOnly: false,
     isOnwards: false,
     images: [
-      "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1503342394128-c104d54dba01?auto=format&fit=crop&w=1000&q=80"
+      "/assets/mockups/tshirt_oversized.png",
+      "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=1000&q=80"
     ],
     sizes: ["S", "M", "L", "XL", "XXL"],
     colors: [
@@ -219,8 +219,8 @@ export const INITIAL_PRODUCTS = [
     isQuoteOnly: false,
     isOnwards: false,
     images: [
-      "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1509967419530-da38b4704bc6?auto=format&fit=crop&w=1000&q=80"
+      "/assets/mockups/hoodie.png",
+      "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=1000&q=80"
     ],
     sizes: ["S", "M", "L", "XL", "XXL"],
     colors: [
