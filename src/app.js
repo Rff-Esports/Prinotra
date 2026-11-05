@@ -47,14 +47,26 @@ class PrintoraApp {
   }
 
   init() {
-    // Show branded 3D shirt flip loading animation on initial load
-    document.body.insertAdjacentHTML('afterbegin', renderShirtFlipLoader(true));
-    
-    this.render();
-    this.attachEventListeners();
+    try {
+      // Show branded 3D shirt flip loading animation on initial load
+      if (document.body) {
+        document.body.insertAdjacentHTML('afterbegin', renderShirtFlipLoader(true));
+      }
+      
+      this.render();
 
-    // Dismiss loader smoothly
-    hideShirtLoader(900);
+      try {
+        this.attachEventListeners();
+      } catch (evtErr) {
+        console.warn('Non-fatal event attachment notice:', evtErr);
+      }
+
+      // Dismiss loader smoothly
+      hideShirtLoader(800);
+    } catch (e) {
+      console.error('PrintoraApp init error:', e);
+      hideShirtLoader(0);
+    }
   }
 
   route() {
@@ -175,7 +187,35 @@ class PrintoraApp {
   }
 }
 
-// Instantiate on DOM load
-document.addEventListener('DOMContentLoaded', () => {
-  new PrintoraApp();
-});
+// Robust boot sequence handling all document ready states (loading, interactive, complete)
+function bootPrintora() {
+  if (window.__printoraApp) return;
+  try {
+    window.__printoraApp = new PrintoraApp();
+  } catch (err) {
+    console.error('Fatal initialization error:', err);
+    hideShirtLoader(0);
+    const appEl = document.getElementById('app');
+    if (appEl && (!appEl.innerHTML || appEl.innerHTML.trim() === '')) {
+      appEl.innerHTML = `
+        <div class="min-h-screen flex items-center justify-center bg-[#0A0A0A] text-white p-6 text-center">
+          <div>
+            <h1 class="text-2xl font-bold tracking-widest text-[#C5A880] mb-2">PRINTORA</h1>
+            <p class="text-xs text-[#AAA] uppercase tracking-wider mb-6">MAKE IT YOURS.</p>
+            <p class="text-sm text-neutral-300 max-w-md mx-auto mb-6">Refreshing store components...</p>
+            <button onclick="window.location.reload(true)" class="bg-[#C5A880] text-black text-xs font-bold px-6 py-3 rounded-xl uppercase tracking-wider">
+              Reload Storefront
+            </button>
+          </div>
+        </div>
+      `;
+    }
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bootPrintora);
+} else {
+  // If document is already interactive or complete, boot immediately
+  bootPrintora();
+}

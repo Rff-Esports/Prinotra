@@ -846,8 +846,8 @@ export const INITIAL_PRODUCTS = [
     name: "Photo Frame",
     subtitle: "Solid Wood Finish Frame with Archival Matte Print",
     description: "Minimalist wooden wall and tabletop photo frame with high-transparency glass. Your personal high-resolution photograph is color-calibrated and printed on archival 260 GSM textured art paper.",
-    price: 399,
-    originalPrice: 599,
+    price: 499,
+    originalPrice: 699,
     isQuoteOnly: false,
     isOnwards: false,
     images: [
@@ -876,10 +876,10 @@ export const INITIAL_PRODUCTS = [
     name: "Gift Boxes",
     subtitle: "Custom Curated Rigid Keepsake Box with Ribbon",
     description: "Handcrafted magnetic-closure rigid gift boxes customized with gold foil debossing. Perfect for birthdays, weddings, festive celebrations, and executive appreciation.",
-    price: 699,
-    originalPrice: 999,
+    price: 799,
+    originalPrice: 1199,
     isQuoteOnly: false,
-    isOnwards: true, // "₹699 onwards"
+    isOnwards: true, // "Starting ₹799"
     images: [
       "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=1000&q=80"
     ],
@@ -1131,8 +1131,8 @@ export const INITIAL_PRODUCTS = [
     name: "Notebook",
     subtitle: "Softbound / Spiral Wire-O Journal • 100 GSM Paper",
     description: "Versatile creative notebook featuring 160 pages of ink-bleed-resistant unruled or dotted sheets. High-quality 350 GSM matte laminated front cover with personalized cover design.",
-    price: 329,
-    originalPrice: 449,
+    price: 429,
+    originalPrice: 599,
     isQuoteOnly: false,
     isOnwards: false,
     images: [
@@ -1160,10 +1160,10 @@ export const INITIAL_PRODUCTS = [
     name: "Stickers",
     subtitle: "Precision Die-Cut Waterproof Vinyl Stickers",
     description: "Waterproof, weatherproof, and UV-resistant matte vinyl stickers. Perfect for branding laptops, water bottles, packaging boxes, skateboards, and retail bags.",
-    price: 199,
-    originalPrice: 299,
+    price: 299,
+    originalPrice: 399,
     isQuoteOnly: false,
-    isOnwards: true, // "₹199 onwards"
+    isOnwards: true, // "Starting ₹299"
     images: [
       "https://images.unsplash.com/photo-1572375992501-4b0892d50c69?auto=format&fit=crop&w=1000&q=80"
     ],
