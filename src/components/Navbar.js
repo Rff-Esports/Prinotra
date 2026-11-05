@@ -45,22 +45,14 @@ export function renderNavbar() {
           </div>
 
           <!-- Brand Logo & Identity (Official Coat Hanger + Sparkle Brandmark) -->
-          <div class="flex items-center">
-            <a href="#" class="flex items-center gap-3 group">
-              <img src="/assets/logo.png" alt="PRINTORA - Customised Clothing" class="h-11 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105 rounded-xl shadow-sm">
-              <div class="hidden sm:flex flex-col">
-                <span class="font-heading text-xl sm:text-2xl font-black tracking-[0.15em] text-[#111111] group-hover:text-[#FF6B35] transition-colors leading-tight">
-                  PRINTORA
-                </span>
-                <span class="text-[8px] tracking-[0.25em] text-[#777] uppercase font-bold group-hover:text-black transition-colors font-heading">
-                  CUSTOMISED CLOTHING
-                </span>
-              </div>
+          <div class="flex items-center flex-shrink-0 mr-4">
+            <a href="#" class="flex items-center group">
+              <img src="/assets/logo.png" alt="PRINTORA - Customised Clothing" class="h-12 sm:h-14 w-auto object-contain transition-transform group-hover:scale-105 rounded-xl shadow-sm">
             </a>
           </div>
 
           <!-- Desktop Navigation Links (Section 4) -->
-          <div class="hidden lg:flex items-center space-x-7 text-xs font-bold uppercase tracking-wider text-[#333]">
+          <div class="hidden lg:flex items-center space-x-3.5 xl:space-x-6 text-[11px] xl:text-xs font-bold uppercase tracking-wider text-[#333] whitespace-nowrap">
             <a href="#" class="hover:text-[#FF6B35] transition-colors py-2 font-heading">
               Home
             </a>

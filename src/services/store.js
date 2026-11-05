@@ -60,19 +60,8 @@ class PrintoraStore {
 
   // Persistence helpers
   loadInitialProducts() {
-    const saved = safeGetItem('printora_custom_products');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return INITIAL_PRODUCTS.map(initial => {
-          const custom = parsed.find(p => p.id === initial.id);
-          return custom ? { ...initial, ...custom, images: initial.images } : initial;
-        });
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return [...INITIAL_PRODUCTS];
+    // Always return fresh curated product definitions
+    return INITIAL_PRODUCTS.map(p => ({ ...p }));
   }
 
   saveProducts() {
@@ -198,6 +187,14 @@ class PrintoraStore {
     this.notify();
   }
 
+  deleteCoupon(code) {
+    if (!code) return;
+    const norm = code.toUpperCase().replace(/\s+/g, '');
+    this.coupons = this.coupons.filter(c => c.code.toUpperCase().replace(/\s+/g, '') !== norm);
+    this.saveCoupons();
+    this.showToast(`Coupon "${code}" deleted successfully`, 'info');
+  }
+
   validateCoupon(code, subtotal) {
     if (!code) return { valid: false, message: "Please enter a coupon code" };
     const normalizedInput = code.trim().toUpperCase().replace(/\s+/g, '');
@@ -210,6 +207,15 @@ class PrintoraStore {
     if (!coupon) {
       return { valid: false, message: "Invalid coupon code" };
     }
+
+    // Check expiry date & time
+    if (coupon.expiresAt) {
+      const exp = new Date(coupon.expiresAt).getTime();
+      if (!isNaN(exp) && Date.now() > exp) {
+        return { valid: false, message: `Coupon "${coupon.code}" expired on ${new Date(coupon.expiresAt).toLocaleString('en-IN')}` };
+      }
+    }
+
     if (subtotal < coupon.minOrder) {
       return { valid: false, message: `Minimum order of ₹${coupon.minOrder} required for ${coupon.code}` };
     }

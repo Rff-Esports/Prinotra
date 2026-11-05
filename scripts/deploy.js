@@ -32,6 +32,7 @@ console.log(`🚀 Uploading ${(zipStats.size / 1024).toFixed(1)} KB to Netlify (
 
 const req = https.request({
   hostname: 'api.netlify.com',
+  family: 4,
   path: `/api/v1/sites/${SITE_ID}/deploys`,
   method: 'POST',
   headers: {

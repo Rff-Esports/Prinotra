@@ -475,53 +475,100 @@ export function renderAdminDashboard() {
                 <thead class="bg-[#FAF7F2] text-[#666] uppercase tracking-wider font-bold border-b border-[#DDD4C4]">
                   <tr>
                     <th class="py-3 px-4">Coupon Code</th>
-                    <th class="py-3 px-4">Discount Type</th>
-                    <th class="py-3 px-4">Value</th>
+                    <th class="py-3 px-4">Discount</th>
                     <th class="py-3 px-4">Min. Order</th>
+                    <th class="py-3 px-4">Expires At / Status</th>
                     <th class="py-3 px-4">Description</th>
+                    <th class="py-3 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-[#EFECE4]">
-                  ${coupons.map(c => `
-                    <tr class="hover:bg-[#FAF9F5]">
-                      <td class="py-3 px-4 font-mono font-bold text-black">${c.code}</td>
-                      <td class="py-3 px-4 uppercase text-[#666]">${c.discountType}</td>
-                      <td class="py-3 px-4 font-mono font-bold text-[#FF6B35]">${c.discountType === 'percent' ? `${c.value}%` : `₹${c.value}`}</td>
+                  ${coupons.map(c => {
+                    const isExpired = c.expiresAt && new Date(c.expiresAt).getTime() < Date.now();
+                    const formattedDate = c.expiresAt ? new Date(c.expiresAt).toLocaleString('en-IN', {
+                      dateStyle: 'medium',
+                      timeStyle: 'short'
+                    }) : null;
+                    return `
+                    <tr class="hover:bg-[#FAF9F5] ${isExpired ? 'opacity-70 bg-rose-50/30' : ''}">
+                      <td class="py-3 px-4">
+                        <span class="font-mono font-bold text-black text-xs bg-[#FAF7F2] px-2.5 py-1 rounded-lg border border-[#DDD4C4]">${c.code}</span>
+                      </td>
+                      <td class="py-3 px-4 font-mono font-bold text-[#FF6B35]">
+                        ${c.discountType === 'percent' ? `${c.value}% OFF` : `₹${c.value} OFF`}
+                      </td>
                       <td class="py-3 px-4 font-mono">₹${c.minOrder}</td>
+                      <td class="py-3 px-4">
+                        ${isExpired ? `
+                          <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
+                            <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+                            <span>EXPIRED</span>
+                            <span class="font-mono font-normal">(${formattedDate})</span>
+                          </div>
+                        ` : c.expiresAt ? `
+                          <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                            <span>Active till:</span>
+                            <span class="font-mono font-semibold">${formattedDate}</span>
+                          </div>
+                        ` : `
+                          <div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
+                            <span>♾️ Lifetime (No Expiry)</span>
+                          </div>
+                        `}
+                      </td>
                       <td class="py-3 px-4 text-[#555]">${c.description}</td>
+                      <td class="py-3 px-4 text-right">
+                        <button class="admin-delete-coupon-btn inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-rose-600 hover:text-white hover:bg-rose-600 font-bold border border-rose-200 transition-colors cursor-pointer" data-code="${c.code}" title="Delete coupon code">
+                          ${renderIcon('trash', 'w-3.5 h-3.5')}
+                          <span>Delete</span>
+                        </button>
+                      </td>
                     </tr>
-                  `).join('')}
+                    `;
+                  }).join('')}
                 </tbody>
               </table>
             </div>
 
             <!-- Create New Coupon Form -->
-            <form id="admin-create-coupon-form" class="p-4 bg-[#FAF8F5] border border-[#DDD4C4] rounded-2xl space-y-3">
-              <span class="text-xs uppercase font-bold text-black font-heading block">Create New Coupon Code</span>
-              <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+            <form id="admin-create-coupon-form" class="p-5 bg-[#FAF8F5] border border-[#DDD4C4] rounded-2xl space-y-4">
+              <div>
+                <span class="text-xs uppercase font-bold text-black font-heading block">Create New Coupon Code</span>
+                <p class="text-[11px] text-[#777]">Generate discount codes with custom values, minimum cart value, and optional expiration date & time.</p>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 text-xs">
                 <div>
                   <label class="block text-[11px] font-bold text-[#555] mb-1">Coupon Code</label>
-                  <input type="text" id="new-coupon-code" required placeholder="FESTIVE15" class="w-full bg-white border border-[#DDD4C4] rounded-xl px-3 py-2 uppercase font-mono font-bold outline-none">
+                  <input type="text" id="new-coupon-code" required placeholder="FESTIVE15" class="w-full bg-white border border-[#DDD4C4] rounded-xl px-3 py-2 uppercase font-mono font-bold outline-none focus:border-[#FF6B35]">
                 </div>
                 <div>
                   <label class="block text-[11px] font-bold text-[#555] mb-1">Discount Type</label>
-                  <select id="new-coupon-type" class="w-full bg-white border border-[#DDD4C4] rounded-xl px-3 py-2 font-bold outline-none">
+                  <select id="new-coupon-type" class="w-full bg-white border border-[#DDD4C4] rounded-xl px-3 py-2 font-bold outline-none focus:border-[#FF6B35]">
                     <option value="percent">Percentage (%)</option>
                     <option value="fixed">Fixed Amount (₹)</option>
                   </select>
                 </div>
                 <div>
                   <label class="block text-[11px] font-bold text-[#555] mb-1">Discount Value</label>
-                  <input type="number" id="new-coupon-val" required placeholder="15" class="w-full bg-white border border-[#DDD4C4] rounded-xl px-3 py-2 font-mono font-bold outline-none">
+                  <input type="number" id="new-coupon-val" required placeholder="15" class="w-full bg-white border border-[#DDD4C4] rounded-xl px-3 py-2 font-mono font-bold outline-none focus:border-[#FF6B35]">
                 </div>
                 <div>
                   <label class="block text-[11px] font-bold text-[#555] mb-1">Minimum Order (₹)</label>
-                  <input type="number" id="new-coupon-min" required placeholder="999" class="w-full bg-white border border-[#DDD4C4] rounded-xl px-3 py-2 font-mono font-bold outline-none">
+                  <input type="number" id="new-coupon-min" required placeholder="999" class="w-full bg-white border border-[#DDD4C4] rounded-xl px-3 py-2 font-mono font-bold outline-none focus:border-[#FF6B35]">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-[#555] mb-1">Expiry Date & Time (Optional)</label>
+                  <input type="datetime-local" id="new-coupon-expiry" class="w-full bg-white border border-[#DDD4C4] rounded-xl px-3 py-1.5 text-xs font-mono outline-none focus:border-[#FF6B35]">
+                  <span class="text-[9px] text-[#888] block mt-0.5">Leave blank for lifetime</span>
                 </div>
               </div>
-              <button type="submit" class="bg-[#111] hover:bg-[#FF6B35] text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors">
-                Add Coupon Code
-              </button>
+              <div class="flex items-center justify-between pt-1">
+                <span class="text-[11px] text-[#666]">💡 Expired coupons will automatically be rejected at checkout.</span>
+                <button type="submit" class="bg-[#111] hover:bg-[#FF6B35] text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-colors shadow-sm cursor-pointer">
+                  + Add Coupon Code
+                </button>
+              </div>
             </form>
           </div>
         </div>
@@ -838,6 +885,7 @@ export function initAdminEvents() {
   tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const target = btn.getAttribute('data-tab');
+      window._adminActiveTab = target;
       tabBtns.forEach(b => {
         b.className = 'admin-tab-btn py-3 border-b-2 border-transparent hover:text-white whitespace-nowrap';
       });
@@ -852,6 +900,14 @@ export function initAdminEvents() {
       });
     });
   });
+
+  // Restore previously active tab if available
+  if (window._adminActiveTab) {
+    const activeTabBtn = document.querySelector(`.admin-tab-btn[data-tab="${window._adminActiveTab}"]`);
+    if (activeTabBtn) {
+      activeTabBtn.click();
+    }
+  }
 
   // Setup Guide Modal
   const setupBtn = document.getElementById('admin-setup-guide-btn');
@@ -917,23 +973,49 @@ export function initAdminEvents() {
   if (couponForm) {
     couponForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      const code = document.getElementById('new-coupon-code').value.trim().toUpperCase();
-      const type = document.getElementById('new-coupon-type').value;
-      const val = Number(document.getElementById('new-coupon-val').value);
-      const min = Number(document.getElementById('new-coupon-min').value);
+      const code = document.getElementById('new-coupon-code')?.value.trim().toUpperCase();
+      const type = document.getElementById('new-coupon-type')?.value;
+      const val = Number(document.getElementById('new-coupon-val')?.value);
+      const min = Number(document.getElementById('new-coupon-min')?.value);
+      const expiryVal = document.getElementById('new-coupon-expiry')?.value;
+      const expiresAt = expiryVal ? new Date(expiryVal).toISOString() : null;
 
-      store.coupons.unshift({
+      if (!code) return;
+
+      const newCoupon = {
         code,
         discountType: type,
         value: val,
         minOrder: min,
-        description: `${type === 'percent' ? `${val}% OFF` : `₹${val} OFF`} on orders above ₹${min}`
-      });
+        expiresAt,
+        description: `${type === 'percent' ? `${val}% OFF` : `₹${val} OFF`} on orders above ₹${min}${expiresAt ? ` (Valid till ${new Date(expiresAt).toLocaleDateString('en-IN')})` : ''}`
+      };
+
+      const existingIdx = store.coupons.findIndex(c => c.code === code);
+      if (existingIdx >= 0) {
+        store.coupons[existingIdx] = newCoupon;
+      } else {
+        store.coupons.unshift(newCoupon);
+      }
+
+      window._adminActiveTab = 'coupons';
       store.saveCoupons();
-      store.showToast(`Coupon ${code} created`, 'success');
+      store.showToast(`Coupon ${code} saved successfully`, 'success');
       couponForm.reset();
     });
   }
+
+  // Delete Coupon Event
+  document.querySelectorAll('.admin-delete-coupon-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const code = btn.getAttribute('data-code');
+      if (!code) return;
+      if (confirm(`Are you sure you want to delete coupon "${code}"? Customers will no longer be able to use it at checkout.`)) {
+        window._adminActiveTab = 'coupons';
+        store.deleteCoupon(code);
+      }
+    });
+  });
 
   // Store Settings Form Save (Brand Info, Admin Credentials, Brevo Key, Supabase)
   const settingsForm = document.getElementById('admin-store-settings-form');
