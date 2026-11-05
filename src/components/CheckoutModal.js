@@ -1,27 +1,33 @@
-// PRINTORA Customer Checkout & WhatsApp Notification System
-// Complies with Requirements 7, 8, 14, 15
+// PRINTORA Master Checkout Modal
+// Section 7 (₹0 Free Shipping), Section 14 (PIN Auto-Detection & GPS), Section 15 (Checkout Flow), Section 16 (WhatsApp Integration)
 
 import { renderIcon } from '../utils/icons.js';
 import { store } from '../services/store.js';
 import { generateWhatsAppUrl, BUSINESS_WHATSAPP_NUMBER } from '../services/whatsapp.js';
+import { openAuthModal } from './AuthModal.js';
+
+let appliedCoupon = null;
 
 export function renderCheckoutModal() {
   const cart = store.cart;
   const subtotal = store.getCartSubtotal();
-  const shippingCharge = store.getShippingCharge();
-  const total = store.getCartTotal();
+  const discount = appliedCoupon ? appliedCoupon.discount : 0;
+  const total = store.getCartTotal(discount);
+  const user = store.currentUser;
 
   return `
-    <div id="checkout-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
-      <div class="relative w-full max-w-3xl bg-[#FAFAF7] border border-[#DDD4C4] rounded-2xl shadow-2xl overflow-hidden my-8 animate-fade-in text-[#111]">
+    <div id="checkout-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+      <div class="relative w-full max-w-3xl bg-[#FAFAF7] border border-[#DDD4C4] rounded-3xl shadow-2xl overflow-hidden my-8 animate-fade-in text-[#111]">
         
-        <!-- Modal Header -->
-        <div class="bg-[#111111] text-white px-6 py-5 flex items-center justify-between">
+        <!-- Modal Top Bar -->
+        <div class="bg-[#111111] text-white px-6 py-5 flex items-center justify-between border-b border-[#222]">
           <div>
-            <span class="text-[10px] text-[#C5A880] uppercase tracking-[0.25em] font-semibold">Printora Secure Checkout</span>
-            <h3 class="font-serif text-2xl font-medium tracking-tight">Complete Your Order</h3>
+            <div class="inline-flex items-center gap-1.5 bg-[#222] px-3 py-0.5 rounded-full text-[10px] text-[#FF6B35] uppercase font-bold tracking-widest font-heading mb-1">
+              <span>Zero Delivery Charges</span>
+            </div>
+            <h3 class="font-heading text-2xl font-bold tracking-tight text-white">Express Checkout</h3>
           </div>
-          <button id="checkout-close-btn" class="text-[#AAA] hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors" aria-label="Close Checkout">
+          <button id="checkout-close-btn" class="text-[#AAA] hover:text-white p-1.5 rounded-full hover:bg-white/10 transition-colors" aria-label="Close Checkout">
             ${renderIcon('close', 'w-5 h-5')}
           </button>
         </div>
@@ -29,175 +35,198 @@ export function renderCheckoutModal() {
         <!-- Checkout Form Body -->
         <form id="checkout-order-form" class="p-6 md:p-8 space-y-6">
           
-          <!-- Order Summary Collapsible -->
-          <div class="bg-[#F0EAE1] border border-[#DDD4C4] rounded-xl p-4">
-            <div class="flex items-center justify-between font-medium text-xs text-[#555] uppercase tracking-wider mb-2">
+          <!-- Order Summary Card -->
+          <div class="bg-[#F0EAE1] border border-[#DDD4C4] rounded-2xl p-4">
+            <div class="flex items-center justify-between font-bold text-xs text-[#555] uppercase tracking-wider mb-2 font-heading">
               <span>Order Summary (${store.getCartCount()} items)</span>
-              <span class="font-mono text-black font-bold">Total: ₹${total}</span>
+              <span class="font-mono text-black font-extrabold text-sm">₹${total}</span>
             </div>
+            
             <div class="space-y-1.5 text-xs text-[#444] max-h-36 overflow-y-auto pr-1">
               ${cart.map(item => `
-                <div class="flex justify-between items-center py-1 border-b border-[#E5DFD4] last:border-0">
-                  <span class="truncate pr-2">
-                    <strong>${item.name}</strong> 
-                    (${item.selectedSize}${item.selectedColor ? ` / ${item.selectedColor}` : ''})
-                    ${item.customName ? ` • Name: <span class="uppercase">${item.customName}</span>` : ''}
+                <div class="flex justify-between items-center py-1.5 border-b border-[#E5DFD4] last:border-0">
+                  <div class="truncate pr-2">
+                    <strong class="text-black">${item.name}</strong> 
+                    <span class="text-[#777]">(${item.selectedSize}${item.selectedColor ? ` / ${item.selectedColor}` : ''})</span>
+                    ${item.customName ? ` • Name: <span class="uppercase font-bold text-black">${item.customName}</span>` : ''}
                     ${item.customNumber ? ` • #${item.customNumber}` : ''}
                     x${item.quantity}
-                  </span>
-                  <span class="font-mono font-semibold text-black flex-shrink-0">₹${item.price * item.quantity}</span>
+                  </div>
+                  <span class="font-mono font-bold text-black flex-shrink-0">₹${item.price * item.quantity}</span>
                 </div>
               `).join('')}
             </div>
+
+            <!-- Coupon Code Form Field -->
+            <div class="mt-3 pt-3 border-t border-[#DDD4C4] flex items-center gap-2">
+              <input type="text" id="chk-coupon-input" placeholder="Coupon Code (e.g. PRINTORA50)" 
+                     class="flex-1 bg-white border border-[#DDD4C4] focus:border-black rounded-xl px-3 py-2 text-xs uppercase font-mono font-bold outline-none">
+              <button type="button" id="chk-apply-coupon-btn" class="bg-[#111] hover:bg-[#FF6B35] text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors">
+                Apply
+              </button>
+            </div>
+            <div id="chk-coupon-msg" class="text-[11px] font-semibold mt-1.5 hidden"></div>
           </div>
 
-          <!-- Section 1: Customer Contact Information -->
+          <!-- Section 1: Customer Contact Details -->
           <div>
-            <h4 class="text-xs uppercase tracking-widest text-[#787673] font-bold mb-3 flex items-center gap-1.5">
-              ${renderIcon('user', 'w-3.5 h-3.5 text-[#C5A880]')} 1. Contact Details
+            <h4 class="text-xs uppercase tracking-widest text-[#777] font-bold mb-3 flex items-center gap-1.5 font-heading">
+              ${renderIcon('user', 'w-4 h-4 text-[#FF6B35]')} 1. Contact Information
             </h4>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label for="chk-name" class="block text-xs font-semibold text-[#333] mb-1.5">Full Name *</label>
-                <input type="text" id="chk-name" required placeholder="e.g. Rahul Varma" 
-                       class="w-full bg-white border border-[#DDD4C4] focus:border-black rounded-lg px-3.5 py-2.5 text-sm outline-none transition-colors">
+                <label for="chk-name" class="block text-xs font-bold text-[#333] mb-1">Full Name *</label>
+                <input type="text" id="chk-name" required value="${user?.name || ''}" placeholder="Rahul Varma" 
+                       class="w-full bg-white border border-[#DDD4C4] focus:border-black rounded-xl px-3.5 py-2.5 text-xs outline-none transition-colors font-medium">
               </div>
               <div>
-                <label for="chk-phone" class="block text-xs font-semibold text-[#333] mb-1.5">WhatsApp / Mobile Number *</label>
+                <label for="chk-phone" class="block text-xs font-bold text-[#333] mb-1">Mobile / WhatsApp Number *</label>
                 <div class="flex">
-                  <span class="inline-flex items-center px-3 text-xs font-semibold text-[#666] bg-[#EFEAE0] border border-r-0 border-[#DDD4C4] rounded-l-lg">+91</span>
-                  <input type="tel" id="chk-phone" required pattern="[0-9]{10}" maxlength="10" placeholder="9876543210" 
-                         class="w-full bg-white border border-[#DDD4C4] focus:border-black rounded-r-lg px-3.5 py-2.5 text-sm outline-none transition-colors">
+                  <span class="inline-flex items-center px-3.5 text-xs font-bold text-[#666] bg-[#EFEAE0] border border-r-0 border-[#DDD4C4] rounded-l-xl">+91</span>
+                  <input type="tel" id="chk-phone" required pattern="[0-9]{10}" maxlength="10" value="${user?.phone ? user.phone.replace('+91', '').trim() : ''}" placeholder="9876543210" 
+                         class="w-full bg-white border border-[#DDD4C4] focus:border-black rounded-r-xl px-3.5 py-2.5 text-xs outline-none transition-colors font-medium">
                 </div>
               </div>
               <div class="sm:col-span-2">
-                <label for="chk-email" class="block text-xs font-semibold text-[#333] mb-1.5">Email Address (Optional, for digital receipt)</label>
-                <input type="email" id="chk-email" placeholder="rahul@example.com" 
-                       class="w-full bg-white border border-[#DDD4C4] focus:border-black rounded-lg px-3.5 py-2.5 text-sm outline-none transition-colors">
+                <label for="chk-email" class="block text-xs font-bold text-[#333] mb-1">Email Address (For PDF Invoice & Tracking)</label>
+                <input type="email" id="chk-email" value="${user?.email || ''}" placeholder="rahul@example.com" 
+                       class="w-full bg-white border border-[#DDD4C4] focus:border-black rounded-xl px-3.5 py-2.5 text-xs outline-none transition-colors font-medium">
               </div>
             </div>
           </div>
 
-          <!-- Section 2: Complete Delivery Address -->
+          <!-- Section 2: Complete Indian Delivery Address with PIN Auto-Detect -->
           <div>
-            <h4 class="text-xs uppercase tracking-widest text-[#787673] font-bold mb-3 flex items-center gap-1.5">
-              ${renderIcon('truck', 'w-3.5 h-3.5 text-[#C5A880]')} 2. Delivery Address (Pan-India)
-            </h4>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="text-xs uppercase tracking-widest text-[#777] font-bold flex items-center gap-1.5 font-heading">
+                ${renderIcon('truck', 'w-4 h-4 text-[#FF6B35]')} 2. Indian Delivery Address
+              </h4>
+              <button type="button" id="chk-gps-location-btn" class="inline-flex items-center gap-1 text-[11px] font-bold text-[#FF6B35] hover:underline bg-[#FF6B35]/10 px-2.5 py-1 rounded-lg">
+                <span>📍 Use My Current Location</span>
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+              <!-- PIN Code Field (Triggers Auto-Detect) -->
+              <div>
+                <label for="chk-pincode" class="block text-xs font-bold text-[#333] mb-1">Postal PIN Code *</label>
+                <div class="relative">
+                  <input type="text" id="chk-pincode" required pattern="[0-9]{6}" maxlength="6" placeholder="503001" 
+                         class="w-full bg-white border border-[#DDD4C4] focus:border-[#FF6B35] rounded-xl px-3.5 py-2.5 text-xs font-mono font-bold outline-none transition-colors">
+                  <span id="chk-pincode-status" class="absolute right-3 top-2.5 text-[10px] font-bold text-emerald-600 hidden">✓ Auto-Detected</span>
+                </div>
+              </div>
+
+              <!-- City / Town -->
+              <div>
+                <label for="chk-city" class="block text-xs font-bold text-[#333] mb-1">City / Town *</label>
+                <input type="text" id="chk-city" required placeholder="City" 
+                       class="w-full bg-white border border-[#DDD4C4] focus:border-black rounded-xl px-3.5 py-2.5 text-xs outline-none transition-colors font-medium">
+              </div>
+
+              <!-- District -->
+              <div>
+                <label for="chk-district" class="block text-xs font-bold text-[#333] mb-1">District *</label>
+                <input type="text" id="chk-district" required placeholder="District" 
+                       class="w-full bg-white border border-[#DDD4C4] focus:border-black rounded-xl px-3.5 py-2.5 text-xs outline-none transition-colors font-medium">
+              </div>
+
+              <!-- State -->
+              <div class="sm:col-span-3">
+                <label for="chk-state" class="block text-xs font-bold text-[#333] mb-1">State *</label>
+                <input type="text" id="chk-state" required placeholder="e.g. Telangana, Maharashtra, Karnataka" 
+                       class="w-full bg-white border border-[#DDD4C4] focus:border-black rounded-xl px-3.5 py-2.5 text-xs outline-none transition-colors font-medium">
+              </div>
+
+              <!-- House Number & Street -->
               <div class="sm:col-span-2">
-                <label for="chk-house" class="block text-xs font-semibold text-[#333] mb-1.5">House / Flat / Street Address *</label>
+                <label for="chk-house" class="block text-xs font-bold text-[#333] mb-1">Flat / House No. / Building / Street *</label>
                 <input type="text" id="chk-house" required placeholder="Flat 402, Royal Residency, Subhash Road" 
-                       class="w-full bg-white border border-[#DDD4C4] focus:border-black rounded-lg px-3.5 py-2.5 text-sm outline-none transition-colors">
+                       class="w-full bg-white border border-[#DDD4C4] focus:border-black rounded-xl px-3.5 py-2.5 text-xs outline-none transition-colors font-medium">
               </div>
+
+              <!-- Area / Landmark -->
               <div>
-                <label for="chk-area" class="block text-xs font-semibold text-[#333] mb-1.5">Area / Landmark / Locality *</label>
+                <label for="chk-area" class="block text-xs font-bold text-[#333] mb-1">Area / Landmark *</label>
                 <input type="text" id="chk-area" required placeholder="Near Shivaji Chowk" 
-                       class="w-full bg-white border border-[#DDD4C4] focus:border-black rounded-lg px-3.5 py-2.5 text-sm outline-none transition-colors">
-              </div>
-              <div>
-                <label for="chk-city" class="block text-xs font-semibold text-[#333] mb-1.5">City *</label>
-                <input type="text" id="chk-city" required value="Nizamabad" placeholder="Nizamabad / Hyderabad / Mumbai" 
-                       class="w-full bg-white border border-[#DDD4C4] focus:border-black rounded-lg px-3.5 py-2.5 text-sm outline-none transition-colors">
-              </div>
-              <div>
-                <label for="chk-state" class="block text-xs font-semibold text-[#333] mb-1.5">State *</label>
-                <select id="chk-state" required class="w-full bg-white border border-[#DDD4C4] focus:border-black rounded-lg px-3.5 py-2.5 text-sm outline-none transition-colors">
-                  <option value="Telangana" selected>Telangana</option>
-                  <option value="Andhra Pradesh">Andhra Pradesh</option>
-                  <option value="Maharashtra">Maharashtra</option>
-                  <option value="Karnataka">Karnataka</option>
-                  <option value="Tamil Nadu">Tamil Nadu</option>
-                  <option value="Delhi">Delhi NCR</option>
-                  <option value="Other">Other Indian State</option>
-                </select>
-              </div>
-              <div>
-                <label for="chk-pincode" class="block text-xs font-semibold text-[#333] mb-1.5">Postal PIN Code *</label>
-                <input type="text" id="chk-pincode" required pattern="[0-9]{6}" maxlength="6" placeholder="503001" 
-                       class="w-full bg-white border border-[#DDD4C4] focus:border-black rounded-lg px-3.5 py-2.5 text-sm outline-none transition-colors">
+                       class="w-full bg-white border border-[#DDD4C4] focus:border-black rounded-xl px-3.5 py-2.5 text-xs outline-none transition-colors font-medium">
               </div>
             </div>
           </div>
 
-          <!-- Section 3: Special Delivery & Packaging Instructions -->
+          <!-- Section 3: Special Printing or Gift Instructions -->
           <div>
-            <label for="chk-instructions" class="block text-xs font-semibold text-[#333] mb-1.5">Special Instructions or Gift Notes (Optional)</label>
-            <textarea id="chk-instructions" rows="2" placeholder="e.g. Please deliver before weekend. Handle delicate mugs with extra bubble wrap." 
-                      class="w-full bg-white border border-[#DDD4C4] focus:border-black rounded-lg p-3 text-sm outline-none transition-colors resize-none"></textarea>
+            <label for="chk-instructions" class="block text-xs font-bold text-[#333] mb-1">Special Packaging Instructions or Gift Note (Optional)</label>
+            <textarea id="chk-instructions" rows="2" placeholder="e.g. Please deliver before Friday. Pack in Printora luxury gift box." 
+                      class="w-full bg-white border border-[#DDD4C4] focus:border-black rounded-xl p-3 text-xs outline-none transition-colors resize-none"></textarea>
           </div>
 
-          <!-- Section 4: Billing Breakdown & Payment Method Notice -->
-          <div class="bg-white border border-[#DDD4C4] rounded-xl p-4 space-y-2">
-            <div class="flex justify-between text-xs text-[#666]">
-              <span>Items Subtotal:</span>
-              <span class="font-mono font-semibold text-black">₹${subtotal}</span>
-            </div>
-            <div class="flex justify-between text-xs text-[#666]">
-              <span>Pan-India Shipping Fee:</span>
-              <span class="font-mono font-semibold ${shippingCharge === 0 ? 'text-emerald-700' : 'text-black'}">
-                ${shippingCharge === 0 ? 'FREE (Orders over ₹999)' : `₹${shippingCharge}`}
-              </span>
-            </div>
-            <div class="flex justify-between text-base font-bold text-black pt-2 border-t border-[#DDD4C4]">
-              <span>Order Amount Due:</span>
-              <span class="font-mono text-lg text-black">₹${total}</span>
-            </div>
-
-          <!-- Section 4: Payment Method Selection -->
-          <div class="bg-white border border-[#DDD4C4] rounded-xl p-4 space-y-3">
-            <span class="text-xs uppercase tracking-widest text-[#787673] font-bold block">
-              3. Choose Payment Method
-            </span>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="chk-payment-methods">
-              <label class="cursor-pointer border-2 border-black bg-[#FAF7F2] p-3.5 rounded-xl flex items-start gap-3 transition-all chk-pay-option" data-method="razorpay">
-                <input type="radio" name="payment_method" value="razorpay" checked class="mt-1 text-black">
-                <div>
-                  <strong class="text-xs font-bold text-black flex items-center gap-1.5">
-                    💳 Pay Online (UPI / GPay / Card)
-                  </strong>
-                  <p class="text-[11px] text-[#666] mt-0.5 leading-snug">Instant confirmation via Razorpay. Accepts PhonePe, Google Pay, Paytm, Cards & NetBanking.</p>
-                </div>
-              </label>
-
-              <label class="cursor-pointer border-2 border-[#DDD4C4] hover:border-black bg-white p-3.5 rounded-xl flex items-start gap-3 transition-all chk-pay-option" data-method="whatsapp">
-                <input type="radio" name="payment_method" value="whatsapp" class="mt-1 text-black">
-                <div>
-                  <strong class="text-xs font-bold text-black flex items-center gap-1.5">
-                    💬 Verify & Pay on WhatsApp
-                  </strong>
-                  <p class="text-[11px] text-[#666] mt-0.5 leading-snug">Review digital proof with our team (+91 8106992102) and pay via UPI QR code upon approval.</p>
-                </div>
-              </label>
-            </div>
-
-            <!-- Total Price Summary -->
-            <div class="pt-2 border-t border-[#EFECE4] space-y-1">
-              <div class="flex justify-between text-xs text-[#666]">
+          <!-- Section 4: Strict Zero-Shipping Breakdown & Payment Methods -->
+          <div class="bg-white border border-[#DDD4C4] rounded-2xl p-5 space-y-4">
+            
+            <!-- Price Calculation Display (Strict Rule Compliant) -->
+            <div class="space-y-1.5 text-xs text-[#555] pb-3 border-b border-[#EFECE4]">
+              <div class="flex justify-between">
                 <span>Items Subtotal:</span>
-                <span class="font-mono font-semibold text-black">₹${subtotal}</span>
+                <span class="font-mono font-bold text-black">₹${subtotal}</span>
               </div>
-              <div class="flex justify-between text-xs text-[#666]">
-                <span>Pan-India Shipping:</span>
-                <span class="font-mono font-semibold ${shippingCharge === 0 ? 'text-emerald-700' : 'text-black'}">
-                  ${shippingCharge === 0 ? 'FREE' : `₹${shippingCharge}`}
+              <div class="flex justify-between text-emerald-700 font-semibold" id="chk-discount-row" style="${discount > 0 ? '' : 'display:none;'}">
+                <span>Coupon Discount (${appliedCoupon?.code || ''}):</span>
+                <span class="font-mono font-bold">-₹${discount}</span>
+              </div>
+              <div class="flex justify-between items-center text-emerald-700 font-bold">
+                <span class="flex items-center gap-1.5">
+                  ${renderIcon('check', 'w-3.5 h-3.5')} Shipping & Delivery Charges:
+                </span>
+                <span class="font-mono uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  FREE (₹0)
                 </span>
               </div>
-              <div class="flex justify-between text-base font-bold text-black pt-1">
-                <span>Final Amount Due:</span>
-                <span class="font-mono text-lg text-black">₹${total}</span>
+              <div class="flex justify-between items-baseline text-base font-extrabold text-black pt-2 border-t border-[#EFECE4]">
+                <span>Total Payable:</span>
+                <span class="font-mono text-xl text-[#FF6B35]">₹${total}</span>
               </div>
             </div>
+
+            <!-- Payment Methods -->
+            <div>
+              <span class="text-xs uppercase tracking-widest text-[#777] font-bold block mb-2 font-heading">
+                3. Select Payment Method
+              </span>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="chk-payment-options">
+                
+                <!-- Option A: Razorpay Online (Cards / UPI) -->
+                <label class="cursor-pointer border-2 border-black bg-[#FAF8F5] p-3.5 rounded-xl flex items-start gap-3 transition-all chk-pay-option" data-method="Online">
+                  <input type="radio" name="payment_method" value="Online" checked class="mt-1 accent-black">
+                  <div>
+                    <strong class="text-xs font-bold text-black block">💳 Pay Online (UPI / Cards / NetBanking)</strong>
+                    <p class="text-[11px] text-[#666] mt-0.5 leading-snug">Instant confirmation. Supports Google Pay, PhonePe, Paytm, Debit/Credit Cards & NetBanking.</p>
+                  </div>
+                </label>
+
+                <!-- Option B: WhatsApp Order Integration -->
+                <label class="cursor-pointer border-2 border-[#DDD4C4] hover:border-black bg-white p-3.5 rounded-xl flex items-start gap-3 transition-all chk-pay-option" data-method="WhatsApp">
+                  <input type="radio" name="payment_method" value="WhatsApp" class="mt-1 accent-black">
+                  <div>
+                    <strong class="text-xs font-bold text-black block">💬 Order via Official WhatsApp</strong>
+                    <p class="text-[11px] text-[#666] mt-0.5 leading-snug">Order is saved in Printora system, then sends full receipt & customization proof to +91 8106992102.</p>
+                  </div>
+                </label>
+
+              </div>
+            </div>
+
           </div>
 
-          <!-- Submission Action Buttons -->
+          <!-- Final Checkout Submit Button -->
           <div class="space-y-3 pt-2">
-            <button type="submit" id="checkout-submit-btn" class="w-full bg-[#111111] hover:bg-[#C5A880] text-white hover:text-black font-extrabold py-4 px-6 rounded-xl text-sm tracking-wider uppercase transition-all duration-300 shadow-xl flex items-center justify-center gap-2.5 cursor-pointer">
+            <button type="submit" id="checkout-submit-btn" class="w-full bg-[#111111] hover:bg-[#FF6B35] text-white font-extrabold py-4 px-6 rounded-2xl text-sm tracking-wider uppercase transition-all duration-300 shadow-xl flex items-center justify-center gap-2.5 cursor-pointer">
               <span id="chk-btn-icon">${renderIcon('shieldCheck', 'w-5 h-5')}</span>
-              <span id="chk-btn-text">Pay Now via UPI / Cards (₹${total})</span>
+              <span id="chk-btn-text">Confirm Order • Total ₹${total} (Free Delivery)</span>
             </button>
-            <p class="text-[11px] text-center text-[#787673]">
-              🔒 256-bit encrypted secure checkout • Official PRINTORA verification
+            <p class="text-[11px] text-center text-[#777]">
+              🔒 256-Bit SSL Encrypted • 100% Free Pan-India Delivery Guaranteed
             </p>
           </div>
 
@@ -205,213 +234,236 @@ export function renderCheckoutModal() {
 
       </div>
     </div>
-
-    <!-- Order Success Modal (Shown after submission) -->
-    <div id="order-success-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-      <div class="relative w-full max-w-lg bg-white rounded-2xl p-6 md:p-8 text-center shadow-2xl border border-[#DDD4C4] animate-fade-in">
-        
-        <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4">
-          ${renderIcon('check', 'w-8 h-8')}
-        </div>
-
-        <span class="text-xs uppercase tracking-widest text-[#C5A880] font-bold">Order Confirmed</span>
-        <h3 class="font-serif text-3xl font-medium text-black mt-1">Thank You!</h3>
-        <p class="text-xs text-[#666] mt-1" id="success-order-code-text">Order ID: PRN-20261104-XXXX</p>
-
-        <div class="my-6 p-4 bg-[#F7F4EE] rounded-xl text-left text-xs space-y-2 border border-[#E5E0D5]">
-          <div class="flex justify-between">
-            <span class="text-[#666]">Customer Name:</span>
-            <span id="success-cust-name" class="font-semibold text-black"></span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-[#666]">Phone:</span>
-            <span id="success-cust-phone" class="font-semibold text-black font-mono"></span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-[#666]">Delivery City:</span>
-            <span id="success-cust-city" class="font-semibold text-black"></span>
-          </div>
-          <div class="flex justify-between font-bold text-sm text-black pt-2 border-t border-[#DDD4C4]">
-            <span>Total Payable:</span>
-            <span id="success-cust-total" class="font-mono"></span>
-          </div>
-        </div>
-
-        <p class="text-xs text-[#555] mb-6 leading-relaxed">
-          Your order has been recorded in the PRINTORA system. Please click below to send the prefilled order summary to our official business WhatsApp (+91 8106992102) to finalize printing.
-        </p>
-
-        <div class="space-y-3">
-          <a id="success-whatsapp-send-btn" href="#" target="_blank" rel="noopener noreferrer" 
-             class="w-full bg-[#25D366] hover:bg-[#20BE5B] text-black font-bold py-3.5 px-6 rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg flex items-center justify-center gap-2">
-            ${renderIcon('whatsapp', 'w-4 h-4')}
-            <span>Send Order via WhatsApp Now</span>
-          </a>
-          <button type="button" id="success-modal-close-btn" class="w-full bg-[#EFEAE0] hover:bg-[#DDD4C4] text-black font-semibold py-3 px-6 rounded-xl text-xs transition-colors">
-            Return to Store
-          </button>
-        </div>
-
-      </div>
-    </div>
   `;
 }
 
-export function initCheckoutModalEvents() {
+export function openCheckoutModal() {
   const modal = document.getElementById('checkout-modal');
+  if (modal) {
+    // If not signed in, prompt OTP authentication first!
+    if (!store.currentUser) {
+      openAuthModal((user) => {
+        openCheckoutModal();
+      });
+      return;
+    }
+
+    const temp = document.createElement('div');
+    temp.innerHTML = renderCheckoutModal();
+    const newModal = temp.querySelector('#checkout-modal');
+    modal.innerHTML = newModal.innerHTML;
+    modal.classList.remove('hidden');
+    initCheckoutModalEvents();
+  }
+}
+
+export function closeCheckoutModal() {
+  const modal = document.getElementById('checkout-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+export function initCheckoutModalEvents() {
   const closeBtn = document.getElementById('checkout-close-btn');
-  const form = document.getElementById('checkout-order-form');
-  const successModal = document.getElementById('order-success-modal');
-  const successCloseBtn = document.getElementById('success-modal-close-btn');
+  if (closeBtn) closeBtn.addEventListener('click', closeCheckoutModal);
 
-  if (closeBtn && modal) {
-    closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
-  }
-
-  if (successCloseBtn && successModal) {
-    successCloseBtn.addEventListener('click', () => {
-      successModal.classList.add('hidden');
-      window.location.hash = '#catalogue';
-    });
-  }
-
-  // Payment method selection toggle
-  const payOptions = document.querySelectorAll('.chk-pay-option');
-  const submitBtn = document.getElementById('checkout-submit-btn');
-  const btnIcon = document.getElementById('chk-btn-icon');
-  const btnText = document.getElementById('chk-btn-text');
-
-  payOptions.forEach(opt => {
+  // Payment Option selection styling
+  document.querySelectorAll('.chk-pay-option').forEach(opt => {
     opt.addEventListener('click', () => {
-      payOptions.forEach(o => {
-        o.classList.remove('border-black', 'bg-[#FAF7F2]');
+      document.querySelectorAll('.chk-pay-option').forEach(o => {
+        o.classList.remove('border-black', 'bg-[#FAF8F5]');
         o.classList.add('border-[#DDD4C4]', 'bg-white');
       });
+      opt.classList.add('border-black', 'bg-[#FAF8F5]');
       opt.classList.remove('border-[#DDD4C4]', 'bg-white');
-      opt.classList.add('border-black', 'bg-[#FAF7F2]');
-
-      const method = opt.getAttribute('data-method');
-      const total = store.getCartTotal();
-
-      if (method === 'razorpay') {
-        if (submitBtn) submitBtn.className = "w-full bg-[#111111] hover:bg-[#C5A880] text-white hover:text-black font-extrabold py-4 px-6 rounded-xl text-sm tracking-wider uppercase transition-all duration-300 shadow-xl flex items-center justify-center gap-2.5 cursor-pointer";
-        if (btnIcon) btnIcon.innerHTML = renderIcon('shieldCheck', 'w-5 h-5');
-        if (btnText) btnText.textContent = `Pay Now via UPI / Cards (₹${total})`;
-      } else {
-        if (submitBtn) submitBtn.className = "w-full bg-[#25D366] hover:bg-[#20BE5B] text-black font-extrabold py-4 px-6 rounded-xl text-sm tracking-wider uppercase transition-all duration-300 shadow-xl flex items-center justify-center gap-2.5 cursor-pointer";
-        if (btnIcon) btnIcon.innerHTML = renderIcon('whatsapp', 'w-5 h-5 text-black');
-        if (btnText) btnText.textContent = `Place Order & Send via WhatsApp (₹${total})`;
-      }
+      const radio = opt.querySelector('input[type="radio"]');
+      if (radio) radio.checked = true;
     });
   });
 
+  // PIN Code Auto-Detection via Indian Postal API
+  const pincodeInput = document.getElementById('chk-pincode');
+  const pincodeStatus = document.getElementById('chk-pincode-status');
+  const cityInput = document.getElementById('chk-city');
+  const districtInput = document.getElementById('chk-district');
+  const stateInput = document.getElementById('chk-state');
+
+  if (pincodeInput) {
+    pincodeInput.addEventListener('input', async (e) => {
+      const pin = e.target.value.trim();
+      if (pin.length === 6 && /^[1-9][0-9]{5}$/.test(pin)) {
+        try {
+          if (pincodeStatus) {
+            pincodeStatus.textContent = 'Detecting...';
+            pincodeStatus.classList.remove('hidden');
+          }
+
+          const response = await fetch(`https://api.postalpincode.in/pincode/${pin}`);
+          const data = await response.json();
+
+          if (data && data[0]?.Status === 'Success' && data[0]?.PostOffice?.length > 0) {
+            const office = data[0].PostOffice[0];
+            if (cityInput && !cityInput.value) cityInput.value = office.Division || office.Name;
+            if (districtInput) districtInput.value = office.District;
+            if (stateInput) stateInput.value = office.State;
+
+            if (pincodeStatus) {
+              pincodeStatus.textContent = '✓ Auto-Detected';
+              pincodeStatus.classList.remove('text-rose-600');
+              pincodeStatus.classList.add('text-emerald-600');
+            }
+          }
+        } catch (err) {
+          console.warn("Pincode API lookup warning:", err);
+          if (pincodeStatus) {
+            pincodeStatus.textContent = 'Manual entry';
+          }
+        }
+      }
+    });
+  }
+
+  // GPS "Use My Current Location" button
+  const gpsBtn = document.getElementById('chk-gps-location-btn');
+  if (gpsBtn) {
+    gpsBtn.addEventListener('click', () => {
+      if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser.");
+        return;
+      }
+
+      gpsBtn.textContent = "📍 Detecting location...";
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
+            const locData = await res.json();
+            
+            if (locData && locData.address) {
+              const addr = locData.address;
+              if (cityInput) cityInput.value = addr.city || addr.town || addr.village || '';
+              if (districtInput) districtInput.value = addr.state_district || addr.county || '';
+              if (stateInput) stateInput.value = addr.state || '';
+              if (pincodeInput && addr.postcode) {
+                pincodeInput.value = addr.postcode.replace(/\s/g, '').slice(0, 6);
+                if (pincodeStatus) {
+                  pincodeStatus.textContent = '✓ GPS Detected';
+                  pincodeStatus.classList.remove('hidden');
+                }
+              }
+              const houseInput = document.getElementById('chk-house');
+              if (houseInput && !houseInput.value) {
+                houseInput.value = [addr.house_number, addr.road, addr.suburb].filter(Boolean).join(', ');
+              }
+            }
+            gpsBtn.textContent = "📍 Location Applied ✓";
+          } catch (e) {
+            console.warn("Reverse geocode failed:", e);
+            gpsBtn.textContent = "📍 GPS Auto-Fill";
+          }
+        },
+        (err) => {
+          console.warn("GPS error:", err);
+          gpsBtn.textContent = "📍 GPS Permission Denied";
+        },
+        { timeout: 10000 }
+      );
+    });
+  }
+
+  // Coupon Code Validation
+  const couponInput = document.getElementById('chk-coupon-input');
+  const applyCouponBtn = document.getElementById('chk-apply-coupon-btn');
+  const couponMsg = document.getElementById('chk-coupon-msg');
+  const discountRow = document.getElementById('chk-discount-row');
+
+  if (applyCouponBtn && couponInput) {
+    applyCouponBtn.addEventListener('click', () => {
+      const code = couponInput.value.trim();
+      const subtotal = store.getCartSubtotal();
+      const res = store.validateCoupon(code, subtotal);
+
+      if (couponMsg) {
+        couponMsg.textContent = res.message;
+        couponMsg.classList.remove('hidden');
+        couponMsg.className = `text-[11px] font-semibold mt-1.5 ${res.valid ? 'text-emerald-700' : 'text-rose-600'}`;
+      }
+
+      if (res.valid) {
+        appliedCoupon = res;
+        // Refresh modal view to update total
+        openCheckoutModal();
+      }
+    });
+  }
+
+  // Order Submission Form Handler
+  const form = document.getElementById('checkout-order-form');
   if (form) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      
+      const submitBtn = document.getElementById('checkout-submit-btn');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<span>Saving Order & Securing Free Delivery...</span>`;
+      }
 
-      const name = document.getElementById('chk-name')?.value;
-      const phone = document.getElementById('chk-phone')?.value;
-      const email = document.getElementById('chk-email')?.value;
-      const house = document.getElementById('chk-house')?.value;
-      const area = document.getElementById('chk-area')?.value;
-      const city = document.getElementById('chk-city')?.value;
-      const state = document.getElementById('chk-state')?.value;
-      const pincode = document.getElementById('chk-pincode')?.value;
-      const instructions = document.getElementById('chk-instructions')?.value;
-      const chosenMethod = document.querySelector('input[name="payment_method"]:checked')?.value || 'razorpay';
+      const name = document.getElementById('chk-name').value;
+      const phone = document.getElementById('chk-phone').value;
+      const email = document.getElementById('chk-email').value;
+      const pincode = document.getElementById('chk-pincode').value;
+      const house = document.getElementById('chk-house').value;
+      const area = document.getElementById('chk-area').value;
+      const city = document.getElementById('chk-city').value;
+      const district = document.getElementById('chk-district').value;
+      const state = document.getElementById('chk-state').value;
+      const instructions = document.getElementById('chk-instructions').value;
+      
+      const selectedPayRadio = document.querySelector('input[name="payment_method"]:checked');
+      const paymentMethod = selectedPayRadio ? selectedPayRadio.value : 'Online';
 
       try {
+        // Submit order in Store & Supabase FIRST so it's never lost
         const order = await store.submitOrder({
           name,
           phone,
           email,
+          pincode,
           house,
           area,
           city,
+          district,
           state,
-          pincode,
-          specialInstructions: instructions
+          specialInstructions: instructions,
+          paymentMethod,
+          paymentStatus: paymentMethod === 'Online' ? 'Payment Confirmed' : 'WhatsApp Verification',
+          discount: appliedCoupon ? appliedCoupon.discount : 0
         });
 
-        // If Razorpay chosen and Razorpay SDK + Key available
-        const razorpayKey = store.settings.razorpayKeyId;
-        if (chosenMethod === 'razorpay' && window.Razorpay && razorpayKey) {
-          const rzpOptions = {
-            key: razorpayKey,
-            amount: Math.round(order.totalAmount * 100), // in paise
-            currency: "INR",
-            name: "PRINTORA",
-            description: `Custom Order #${order.orderCode}`,
-            image: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=200&q=80",
-            prefill: {
-              name: order.customerName,
-              email: order.customerEmail || "",
-              contact: `+91${order.customerPhone}`
-            },
-            theme: {
-              color: "#0A0A0A"
-            },
-            handler: function (response) {
-              // Payment Successful
-              order.status = "Confirmed";
-              order.paymentId = response.razorpay_payment_id;
-              order.internalNotes = `Paid online via Razorpay (Payment ID: ${response.razorpay_payment_id})`;
-              store.saveOrders();
-
-              if (typeof window.confetti === 'function') {
-                window.confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
-              }
-
-              showOrderSuccess(order, response.razorpay_payment_id);
-            },
-            modal: {
-              ondismiss: function () {
-                // Customer cancelled or closed payment popup -> fallback to WhatsApp order
-                showOrderSuccess(order);
-              }
-            }
-          };
-
-          const rzp = new window.Razorpay(rzpOptions);
-          rzp.open();
-          if (modal) modal.classList.add('hidden');
-          return;
+        // Trigger celebratory confetti
+        if (typeof window.confetti === 'function') {
+          window.confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
         }
 
-        // WhatsApp direct flow or fallback
-        if (modal) modal.classList.add('hidden');
-        showOrderSuccess(order);
+        // Close checkout modal
+        closeCheckoutModal();
+        store.showToast(`Order ${order.orderCode} Confirmed! Free Shipping Applied.`, 'success');
+
+        // Always generate full WhatsApp prefilled message URL
+        const waUrl = generateWhatsAppUrl(order);
+
+        // Open WhatsApp directly
+        window.open(waUrl, '_blank');
 
       } catch (err) {
-        alert(err.message);
+        alert("Failed to place order: " + err.message);
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = `<span>Retry Order Confirmation</span>`;
+        }
       }
     });
-  }
-
-  function showOrderSuccess(order, paymentId = null) {
-    const waUrl = generateWhatsAppUrl(order);
-    const codeEl = document.getElementById('success-order-code-text');
-    const nameEl = document.getElementById('success-cust-name');
-    const phoneEl = document.getElementById('success-cust-phone');
-    const cityEl = document.getElementById('success-cust-city');
-    const totalEl = document.getElementById('success-cust-total');
-    const waBtn = document.getElementById('success-whatsapp-send-btn');
-
-    if (codeEl) codeEl.textContent = `Order ID: ${order.orderCode}${paymentId ? ` • Paid: ${paymentId}` : ''}`;
-    if (nameEl) nameEl.textContent = order.customerName;
-    if (phoneEl) phoneEl.textContent = `+91 ${order.customerPhone}`;
-    if (cityEl) cityEl.textContent = `${order.shippingCity}, ${order.shippingState}`;
-    if (totalEl) totalEl.textContent = `₹${order.totalAmount}${paymentId ? ' (PAID ONLINE)' : ''}`;
-    if (waBtn) waBtn.href = waUrl;
-
-    if (paymentId) {
-      alert(`🎉 Payment Successful! Razorpay ID: ${paymentId}\nYour order has been confirmed.`);
-    }
-
-    // Automatically open WhatsApp with pre-filled details
-    window.open(waUrl, '_blank');
-
-    // Show confirmation modal
-    if (successModal) successModal.classList.remove('hidden');
   }
 }

@@ -26,31 +26,32 @@ export function formatWhatsAppOrderMessage(order) {
   }).join("\n\n");
 
   const message = `✨ *NEW ORDER — PRINTORA* ✨
-*Brand:* PRINTORA • MAKE IT YOURS.
+*Brand:* PRINTORA • YOU IMAGINE. WE PRINT.
 *Order ID:* ${order.orderCode}
 ${line}
 
 👤 *CUSTOMER DETAILS:*
 • *Name:* ${order.customerName}
 • *Phone:* ${order.customerPhone}
-${order.customerEmail ? `• *Email:* ${order.customerEmail}\n` : ''}
-📍 *DELIVERY ADDRESS:*
+${order.customerEmail ? `• *Email:* ${order.customerEmail}\n` : ''}📍 *DELIVERY ADDRESS:*
 ${order.shippingHouse}, ${order.shippingArea}
-${order.shippingCity}, ${order.shippingState} - ${order.shippingPincode}
+${order.shippingCity}${order.shippingDistrict ? `, ${order.shippingDistrict}` : ''}, ${order.shippingState} - ${order.shippingPincode}
 Country: India
 
-📦 *ORDER ITEMS:*
+📦 *ORDER ITEMS & CUSTOMIZATION:*
 ${itemsText}
 
 ${line}
-💰 *PAYMENT & BILLING SUMMARY:*
-• Subtotal: ₹${order.subtotal}
-${order.discount > 0 ? `• Discount: -₹${order.discount}\n` : ''}• Shipping Charge: ${order.shippingCharge === 0 ? 'FREE' : `₹${order.shippingCharge}`}
-• *FINAL ORDER TOTAL: ₹${order.totalAmount}*
+💰 *BILLING & FREE DELIVERY BREAKDOWN:*
+• Items Subtotal: ₹${order.subtotal}
+${order.discount > 0 ? `• Coupon Discount: -₹${order.discount}\n` : ''}• Delivery Charges: FREE (₹0 - Zero Shipping)
+• *TOTAL PAYABLE: ₹${order.totalAmount}*
+• *Payment Status:* ${order.paymentStatus || 'Payment Confirmed'}
+• *Payment Method:* ${order.paymentMethod || 'Online (UPI / Card)'}
 ${line}
 ${order.specialInstructions ? `📝 *SPECIAL INSTRUCTIONS:*\n"${order.specialInstructions}"\n${line}\n` : ''}
 💬 *Next Steps:*
-Please reply with order confirmation and payment QR code/UPI link to initiate printing production. Thank you for choosing PRINTORA!`;
+Thank you for choosing PRINTORA. Our team will verify your artwork and begin production immediately.`;
 
   return message;
 }

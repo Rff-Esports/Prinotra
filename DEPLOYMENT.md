@@ -58,12 +58,18 @@ Add the following two records to link your domain:
 2. Choose the nearest region: **South Asia (Mumbai) [ap-south-1]**.
 3. Open the **SQL Editor** tab on the left sidebar.
 4. Copy the entire contents of `supabase/schema.sql` and click **"Run"**.
-5. All 8 tables, indexes, enums, initial categories, and RLS security policies will be created.
+5. All 22+ tables, indexes, enums, initial categories, product catalogue seed data, and RLS security policies will be created.
 6. Go to **Project Settings** → **API**.
 7. Copy:
    - **Project URL** (e.g. `https://xyzabc.supabase.co`)
    - **anon public key**
 8. Open your live Printora website, navigate to `#admin` → **Store Settings**, paste the URL and Anon Key, and click **Save**.
+9. Grant First Admin privileges to your account:
+   ```sql
+   INSERT INTO public.user_roles (user_id, role)
+   VALUES ('YOUR_USER_UUID', 'admin')
+   ON CONFLICT (user_id, role) DO NOTHING;
+   ```
 
 ---
 
@@ -72,10 +78,11 @@ Add the following two records to link your domain:
 1. Access the Admin Dashboard at:  
    `https://printoracustom.in#admin` (or `/admin` via Netlify redirect).
 2. **Features available without code editing:**
-   - **Live Orders:** View customer names, addresses, customization options, and change status (Pending → Confirmed → In Production → Dispatched → Delivered).
-   - **Fulfillment Engine:** Assign orders to production dealers (Nizamabad, Hyderabad, Tirupur), log internal costs, enter tracking numbers.
-   - **Product Manager:** Update prices, add new seasonal items, upload photos.
-   - **Settings:** Modify WhatsApp number, Instagram handle, free shipping thresholds, and homepage banners.
+   - **Live Orders & 10-Status Lifecycle:** Track and update orders across 10 progressive statuses (`Order Placed`, `Payment Pending`, `Payment Confirmed`, `Artwork Verification`, `In Production`, `Quality Check`, `Shipped`, `Out for Delivery`, `Delivered`, `Cancelled`).
+   - **Fulfillment Engine:** Assign orders to production dealers (Nizamabad, Hyderabad, Tirupur), log internal costs, enter courier tracking numbers.
+   - **Product Manager:** Update customer prices, create new seasonal items, upload photos.
+   - **Coupons Engine:** Create percentage or flat discounts with minimum cart values and expiry dates.
+   - **Settings:** Modify WhatsApp number (`+91 8106992102`), Instagram handle (`@printora.gifts`), announcement banners, and Supabase credentials.
 
 ---
 

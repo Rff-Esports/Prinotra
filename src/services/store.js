@@ -8,6 +8,11 @@ import { CATEGORIES, INITIAL_PRODUCTS } from '../data/products.js';
 import { supabase, isSupabaseConfigured } from './supabase.js';
 import { formatWhatsAppOrderMessage, generateWhatsAppUrl, sendWhatsAppCloudApiNotification, generateBulkWhatsAppUrl } from './whatsapp.js';
 
+const isBrowser = typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+const safeGetItem = (k) => isBrowser ? localStorage.getItem(k) : null;
+const safeSetItem = (k, v) => isBrowser ? localStorage.setItem(k, v) : null;
+const safeRemoveItem = (k) => isBrowser ? localStorage.removeItem(k) : null;
+
 class PrintoraStore {
   constructor() {
     this.listeners = new Set();
@@ -55,7 +60,7 @@ class PrintoraStore {
 
   // Persistence helpers
   loadInitialProducts() {
-    const saved = localStorage.getItem('printora_custom_products');
+    const saved = safeGetItem('printora_custom_products');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -67,27 +72,27 @@ class PrintoraStore {
   }
 
   saveProducts() {
-    localStorage.setItem('printora_custom_products', JSON.stringify(this.products));
+    safeSetItem('printora_custom_products', JSON.stringify(this.products));
     this.notify();
   }
 
   loadCart() {
-    const saved = localStorage.getItem('printora_cart');
+    const saved = safeGetItem('printora_cart');
     return saved ? JSON.parse(saved) : [];
   }
 
   saveCart() {
-    localStorage.setItem('printora_cart', JSON.stringify(this.cart));
+    safeSetItem('printora_cart', JSON.stringify(this.cart));
     this.notify();
   }
 
   loadWishlist() {
-    const saved = localStorage.getItem('printora_wishlist');
+    const saved = safeGetItem('printora_wishlist');
     return saved ? JSON.parse(saved) : [];
   }
 
   saveWishlist() {
-    localStorage.setItem('printora_wishlist', JSON.stringify(this.wishlist));
+    safeSetItem('printora_wishlist', JSON.stringify(this.wishlist));
     this.notify();
   }
 
@@ -122,7 +127,7 @@ class PrintoraStore {
   }
 
   loadSavedDesigns() {
-    const saved = localStorage.getItem('printora_saved_designs');
+    const saved = safeGetItem('printora_saved_designs');
     return saved ? JSON.parse(saved) : [
       {
         id: "dsg-demo-1",
@@ -150,7 +155,7 @@ class PrintoraStore {
       previewData: designData
     };
     this.savedDesigns.unshift(newDesign);
-    localStorage.setItem('printora_saved_designs', JSON.stringify(this.savedDesigns));
+    safeSetItem('printora_saved_designs', JSON.stringify(this.savedDesigns));
     this.notify();
     this.showToast('Design saved to your account', 'success');
     return newDesign;
@@ -158,13 +163,13 @@ class PrintoraStore {
 
   deleteSavedDesign(designId) {
     this.savedDesigns = this.savedDesigns.filter(d => d.id !== designId);
-    localStorage.setItem('printora_saved_designs', JSON.stringify(this.savedDesigns));
+    safeSetItem('printora_saved_designs', JSON.stringify(this.savedDesigns));
     this.notify();
     this.showToast('Design removed', 'info');
   }
 
   loadCoupons() {
-    const saved = localStorage.getItem('printora_coupons');
+    const saved = safeGetItem('printora_coupons');
     return saved ? JSON.parse(saved) : [
       { code: "PRINTORA50", discountType: "fixed", value: 50, minOrder: 499, description: "Flat ₹50 OFF on orders above ₹499" },
       { code: "WELCOME10", discountType: "percent", value: 10, minOrder: 0, description: "10% OFF for new customers" },
@@ -173,7 +178,7 @@ class PrintoraStore {
   }
 
   saveCoupons() {
-    localStorage.setItem('printora_coupons', JSON.stringify(this.coupons));
+    safeSetItem('printora_coupons', JSON.stringify(this.coupons));
     this.notify();
   }
 
@@ -198,7 +203,7 @@ class PrintoraStore {
   }
 
   loadOrders() {
-    const saved = localStorage.getItem('printora_orders');
+    const saved = safeGetItem('printora_orders');
     return saved ? JSON.parse(saved) : [
       {
         id: "demo-ord-01",
@@ -245,12 +250,12 @@ class PrintoraStore {
   }
 
   saveOrders() {
-    localStorage.setItem('printora_orders', JSON.stringify(this.orders));
+    safeSetItem('printora_orders', JSON.stringify(this.orders));
     this.notify();
   }
 
   loadBulkEnquiries() {
-    const saved = localStorage.getItem('printora_bulk_enquiries');
+    const saved = safeGetItem('printora_bulk_enquiries');
     return saved ? JSON.parse(saved) : [
       {
         id: "blk-01",
@@ -270,12 +275,12 @@ class PrintoraStore {
   }
 
   saveBulkEnquiries() {
-    localStorage.setItem('printora_bulk_enquiries', JSON.stringify(this.bulkEnquiries));
+    safeSetItem('printora_bulk_enquiries', JSON.stringify(this.bulkEnquiries));
     this.notify();
   }
 
   loadSuppliers() {
-    const saved = localStorage.getItem('printora_suppliers');
+    const saved = safeGetItem('printora_suppliers');
     return saved ? JSON.parse(saved) : [
       {
         id: "s1000000-0000-0000-0000-000000000001",
@@ -311,22 +316,22 @@ class PrintoraStore {
   }
 
   saveSuppliers() {
-    localStorage.setItem('printora_suppliers', JSON.stringify(this.suppliers));
+    safeSetItem('printora_suppliers', JSON.stringify(this.suppliers));
     this.notify();
   }
 
   loadSupplierAssignments() {
-    const saved = localStorage.getItem('printora_supplier_assignments');
+    const saved = safeGetItem('printora_supplier_assignments');
     return saved ? JSON.parse(saved) : {};
   }
 
   saveSupplierAssignments() {
-    localStorage.setItem('printora_supplier_assignments', JSON.stringify(this.supplierAssignments));
+    safeSetItem('printora_supplier_assignments', JSON.stringify(this.supplierAssignments));
     this.notify();
   }
 
   loadSettings() {
-    const saved = localStorage.getItem('printora_store_settings');
+    const saved = safeGetItem('printora_store_settings');
     return saved ? JSON.parse(saved) : {
       brandName: "PRINTORA",
       tagline: "YOU IMAGINE. WE PRINT.",
@@ -339,26 +344,26 @@ class PrintoraStore {
       announcementBanner: "FREE SHIPPING ACROSS INDIA – NO DELIVERY CHARGES!",
       whatsappCloudApiToken: "",
       whatsappPhoneNumberId: "",
-      razorpayKeyId: localStorage.getItem('printora_razorpay_key_id') || "rzp_test_Tw51XlubBFx1y1"
+      razorpayKeyId: safeGetItem('printora_razorpay_key_id') || "rzp_test_Tw51XlubBFx1y1"
     };
   }
 
   saveSettings() {
-    localStorage.setItem('printora_store_settings', JSON.stringify(this.settings));
+    safeSetItem('printora_store_settings', JSON.stringify(this.settings));
     this.notify();
   }
 
   loadUser() {
-    const saved = localStorage.getItem('printora_user');
+    const saved = safeGetItem('printora_user');
     return saved ? JSON.parse(saved) : null;
   }
 
   setUser(user) {
     this.currentUser = user;
     if (user) {
-      localStorage.setItem('printora_user', JSON.stringify(user));
+      safeSetItem('printora_user', JSON.stringify(user));
     } else {
-      localStorage.removeItem('printora_user');
+      safeRemoveItem('printora_user');
     }
     this.notify();
   }
@@ -724,3 +729,4 @@ class PrintoraStore {
 }
 
 export const store = new PrintoraStore();
+export default store;

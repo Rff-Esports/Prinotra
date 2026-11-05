@@ -73,8 +73,8 @@ export const POLICIES = {
         <li><strong>Rest of India:</strong> 4 to 6 business days via express air/surface couriers (DTDC, Bluedart, Delhivery).</li>
       </ul>
 
-      <h4>3. Shipping Charges</h4>
-      <p>We provide <strong>FREE Pan-India Delivery</strong> on all orders totaling ₹999 or more. For orders below ₹999, a nominal flat shipping fee of ₹60 is applied at checkout.</p>
+      <h4>3. Zero Shipping Charges — 100% Free Pan-India Delivery</h4>
+      <p>PRINTORA provides <strong>100% FREE Pan-India Delivery</strong> on all orders without exception. There are no delivery charges, no fuel surcharges, and no minimum order amount required. Whether you order a single custom mug (₹299) or 100 team jerseys, shipping is always ₹0 across all serviceable pin codes in India.</p>
 
       <h4>4. Tracking & Delays</h4>
       <p>Once dispatched, a live tracking link with the courier partner's docket number is dispatched to your WhatsApp number. While we partner with top-tier national logistics providers, PRINTORA is not liable for transit delays caused by extreme weather, regional strikes, or incorrect postal addresses provided by the customer.</p>
