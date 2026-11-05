@@ -362,7 +362,8 @@ class PrintoraStore {
       announcementBanner: "FREE SHIPPING ACROSS INDIA • USE COUPON 'PRINTORA 25' FOR FLAT ₹25 OFF ON MRP!",
       whatsappCloudApiToken: "",
       whatsappPhoneNumberId: "",
-      razorpayKeyId: safeGetItem('printora_razorpay_key_id') || "rzp_test_Tw51XlubBFx1y1"
+      razorpayKeyId: safeGetItem('printora_razorpay_key_id') || "rzp_test_Tw51XlubBFx1y1",
+      brevoApiKey: safeGetItem('printora_brevo_api_key') || ""
     };
     if (!saved) return defaults;
     try {

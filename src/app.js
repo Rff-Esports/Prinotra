@@ -219,7 +219,15 @@ class PrintoraApp {
   }
 }
 
-// Instantiate on DOM load
-document.addEventListener('DOMContentLoaded', () => {
-  new PrintoraApp();
-});
+// Instantiate on DOM load or immediately if already parsed
+function bootPrintora() {
+  if (!window.printoraApp) {
+    window.printoraApp = new PrintoraApp();
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bootPrintora);
+} else {
+  bootPrintora();
+}

@@ -132,8 +132,7 @@ export function renderNavbar() {
       <a href="#bulk-orders" class="block py-2 border-b border-[#F0EAE1] hover:text-[#FF6B35]">Corporate & Bulk Orders</a>
       <a href="#about-us" data-policy="about" class="block py-2 border-b border-[#F0EAE1] hover:text-[#FF6B35]">About Us</a>
       <a href="#contact-us" data-policy="contact" class="block py-2 border-b border-[#F0EAE1] hover:text-[#FF6B35]">Contact</a>
-      <div class="pt-2 flex items-center justify-between">
-        <a href="#admin" class="text-[#FF6B35] font-mono text-[11px] font-bold">Admin Portal Login →</a>
+      <div class="pt-2 flex items-center justify-end">
         <span class="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Free Pan-India Delivery</span>
       </div>
     </div>

@@ -4,6 +4,7 @@
 import { renderIcon } from '../utils/icons.js';
 import { store } from '../services/store.js';
 import { isSupabaseConfigured, updateSupabaseCredentials } from '../services/supabase.js';
+import { sendBrevoOtpEmail, generate6DigitOtp } from '../services/brevo.js';
 
 export const ADMIN_ORDER_STATUSES = [
   "Order Placed",
@@ -18,7 +19,87 @@ export const ADMIN_ORDER_STATUSES = [
   "Cancelled"
 ];
 
+export function getAdminCredentials() {
+  const saved = localStorage.getItem('printora_admin_credentials');
+  if (saved) {
+    try { return JSON.parse(saved); } catch (e) {}
+  }
+  return {
+    username: "admin@printoracustom.in",
+    password: "Printora@2026"
+  };
+}
+
+export function saveAdminCredentials(username, password) {
+  localStorage.setItem('printora_admin_credentials', JSON.stringify({ username, password }));
+}
+
+export function isAdminAuthenticated() {
+  return sessionStorage.getItem('printora_admin_session') === 'active';
+}
+
+export function setAdminAuthenticated(val) {
+  if (val) {
+    sessionStorage.setItem('printora_admin_session', 'active');
+  } else {
+    sessionStorage.removeItem('printora_admin_session');
+  }
+}
+
+function renderAdminLoginGate() {
+  return `
+    <div id="admin-login-barrier" class="min-h-screen bg-[#0A0A0A] text-white flex flex-col items-center justify-center p-4 sm:p-6 font-sans">
+      <div class="w-full max-w-md bg-[#141414] border border-[#2B2B2B] rounded-3xl p-8 sm:p-10 shadow-2xl relative">
+        
+        <div class="text-center mb-8">
+          <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#FF6B35]/15 border border-[#FF6B35]/30 text-[#FF6B35] mb-4">
+            ${renderIcon('shieldCheck', 'w-7 h-7')}
+          </div>
+          <span class="text-[10px] text-[#FF6B35] font-bold uppercase tracking-[0.3em] font-heading block">RESTRICTED ACCESS</span>
+          <h2 class="text-2xl font-bold font-heading text-white mt-1">PRINTORA Control Center</h2>
+          <p class="text-xs text-[#888] mt-1.5">Authorized Store Administrator Authentication</p>
+        </div>
+
+        <form id="admin-login-form" class="space-y-4">
+          <div id="admin-login-error" class="hidden p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 text-xs font-medium text-center"></div>
+
+          <div>
+            <label for="admin-user-input" class="block text-xs font-bold text-[#CCC] mb-1.5 uppercase tracking-wider">Admin ID / Email</label>
+            <input type="text" id="admin-user-input" required placeholder="admin@printoracustom.in" 
+                   class="w-full bg-[#1C1C1C] border border-[#333] focus:border-[#FF6B35] rounded-xl px-4 py-3 text-sm text-white outline-none transition-colors font-mono">
+          </div>
+
+          <div>
+            <label for="admin-pwd-input" class="block text-xs font-bold text-[#CCC] mb-1.5 uppercase tracking-wider">Admin Password</label>
+            <div class="relative">
+              <input type="password" id="admin-pwd-input" required placeholder="••••••••••••" 
+                     class="w-full bg-[#1C1C1C] border border-[#333] focus:border-[#FF6B35] rounded-xl pl-4 pr-11 py-3 text-sm text-white outline-none transition-colors font-mono">
+              <button type="button" id="admin-pwd-toggle" class="absolute right-3.5 top-3.5 text-[#888] hover:text-white" title="Toggle Password">
+                ${renderIcon('eye', 'w-4 h-4')}
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" id="admin-login-btn" class="w-full bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold py-3.5 px-4 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 shadow-lg font-heading cursor-pointer mt-2">
+            Unlock Admin Portal
+          </button>
+        </form>
+
+        <div class="mt-6 pt-6 border-t border-[#242424] text-center">
+          <a href="#catalogue" class="text-xs text-[#888] hover:text-white transition-colors flex items-center justify-center gap-1.5">
+            <span>← Return to Public Store</span>
+          </a>
+        </div>
+
+      </div>
+    </div>
+  `;
+}
+
 export function renderAdminDashboard() {
+  if (!isAdminAuthenticated()) {
+    return renderAdminLoginGate();
+  }
   const orders = store.orders;
   const products = store.products;
   const bulkEnquiries = store.bulkEnquiries;
@@ -60,6 +141,10 @@ export function renderAdminDashboard() {
             <button id="admin-quick-add-prod-btn" class="bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
               ${renderIcon('plus', 'w-3.5 h-3.5')}
               <span>Add Product</span>
+            </button>
+            <button id="admin-logout-btn" class="bg-[#242424] hover:bg-rose-600 text-white font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer" title="Log out from Admin">
+              ${renderIcon('x', 'w-3.5 h-3.5')}
+              <span>Logout</span>
             </button>
           </div>
         </div>
@@ -528,6 +613,56 @@ export function renderAdminDashboard() {
                 </div>
               </div>
 
+              <!-- Admin Security Credentials (Protected & Hidden from regular visitors) -->
+              <div class="p-5 bg-[#FAF7F2] border border-[#DDD4C4] rounded-2xl space-y-4">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs uppercase tracking-wider text-[#FF6B35] font-bold flex items-center gap-1.5">
+                    ${renderIcon('shieldCheck', 'w-4 h-4')}
+                    <span>Admin Security Credentials</span>
+                  </span>
+                  <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                    Gated & Protected
+                  </span>
+                </div>
+                <p class="text-xs text-[#666]">
+                  These credentials control access to this private Admin Control Center at <code class="font-mono bg-white px-1.5 py-0.5 rounded border border-[#DDD4C4]">#admin</code>. Public visitors have zero links or visibility to this portal.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-[11px] font-bold text-[#444] mb-1">Admin ID / Login Email</label>
+                    <input type="text" id="set-admin-username" value="${getAdminCredentials().username}" class="w-full bg-white border border-[#DDD4C4] rounded-xl p-2.5 text-xs font-mono">
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-bold text-[#444] mb-1">Admin Password</label>
+                    <input type="text" id="set-admin-password" value="${getAdminCredentials().password}" class="w-full bg-white border border-[#DDD4C4] rounded-xl p-2.5 text-xs font-mono">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Brevo (Sendinblue) Transactional Email & OTP System -->
+              <div class="p-5 bg-[#FAF7F2] border border-[#DDD4C4] rounded-2xl space-y-4">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs uppercase tracking-wider text-[#FF6B35] font-bold flex items-center gap-1.5">
+                    ✉️ Brevo (Sendinblue) Transactional Email & OTP API
+                  </span>
+                  <span id="brevo-status-badge" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full ${(settings.brevoApiKey || localStorage.getItem('printora_brevo_api_key')) ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                    ${(settings.brevoApiKey || localStorage.getItem('printora_brevo_api_key')) ? '● Brevo Connected' : '○ API Key Required'}
+                  </span>
+                </div>
+                <p class="text-xs text-[#666]">
+                  Enter your Brevo v3 API Key (starts with <code class="font-mono bg-white px-1.5 py-0.5 rounded border border-[#DDD4C4]">xkeysib-</code>). Used for real-time customer OTP authentication, order dispatch alerts, and custom jersey proofs.
+                </p>
+                <div class="space-y-3">
+                  <div class="flex flex-col sm:flex-row gap-2">
+                    <input type="password" id="set-brevo-api-key" value="${settings.brevoApiKey || localStorage.getItem('printora_brevo_api_key') || ''}" placeholder="xkeysib-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" class="flex-1 bg-white border border-[#DDD4C4] rounded-xl p-2.5 text-xs font-mono">
+                    <button type="button" id="test-brevo-btn" class="bg-[#111] hover:bg-[#FF6B35] text-white px-4 py-2 text-xs font-bold rounded-xl transition-colors whitespace-nowrap cursor-pointer">
+                      Test Send OTP
+                    </button>
+                  </div>
+                  <div id="brevo-test-feedback" class="hidden text-xs p-3 rounded-xl font-medium"></div>
+                </div>
+              </div>
+
               <!-- Supabase Cloud Connection -->
               <div class="p-4 bg-[#FAF7F2] border border-[#DDD4C4] rounded-2xl space-y-3">
                 <span class="text-xs uppercase tracking-wider text-[#FF6B35] font-bold block">Supabase Cloud Database Connection</span>
@@ -538,7 +673,7 @@ export function renderAdminDashboard() {
                 </div>
               </div>
 
-              <button type="submit" class="bg-[#111] hover:bg-[#FF6B35] text-white px-6 py-3 text-xs font-bold uppercase tracking-wider rounded-xl transition-all">
+              <button type="submit" class="bg-[#111] hover:bg-[#FF6B35] text-white px-6 py-3 text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer">
                 Save Store Settings
               </button>
             </form>
@@ -630,6 +765,59 @@ function getStatusBadgeClass(status) {
 }
 
 export function initAdminEvents() {
+  // Gatekeeper: If unauthenticated, bind login barrier events only
+  if (!isAdminAuthenticated()) {
+    const loginForm = document.getElementById('admin-login-form');
+    const pwdToggle = document.getElementById('admin-pwd-toggle');
+    const pwdInput = document.getElementById('admin-pwd-input');
+    const userInput = document.getElementById('admin-user-input');
+    const errBox = document.getElementById('admin-login-error');
+
+    if (pwdToggle && pwdInput) {
+      pwdToggle.addEventListener('click', () => {
+        pwdInput.type = pwdInput.type === 'password' ? 'text' : 'password';
+      });
+    }
+
+    if (loginForm) {
+      loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const user = userInput?.value.trim();
+        const pwd = pwdInput?.value;
+        const creds = getAdminCredentials();
+
+        if (user.toLowerCase() === creds.username.toLowerCase() && pwd === creds.password) {
+          setAdminAuthenticated(true);
+          store.showToast('Admin authenticated successfully', 'success');
+          if (window.printoraApp) {
+            window.printoraApp.renderAdminOnly();
+          } else {
+            window.location.reload();
+          }
+        } else {
+          if (errBox) {
+            errBox.textContent = 'Invalid Admin ID or Password. Access denied.';
+            errBox.classList.remove('hidden');
+          }
+        }
+      });
+    }
+    return;
+  }
+
+  // Admin Logout Button
+  const logoutBtn = document.getElementById('admin-logout-btn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      setAdminAuthenticated(false);
+      store.showToast('Logged out of Admin Portal', 'info');
+      window.location.hash = '#catalogue';
+      if (window.printoraApp) {
+        window.printoraApp.route();
+      }
+    });
+  }
+
   // Tab Switching
   const tabBtns = document.querySelectorAll('.admin-tab-btn');
   const tabContents = document.querySelectorAll('.admin-tab-content');
@@ -734,7 +922,7 @@ export function initAdminEvents() {
     });
   }
 
-  // Store Settings Form Save
+  // Store Settings Form Save (Brand Info, Admin Credentials, Brevo Key, Supabase)
   const settingsForm = document.getElementById('admin-store-settings-form');
   if (settingsForm) {
     settingsForm.addEventListener('submit', (e) => {
@@ -746,22 +934,96 @@ export function initAdminEvents() {
       const supabaseUrl = document.getElementById('set-supabase-url')?.value;
       const supabaseKey = document.getElementById('set-supabase-key')?.value;
 
+      // Admin Credentials update
+      const newAdminUser = document.getElementById('set-admin-username')?.value.trim();
+      const newAdminPwd = document.getElementById('set-admin-password')?.value;
+      if (newAdminUser && newAdminPwd) {
+        saveAdminCredentials(newAdminUser, newAdminPwd);
+      }
+
+      // Brevo API Key update
+      const brevoKey = document.getElementById('set-brevo-api-key')?.value.trim() || '';
+      localStorage.setItem('printora_brevo_api_key', brevoKey);
+
       store.settings = {
         ...store.settings,
         brandName,
         tagline,
         whatsappNumber,
         instagramHandle,
+        brevoApiKey: brevoKey,
         shippingFlatFee: 0, // Strict rule: always 0
         freeShippingThreshold: 0
       };
       store.saveSettings();
 
+      // Update Brevo badge
+      const brevoBadge = document.getElementById('brevo-status-badge');
+      if (brevoBadge) {
+        if (brevoKey) {
+          brevoBadge.className = 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
+          brevoBadge.textContent = '● Brevo Connected';
+        } else {
+          brevoBadge.className = 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800';
+          brevoBadge.textContent = '○ API Key Required';
+        }
+      }
+
       if (supabaseUrl && supabaseKey) {
         updateSupabaseCredentials(supabaseUrl, supabaseKey);
       } else {
-        alert("Store settings saved successfully!");
+        store.showToast("Store settings, credentials & Brevo configuration saved!", "success");
+      }
+    });
+  }
+
+  // Brevo Test OTP Dispatch Button
+  const testBrevoBtn = document.getElementById('test-brevo-btn');
+  const brevoFeedback = document.getElementById('brevo-test-feedback');
+  if (testBrevoBtn) {
+    testBrevoBtn.addEventListener('click', async () => {
+      const apiKeyInput = document.getElementById('set-brevo-api-key');
+      const apiKey = apiKeyInput?.value.trim() || store.settings.brevoApiKey || localStorage.getItem('printora_brevo_api_key');
+
+      if (!apiKey) {
+        alert("Please enter a Brevo API key first (starts with 'xkeysib-').");
+        return;
+      }
+
+      const defaultEmail = getAdminCredentials().username.includes('@') ? getAdminCredentials().username : 'admin@printoracustom.in';
+      const recipient = prompt("Enter an email address to send a real test OTP verification email:", defaultEmail);
+      if (!recipient || !recipient.trim()) return;
+
+      if (brevoFeedback) {
+        brevoFeedback.className = 'text-xs p-3 rounded-xl font-medium bg-blue-50 text-blue-700 border border-blue-200 block';
+        brevoFeedback.textContent = `⏳ Connecting to Brevo v3 REST API and dispatching OTP to ${recipient}...`;
+      }
+
+      testBrevoBtn.disabled = true;
+      testBrevoBtn.textContent = 'Sending...';
+
+      const testOtp = generate6DigitOtp();
+      const res = await sendBrevoOtpEmail({
+        apiKey,
+        toEmail: recipient.trim(),
+        toName: "PRINTORA Administrator",
+        otpCode: testOtp,
+        purpose: "Admin Brevo API Live Test"
+      });
+
+      testBrevoBtn.disabled = false;
+      testBrevoBtn.textContent = 'Test Send OTP';
+
+      if (brevoFeedback) {
+        if (res.success) {
+          brevoFeedback.className = 'text-xs p-3 rounded-xl font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 block';
+          brevoFeedback.innerHTML = `✅ <strong>Brevo Test Succeeded!</strong> OTP <code>${testOtp}</code> was dispatched to <strong>${recipient}</strong>.<br><span class="text-[11px] text-[#555]">Message ID: ${res.messageId || 'Delivered'}</span>`;
+        } else {
+          brevoFeedback.className = 'text-xs p-3 rounded-xl font-medium bg-rose-50 text-rose-800 border border-rose-200 block';
+          brevoFeedback.innerHTML = `❌ <strong>Brevo Dispatch Failed:</strong> ${res.error}`;
+        }
       }
     });
   }
 }
+

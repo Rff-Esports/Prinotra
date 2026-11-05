@@ -83,7 +83,6 @@ export function renderFooter() {
               <li><a href="#studio-3d" class="hover:text-white transition-colors">360° 3D Studio</a></li>
               <li><a href="#custom-jersey" class="hover:text-white transition-colors">Custom Jerseys (₹499)</a></li>
               <li><a href="#bulk-orders" class="hover:text-white transition-colors">Corporate Gifting</a></li>
-              <li><a href="#admin" class="hover:text-[#FF6B35] transition-colors font-mono">Admin Portal</a></li>
             </ul>
           </div>
 
