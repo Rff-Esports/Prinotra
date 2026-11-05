@@ -7,6 +7,7 @@
 import { CATEGORIES, INITIAL_PRODUCTS } from '../data/products.js';
 import { supabase, isSupabaseConfigured } from './supabase.js';
 import { formatWhatsAppOrderMessage, generateWhatsAppUrl, sendWhatsAppCloudApiNotification, generateBulkWhatsAppUrl } from './whatsapp.js';
+import { getCloudOverrides, pushOverridesToCloud, fetchLiveCloudOverrides } from './cloudSync.js';
 
 const isBrowser = typeof window !== 'undefined' && typeof localStorage !== 'undefined';
 const safeGetItem = (k) => isBrowser ? localStorage.getItem(k) : null;
@@ -35,8 +36,9 @@ class PrintoraStore {
     this.notification = null;
 
     
-    // Sync with Supabase in background if configured
+    // Sync with Supabase & Global Netlify Cloud in background
     this.syncFromSupabase();
+    this.syncCloudProducts();
   }
 
   // Reactive Subscription
@@ -60,34 +62,39 @@ class PrintoraStore {
     }, 4000);
   }
 
-  // Persistence helpers
+  // Persistence helpers with Global Cross-Device Cloud Synchronization
   loadInitialProducts() {
+    const cloudOverrides = getCloudOverrides() || {};
     const saved = safeGetItem('printora_custom_products');
-    if (!saved) return INITIAL_PRODUCTS.map(p => ({ ...p }));
-    try {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        const editMap = new Map(parsed.map(p => [p.id, p]));
-        return INITIAL_PRODUCTS.map(p => {
-          if (editMap.has(p.id)) {
-            const ed = editMap.get(p.id);
-            return {
-              ...p,
-              name: ed.name || p.name,
-              price: ed.price !== undefined ? ed.price : p.price,
-              originalPrice: ed.originalPrice !== undefined ? ed.originalPrice : p.originalPrice,
-              images: (ed.images && ed.images.length > 0) ? ed.images : p.images,
-              isAvailable: ed.isAvailable !== undefined ? ed.isAvailable : p.isAvailable,
-              isQuoteOnly: ed.isQuoteOnly !== undefined ? ed.isQuoteOnly : p.isQuoteOnly
-            };
-          }
-          return { ...p };
-        });
+    let localSavedMap = new Map();
+
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          localSavedMap = new Map(parsed.map(p => [p.id, p]));
+        }
+      } catch (e) {
+        console.warn("Failed to parse local custom products:", e);
       }
-    } catch (e) {
-      console.warn("Failed to parse custom products:", e);
     }
-    return INITIAL_PRODUCTS.map(p => ({ ...p }));
+
+    return INITIAL_PRODUCTS.map(p => {
+      // Cloud overrides have top priority so any update made on laptop/mobile reflects on ALL devices
+      const ed = cloudOverrides[p.id] || localSavedMap.get(p.id);
+      if (ed) {
+        return {
+          ...p,
+          name: ed.name || p.name,
+          price: ed.price !== undefined ? ed.price : p.price,
+          originalPrice: ed.originalPrice !== undefined ? ed.originalPrice : p.originalPrice,
+          images: (ed.images && ed.images.length > 0) ? ed.images : p.images,
+          isAvailable: ed.isAvailable !== undefined ? ed.isAvailable : p.isAvailable,
+          isQuoteOnly: ed.isQuoteOnly !== undefined ? ed.isQuoteOnly : p.isQuoteOnly
+        };
+      }
+      return { ...p };
+    });
   }
 
   saveProducts() {
@@ -100,9 +107,85 @@ class PrintoraStore {
     if (idx !== -1) {
       this.products[idx] = { ...this.products[idx], ...updates };
       this.saveProducts();
+
+      // Dual-sync to global Netlify cloud store for ALL devices worldwide
+      const currentOverrides = { ...getCloudOverrides() };
+      currentOverrides[productId] = {
+        id: productId,
+        name: this.products[idx].name,
+        price: this.products[idx].price,
+        originalPrice: this.products[idx].originalPrice,
+        images: this.products[idx].images,
+        isAvailable: this.products[idx].isAvailable,
+        isQuoteOnly: this.products[idx].isQuoteOnly
+      };
+
+      pushOverridesToCloud(currentOverrides).then(success => {
+        if (success) {
+          console.log(`✅ [PRINTORA CLOUD] Product "${this.products[idx].name}" synced live for ALL devices!`);
+        }
+      });
+
       return this.products[idx];
     }
     return null;
+  }
+
+  // Publish all current products and prices live to Netlify Cloud
+  async publishAllProductsLive() {
+    const overrides = {};
+    for (const p of this.products) {
+      overrides[p.id] = {
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        originalPrice: p.originalPrice,
+        images: p.images,
+        isAvailable: p.isAvailable,
+        isQuoteOnly: p.isQuoteOnly
+      };
+    }
+    const success = await pushOverridesToCloud(overrides);
+    if (success) {
+      this.showToast('🚀 Successfully published to ALL devices worldwide!', 'success');
+    } else {
+      this.showToast('Saved locally. Cloud sync pending.', 'info');
+    }
+    return success;
+  }
+
+  // Background Cloud Sync to pull fresh product edits from Netlify Snippet
+  async syncCloudProducts() {
+    try {
+      const liveOverrides = await fetchLiveCloudOverrides();
+      if (liveOverrides && Object.keys(liveOverrides).length > 0) {
+        let hasChanges = false;
+        this.products = this.products.map(p => {
+          if (liveOverrides[p.id]) {
+            const ov = liveOverrides[p.id];
+            hasChanges = true;
+            return {
+              ...p,
+              name: ov.name || p.name,
+              price: ov.price !== undefined ? ov.price : p.price,
+              originalPrice: ov.originalPrice !== undefined ? ov.originalPrice : p.originalPrice,
+              images: (ov.images && ov.images.length > 0) ? ov.images : p.images,
+              isAvailable: ov.isAvailable !== undefined ? ov.isAvailable : p.isAvailable,
+              isQuoteOnly: ov.isQuoteOnly !== undefined ? ov.isQuoteOnly : p.isQuoteOnly
+            };
+          }
+          return p;
+        });
+
+        if (hasChanges) {
+          safeSetItem('printora_custom_products', JSON.stringify(this.products));
+          this.notify();
+          console.log('✅ Synchronized latest product catalogue from Netlify Cloud');
+        }
+      }
+    } catch (err) {
+      console.warn('Background cloud product sync error:', err.message);
+    }
   }
 
   loadCart() {

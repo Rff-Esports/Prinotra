@@ -5,6 +5,7 @@ import { renderIcon } from '../utils/icons.js';
 import { store } from '../services/store.js';
 import { isSupabaseConfigured, updateSupabaseCredentials } from '../services/supabase.js';
 import { sendBrevoOtpEmail, sendPaymentConfirmedEmail, generate6DigitOtp } from '../services/brevo.js';
+import { compressImageFile } from '../services/cloudSync.js';
 
 
 export const ADMIN_ORDER_STATUSES = [
@@ -133,33 +134,54 @@ export function renderAdminDashboard() {
       
       <!-- Admin Top Bar -->
       <header class="bg-[#111111] text-white border-b border-[#222] sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <a href="#catalogue" class="text-xs uppercase tracking-widest text-[#FF6B35] hover:underline flex items-center gap-1 font-heading">
-              <span>← Back to Store</span>
-            </a>
-            <span class="text-[#333]">|</span>
-            <img src="/assets/logo.png" alt="PRINTORA" class="h-8 w-auto object-contain rounded-lg bg-white p-0.5">
-            <span class="font-heading text-lg font-bold tracking-wider text-white">PRINTORA ADMIN</span>
-            <span class="text-[10px] bg-[#FF6B35]/20 text-[#FF6B35] px-2 py-0.5 rounded font-mono font-bold">CONTROL CENTER</span>
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-0 sm:h-16 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+          
+          <!-- Top Row on Mobile / Left Section on Desktop -->
+          <div class="flex items-center justify-between sm:justify-start gap-2.5 w-full sm:w-auto">
+            <div class="flex items-center gap-2 sm:gap-3">
+              <a href="#catalogue" class="text-xs uppercase tracking-wider text-[#FF6B35] hover:underline flex items-center gap-1 font-heading font-bold whitespace-nowrap">
+                <span>← Store</span>
+              </a>
+              <span class="text-[#333]">|</span>
+              <img src="/assets/logo.png" alt="PRINTORA" class="h-7 sm:h-8 w-auto object-contain rounded-lg bg-white p-0.5">
+              <span class="font-heading text-sm sm:text-lg font-bold tracking-wider text-white whitespace-nowrap">ADMIN</span>
+              <span class="hidden md:inline-block text-[10px] bg-[#FF6B35]/20 text-[#FF6B35] px-2 py-0.5 rounded font-mono font-bold">CONTROL CENTER</span>
+            </div>
+
+            <!-- Mobile-only Quick Actions -->
+            <div class="flex sm:hidden items-center gap-2">
+              <button class="admin-quick-add-trigger bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-2.5 py-1 rounded-lg text-xs flex items-center gap-1 shadow-sm cursor-pointer">
+                ${renderIcon('plus', 'w-3 h-3')}
+                <span>Add</span>
+              </button>
+              <button class="admin-logout-trigger bg-[#242424] hover:bg-rose-600 text-white font-bold px-2.5 py-1 rounded-lg text-xs flex items-center gap-1 transition-colors cursor-pointer" title="Logout">
+                ${renderIcon('x', 'w-3 h-3')}
+                <span>Exit</span>
+              </button>
+            </div>
           </div>
 
-          <div class="flex items-center gap-3 text-xs">
-            <button id="admin-setup-guide-btn" class="text-xs text-[#DDD] hover:text-white underline font-semibold">
-              🔑 First Admin Setup Guide
+          <!-- Bottom Row on Mobile / Right Section on Desktop -->
+          <div class="flex items-center justify-between sm:justify-end gap-3 text-xs w-full sm:w-auto border-t sm:border-t-0 border-[#222] pt-2 sm:pt-0">
+            <button id="admin-setup-guide-btn" class="text-[11px] sm:text-xs text-[#AAA] hover:text-white underline font-semibold truncate cursor-pointer">
+              🔑 Admin Setup Guide
             </button>
-            <span class="hidden sm:inline-flex items-center gap-1.5 ${isSupabaseConfigured() ? 'text-emerald-400' : 'text-amber-400'}">
-              <span class="w-2 h-2 rounded-full ${isSupabaseConfigured() ? 'bg-emerald-400' : 'bg-amber-400'}"></span>
-              <span>${isSupabaseConfigured() ? 'Supabase Live' : 'Local Sync Active'}</span>
+            
+            <span class="inline-flex items-center gap-1.5 text-[11px] sm:text-xs text-emerald-400 font-medium">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="truncate">Global Cloud Sync Active</span>
             </span>
-            <button id="admin-quick-add-prod-btn" class="bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-              ${renderIcon('plus', 'w-3.5 h-3.5')}
-              <span>Add Product</span>
-            </button>
-            <button id="admin-logout-btn" class="bg-[#242424] hover:bg-rose-600 text-white font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer" title="Log out from Admin">
-              ${renderIcon('x', 'w-3.5 h-3.5')}
-              <span>Logout</span>
-            </button>
+
+            <div class="hidden sm:flex items-center gap-2.5">
+              <button class="admin-quick-add-trigger bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 cursor-pointer">
+                ${renderIcon('plus', 'w-3.5 h-3.5')}
+                <span>Add Product</span>
+              </button>
+              <button class="admin-logout-trigger bg-[#242424] hover:bg-rose-600 text-white font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer" title="Log out from Admin">
+                ${renderIcon('x', 'w-3.5 h-3.5')}
+                <span>Logout</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -399,15 +421,34 @@ export function renderAdminDashboard() {
              ========================================== -->
         <div id="admin-tab-products" class="admin-tab-content hidden space-y-6">
           <div class="bg-white border border-[#DDD4C4] rounded-2xl p-6 shadow-sm">
-            <div class="flex items-center justify-between mb-6">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
               <div>
                 <h3 class="font-heading text-xl font-bold text-black">Product Catalogue & Exact Pricing</h3>
                 <p class="text-xs text-[#777]">Strict pricing compliance: Prices can only be changed by authorized administrators.</p>
               </div>
-              <button id="admin-add-product-btn-2" class="bg-[#FF6B35] hover:bg-[#E55A2B] text-white px-4 py-2 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5">
-                ${renderIcon('plus', 'w-3.5 h-3.5')}
-                <span>Add New Product</span>
-              </button>
+              <div class="flex items-center gap-2">
+                <button id="admin-sync-all-cloud-btn" type="button" class="bg-[#111] hover:bg-[#FF6B35] text-white px-3.5 py-2 text-xs font-bold rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer">
+                  <span>🚀 Publish All Live</span>
+                </button>
+                <button id="admin-add-product-btn-2" class="admin-quick-add-trigger bg-[#FF6B35] hover:bg-[#E55A2B] text-white px-4 py-2 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer">
+                  ${renderIcon('plus', 'w-3.5 h-3.5')}
+                  <span>Add Product</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Global Cross-Device Live Sync Status Banner -->
+            <div class="mb-5 p-3.5 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs">
+              <div class="flex items-center gap-2.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+                <div>
+                  <strong class="text-emerald-950 font-bold block">🌐 Cross-Device Live Sync Active for All Customers</strong>
+                  <span class="text-emerald-800 text-[11px]">Any photo from your gallery or price edit you save here is automatically pushed live to all phones, laptops, and tablets across India.</span>
+                </div>
+              </div>
+              <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full shrink-0">
+                ● Netlify Edge Live
+              </span>
             </div>
 
             <!-- Product Table -->
@@ -957,10 +998,9 @@ export function initAdminEvents() {
     return;
   }
 
-  // Admin Logout Button
-  const logoutBtn = document.getElementById('admin-logout-btn');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
+  // Admin Logout Triggers (Mobile & Desktop)
+  document.querySelectorAll('.admin-logout-trigger').forEach(btn => {
+    btn.addEventListener('click', () => {
       setAdminAuthenticated(false);
       store.showToast('Logged out of Admin Portal', 'info');
       window.location.hash = '#catalogue';
@@ -968,7 +1008,23 @@ export function initAdminEvents() {
         window.printoraApp.route();
       }
     });
-  }
+  });
+
+  // Admin Quick Add Product Triggers
+  document.querySelectorAll('.admin-quick-add-trigger').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const prodTabBtn = document.querySelector('.admin-tab-btn[data-tab="products"]');
+      if (prodTabBtn) prodTabBtn.click();
+      const nameInput = document.getElementById('edit-prod-name');
+      const modalEl = document.getElementById('admin-edit-product-modal');
+      const idIn = document.getElementById('edit-prod-id');
+      const titleEl = document.getElementById('edit-prod-modal-title');
+      if (idIn) idIn.value = `custom-item-${Date.now()}`;
+      if (nameInput) nameInput.value = '';
+      if (titleEl) titleEl.textContent = 'Add New Product to Catalogue';
+      if (modalEl) modalEl.classList.remove('hidden');
+    });
+  });
 
   // Tab Switching
   const tabBtns = document.querySelectorAll('.admin-tab-btn');
@@ -1267,24 +1323,38 @@ export function initAdminEvents() {
     });
   }
 
-  // Device Gallery & File Manager Image Reader
-  document.addEventListener('change', (e) => {
+  // Device Gallery & File Manager Image Reader with Automatic Web Optimization
+  document.addEventListener('change', async (e) => {
     if (e.target && e.target.id === 'edit-prod-file-input') {
       const file = e.target.files?.[0];
       if (file) {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          const dataUrl = ev.target.result;
+        try {
+          store.showToast('Optimizing photo from gallery...', 'info');
+          const dataUrl = await compressImageFile(file, 800, 800, 0.82);
           const imgIn = document.getElementById('edit-prod-image');
           const imgPrev = document.getElementById('edit-prod-img-preview');
           if (imgIn) imgIn.value = dataUrl;
           if (imgPrev) imgPrev.src = dataUrl;
-          store.showToast('Product photo selected from device gallery!', 'success');
-        };
-        reader.readAsDataURL(file);
+          store.showToast('✓ Photo ready! Click "Save Product Changes" to publish across all devices.', 'success');
+        } catch (err) {
+          console.error(err);
+          store.showToast('Failed to process image: ' + err.message, 'warning');
+        }
       }
     }
   });
+
+  // Force Sync All Products to Netlify Cloud Button
+  const syncAllBtn = document.getElementById('admin-sync-all-cloud-btn');
+  if (syncAllBtn) {
+    syncAllBtn.addEventListener('click', async () => {
+      syncAllBtn.disabled = true;
+      syncAllBtn.textContent = '⏳ Syncing to All Devices...';
+      await store.publishAllProductsLive();
+      syncAllBtn.disabled = false;
+      syncAllBtn.textContent = '🚀 Publish All Live';
+    });
+  }
 
 
   // Delegated Open Edit Product Modal on button click (100% reliable across tab switches)

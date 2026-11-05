@@ -18,7 +18,7 @@ console.log('📦 Packaging project files with standard POSIX paths...');
 
 try {
   // tar.exe -a creates standard zip with Linux-compatible forward slashes
-  execSync('tar.exe -a -c -f dist.zip index.html netlify.toml robots.txt sitemap.xml _redirects src assets', {
+  execSync('tar.exe -a -c -f dist.zip index.html netlify.toml robots.txt sitemap.xml _redirects src assets netlify', {
     cwd: rootDir,
     stdio: 'inherit'
   });

@@ -35,6 +35,28 @@ const server = http.createServer((req, res) => {
     pathname = '/index.html';
   }
 
+  // API endpoint for syncing custom products and triggering live deploy
+  if (pathname === '/api/save-products' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+      try {
+        const data = JSON.parse(body);
+        const assetsDir = path.join(__dirname, 'assets');
+        if (!fs.existsSync(assetsDir)) fs.mkdirSync(assetsDir, { recursive: true });
+        fs.writeFileSync(path.join(assetsDir, 'custom_products.json'), JSON.stringify(data.overrides || {}, null, 2));
+        console.log('✅ [SERVER] Saved custom product overrides to assets/custom_products.json');
+
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ success: true, message: 'Products persisted' }));
+      } catch (err) {
+        res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
   let filePath = path.join(__dirname, pathname);
 
   // Security check: ensure path is within root

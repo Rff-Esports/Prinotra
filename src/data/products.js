@@ -78,36 +78,11 @@ export const INITIAL_PRODUCTS = [
     categoryId: "apparel",
     categoryName: "Apparel",
     name: "Round Neck T-shirt",
-    subtitle: "Enter Phone Model & Upload Photo • ₹699",
+    subtitle: "Everyday Staple • 180 GSM Pure Bio-Washed Cotton",
     description: "Our signature classic crewneck crafted from 100% bio-washed super-combed cotton. Ultra-smooth surface engineered for high-definition vibrant print longevity and soft all-day comfort.",
-    price: 599,
-    originalPrice: 899,
-    originalPrice: 499,
-    originalPrice: 349,
-    originalPrice: 499,
-    originalPrice: 499,
-    originalPrice: 900,
-    originalPrice: 750,
-    originalPrice: 299,
-    originalPrice: 449,
-    originalPrice: 699,
-    originalPrice: 799,
-    originalPrice: 999,
-    originalPrice: 599,
-    originalPrice: 499,
-    originalPrice: 299,
-    originalPrice: 599,
-    originalPrice: 1499,
-    originalPrice: 1499,
-    originalPrice: 699,
-    originalPrice: 999,
-    originalPrice: 899,
-    originalPrice: 799,
-    originalPrice: 599,
-    originalPrice: 1299,
+    price: 499,
     originalPrice: 699,
     isQuoteOnly: false,
-    quoteEmail: "printora256@gmail.com",
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1000&q=80",
@@ -802,7 +777,7 @@ export const INITIAL_PRODUCTS = [
     subtitle: "Temperature Display Smart Insulated Flask",
     description: "Smart thermos flask with built-in LED touch temperature display on cap. Double-vacuum stainless steel construction with removable tea infuser mesh basket.",
     price: null,
-    isQuoteOnly: false,
+    isQuoteOnly: true,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=1000&q=80"
@@ -830,7 +805,7 @@ export const INITIAL_PRODUCTS = [
     subtitle: "Single-Walled Ergonomic Everyday Sports Bottle",
     description: "Lightweight 750ml food-grade 18/8 stainless steel bottle with leakproof threaded bamboo or steel cap. Customized with laser engraving or rotary UV color print.",
     price: null,
-    isQuoteOnly: false,
+    isQuoteOnly: true,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1536939459926-301728717817?auto=format&fit=crop&w=1000&q=80"
@@ -858,7 +833,7 @@ export const INITIAL_PRODUCTS = [
     subtitle: "BPA-Free Gym Shaker & Infuser Sipper",
     description: "Multi-purpose active sipper with flip spout, integrated carrying loop, and internal protein blending ball. Custom printed with gym logos, names, or team badges.",
     price: null,
-    isQuoteOnly: false,
+    isQuoteOnly: true,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1570554886111-e80fcca6a029?auto=format&fit=crop&w=1000&q=80"
@@ -1305,7 +1280,7 @@ export const INITIAL_PRODUCTS = [
     subtitle: "Metal Rollerball & Twist Action Laser-Engraved Pens",
     description: "Heavy metal body luxury pens with smooth German ink refills. Laser-engraved with employee names, company branding, or commemorative dates.",
     price: null,
-    isQuoteOnly: false,
+    isQuoteOnly: true,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1585336261026-62c76508006e?auto=format&fit=crop&w=1000&q=80"
@@ -1333,7 +1308,7 @@ export const INITIAL_PRODUCTS = [
     subtitle: "Complete Branded Desk & Supply Set",
     description: "Customized desk organizers, paperweights, branded envelopes, document clips, and conference folders designed for cohesive office aesthetics.",
     price: null,
-    isQuoteOnly: false,
+    isQuoteOnly: true,
     isOnwards: false,
     images: [
       "https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=1000&q=80"
