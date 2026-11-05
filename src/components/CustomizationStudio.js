@@ -246,17 +246,10 @@ export function renderCustomizationStudioSection() {
             </div>
 
             <!-- Action Buttons: Save Design & Add to Cart -->
-            <div class="pt-2 space-y-2">
-              <div class="grid grid-cols-2 gap-2">
-                <button type="button" id="studio-save-design-btn" class="w-full bg-white hover:bg-[#F5F5F5] border border-[#DDD4C4] hover:border-black text-black font-bold py-3 px-3 rounded-xl text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-sm">
-                  ${renderIcon('save', 'w-3.5 h-3.5 text-[#FF6B35]')}
-                  <span>Save Design</span>
-                </button>
-                
-                <button type="button" id="studio-3d-jump-btn" class="w-full bg-[#111] hover:bg-black text-white font-bold py-3 px-3 rounded-xl text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-sm">
-                  <span>View in 3D →</span>
-                </button>
-              </div>
+              <button type="button" id="studio-save-design-btn" class="w-full bg-white hover:bg-[#F5F5F5] border border-[#DDD4C4] hover:border-black text-black font-bold py-3 px-3 rounded-xl text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-sm">
+                ${renderIcon('save', 'w-3.5 h-3.5 text-[#FF6B35]')}
+                <span>Save Custom Design</span>
+              </button>
 
               <button type="button" id="studio-add-cart-btn" class="w-full bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-extrabold py-3.5 px-4 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 shadow-xl flex items-center justify-center gap-2">
                 ${renderIcon('shoppingBag', 'w-4 h-4')}
@@ -571,14 +564,6 @@ export function initCustomizationStudioEvents() {
     });
   }
 
-  // 3D Jump Button
-  const jump3dBtn = document.getElementById('studio-3d-jump-btn');
-  if (jump3dBtn) {
-    jump3dBtn.addEventListener('click', () => {
-      const sec = document.getElementById('studio-3d');
-      if (sec) sec.scrollIntoView({ behavior: 'smooth' });
-    });
-  }
 
   // Add to Bag
   const addCartBtn = document.getElementById('studio-add-cart-btn');

@@ -63,10 +63,6 @@ export function renderNavbar() {
               <span>Customize</span>
               <span class="bg-[#111] text-white text-[9px] px-1.5 py-0.5 rounded-full">STUDIO</span>
             </a>
-            <a href="#studio-3d" class="hover:text-[#FF6B35] transition-colors py-2 font-heading flex items-center gap-1">
-              <span>3D Studio</span>
-              <span class="bg-[#FF6B35] text-white text-[9px] px-1.5 py-0.5 rounded-full font-bold">360°</span>
-            </a>
             <a href="#custom-jersey" class="hover:text-[#FF6B35] transition-colors py-2 font-heading flex items-center gap-1">
               <span>Custom Jerseys</span>
               <span class="text-[#FF6B35] font-mono">₹499</span>
@@ -132,10 +128,6 @@ export function renderNavbar() {
       <a href="#custom-studio" class="block py-2 border-b border-[#F0EAE1] text-[#FF6B35] flex items-center justify-between">
         <span>Customize Studio</span>
         <span class="bg-[#FF6B35] text-white text-[9px] px-1.5 py-0.5 rounded-full">STUDIO</span>
-      </a>
-      <a href="#studio-3d" class="block py-2 border-b border-[#F0EAE1] text-[#111] flex items-center justify-between">
-        <span>360° 3D Studio</span>
-        <span class="bg-black text-[#FF6B35] text-[9px] px-1.5 py-0.5 rounded-full">3D</span>
       </a>
       <a href="#custom-jersey" class="block py-2 border-b border-[#F0EAE1] hover:text-[#FF6B35] flex items-center justify-between">
         <span>Custom Team Jerseys</span>

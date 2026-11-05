@@ -4,7 +4,6 @@
 
 import { renderNavbar, initNavbarEvents } from './components/Navbar.js';
 import { renderHeroBanner, initHeroBannerEvents } from './components/HeroBanner.js';
-import { renderProductViewer3DSection, initProductViewer3D } from './components/ProductViewer3D.js';
 import { renderCustomizationStudioSection, initCustomizationStudioEvents } from './components/CustomizationStudio.js';
 import { renderProductCatalogue, initProductCatalogueEvents } from './components/ProductCatalogue.js';
 import { renderJerseyStudio, initJerseyCustomizerEvents } from './components/JerseyCustomizer.js';
@@ -222,7 +221,6 @@ class PrintoraApp {
       <main>
         ${renderHeroBanner()}
         ${renderCustomizationStudioSection()}
-        ${renderProductViewer3DSection()}
         ${renderProductCatalogue()}
         ${renderJerseyStudio()}
         ${renderBulkOrderSection()}
@@ -245,7 +243,6 @@ class PrintoraApp {
     initNavbarEvents();
     initHeroBannerEvents();
     initCustomizationStudioEvents();
-    initProductViewer3D();
     initProductCatalogueEvents();
     initJerseyCustomizerEvents();
     initBulkOrderEvents();

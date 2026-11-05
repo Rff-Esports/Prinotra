@@ -7,7 +7,7 @@
 import { CATEGORIES, INITIAL_PRODUCTS } from '../data/products.js';
 import { supabase, isSupabaseConfigured } from './supabase.js';
 import { formatWhatsAppOrderMessage, generateWhatsAppUrl, sendWhatsAppCloudApiNotification, generateBulkWhatsAppUrl } from './whatsapp.js';
-import { getCloudOverrides, pushOverridesToCloud, fetchLiveCloudOverrides } from './cloudSync.js';
+import { getCloudOverrides, pushOverridesToCloud, fetchLiveCloudOverrides, getGlobalCloudState, fetchLiveGlobalCloud, pushGlobalCloudState } from './cloudSync.js';
 
 const isBrowser = typeof window !== 'undefined' && typeof localStorage !== 'undefined';
 const safeGetItem = (k) => isBrowser ? localStorage.getItem(k) : null;
@@ -38,7 +38,10 @@ class PrintoraStore {
     
     // Sync with Supabase & Global Netlify Cloud in background
     this.syncFromSupabase();
-    this.syncCloudProducts();
+    this.syncGlobalCloud();
+    if (isBrowser) {
+      setInterval(() => this.syncGlobalCloud(), 12000);
+    }
   }
 
   // Reactive Subscription
@@ -131,7 +134,7 @@ class PrintoraStore {
     return null;
   }
 
-  // Publish all current products and prices live to Netlify Cloud
+  // Publish all current products, orders & coupons live to Netlify Cloud for all devices
   async publishAllProductsLive() {
     const overrides = {};
     for (const p of this.products) {
@@ -145,46 +148,89 @@ class PrintoraStore {
         isQuoteOnly: p.isQuoteOnly
       };
     }
-    const success = await pushOverridesToCloud(overrides);
+    const success = await pushGlobalCloudState({
+      products: overrides,
+      orders: this.orders,
+      coupons: this.coupons
+    });
     if (success) {
-      this.showToast('🚀 Successfully published to ALL devices worldwide!', 'success');
+      this.showToast('🚀 All products, orders & coupons published live to ALL devices worldwide!', 'success');
     } else {
       this.showToast('Saved locally. Cloud sync pending.', 'info');
     }
     return success;
   }
 
-  // Background Cloud Sync to pull fresh product edits from Netlify Snippet
-  async syncCloudProducts() {
+  // Background Global Cloud Sync to pull fresh orders, coupons & product edits from Netlify Snippet
+  async syncGlobalCloud() {
     try {
-      const liveOverrides = await fetchLiveCloudOverrides();
-      if (liveOverrides && Object.keys(liveOverrides).length > 0) {
+      const liveCloud = await fetchLiveGlobalCloud();
+      if (liveCloud) {
         let hasChanges = false;
-        this.products = this.products.map(p => {
-          if (liveOverrides[p.id]) {
-            const ov = liveOverrides[p.id];
-            hasChanges = true;
-            return {
-              ...p,
-              name: ov.name || p.name,
-              price: ov.price !== undefined ? ov.price : p.price,
-              originalPrice: ov.originalPrice !== undefined ? ov.originalPrice : p.originalPrice,
-              images: (ov.images && ov.images.length > 0) ? ov.images : p.images,
-              isAvailable: ov.isAvailable !== undefined ? ov.isAvailable : p.isAvailable,
-              isQuoteOnly: ov.isQuoteOnly !== undefined ? ov.isQuoteOnly : p.isQuoteOnly
-            };
+
+        // 1. Synchronize Orders across devices
+        if (Array.isArray(liveCloud.orders) && liveCloud.orders.length > 0) {
+          const orderMap = new Map(this.orders.map(o => [o.orderCode || o.id, o]));
+          liveCloud.orders.forEach(co => {
+            const key = co.orderCode || co.id;
+            if (!orderMap.has(key)) {
+              this.orders.unshift(co);
+              hasChanges = true;
+            } else {
+              const existing = orderMap.get(key);
+              if (existing.status !== co.status) {
+                existing.status = co.status;
+                hasChanges = true;
+              }
+            }
+          });
+          if (hasChanges) {
+            safeSetItem('printora_orders', JSON.stringify(this.orders));
           }
-          return p;
-        });
+        }
+
+        // 2. Synchronize Coupons across devices
+        if (Array.isArray(liveCloud.coupons) && liveCloud.coupons.length > 0) {
+          const currentCodes = this.coupons.map(c => c.code.toUpperCase().replace(/\s+/g, '')).join(',');
+          const incomingCodes = liveCloud.coupons.map(c => c.code.toUpperCase().replace(/\s+/g, '')).join(',');
+          if (currentCodes !== incomingCodes || JSON.stringify(this.coupons) !== JSON.stringify(liveCloud.coupons)) {
+            this.coupons = liveCloud.coupons;
+            safeSetItem('printora_coupons', JSON.stringify(this.coupons));
+            hasChanges = true;
+          }
+        }
+
+        // 3. Synchronize Products across devices
+        if (liveCloud.products && Object.keys(liveCloud.products).length > 0) {
+          this.products = this.products.map(p => {
+            if (liveCloud.products[p.id]) {
+              const ov = liveCloud.products[p.id];
+              hasChanges = true;
+              return {
+                ...p,
+                name: ov.name || p.name,
+                price: ov.price !== undefined ? ov.price : p.price,
+                originalPrice: ov.originalPrice !== undefined ? ov.originalPrice : p.originalPrice,
+                images: (ov.images && ov.images.length > 0) ? ov.images : p.images,
+                isAvailable: ov.isAvailable !== undefined ? ov.isAvailable : p.isAvailable,
+                isQuoteOnly: ov.isQuoteOnly !== undefined ? ov.isQuoteOnly : p.isQuoteOnly
+              };
+            }
+            return p;
+          });
+
+          if (hasChanges) {
+            safeSetItem('printora_custom_products', JSON.stringify(this.products));
+          }
+        }
 
         if (hasChanges) {
-          safeSetItem('printora_custom_products', JSON.stringify(this.products));
           this.notify();
-          console.log('✅ Synchronized latest product catalogue from Netlify Cloud');
+          console.log('✅ [CLOUD SYNC] Synchronized latest Orders, Coupons & Products across devices');
         }
       }
     } catch (err) {
-      console.warn('Background cloud product sync error:', err.message);
+      console.warn('Background global cloud sync skipped:', err.message);
     }
   }
 
@@ -288,6 +334,11 @@ class PrintoraStore {
       { code: "BULK20", discountType: "percent", value: 20, minOrder: 2499, description: "20% OFF on team and bulk orders above ₹2499" }
     ];
 
+    const cloudCoupons = getGlobalCloudState()?.coupons;
+    if (Array.isArray(cloudCoupons) && cloudCoupons.length > 0) {
+      return cloudCoupons;
+    }
+
     const saved = safeGetItem('printora_coupons');
     if (!saved) return defaultCoupons;
     try {
@@ -303,6 +354,7 @@ class PrintoraStore {
 
   saveCoupons() {
     safeSetItem('printora_coupons', JSON.stringify(this.coupons));
+    pushGlobalCloudState({ coupons: this.coupons });
     this.notify();
   }
 
@@ -350,8 +402,11 @@ class PrintoraStore {
   }
 
   loadOrders() {
+    const cloudOrders = getGlobalCloudState()?.orders || [];
     const saved = safeGetItem('printora_orders');
-    return saved ? JSON.parse(saved) : [
+    const localOrders = saved ? JSON.parse(saved) : [];
+
+    const defaultOrders = [
       {
         id: "demo-ord-01",
         orderCode: "PRN-20261103-9182",
@@ -394,10 +449,18 @@ class PrintoraStore {
         }
       }
     ];
+
+    const mergedMap = new Map();
+    defaultOrders.forEach(o => mergedMap.set(o.orderCode || o.id, o));
+    localOrders.forEach(o => mergedMap.set(o.orderCode || o.id, o));
+    cloudOrders.forEach(o => mergedMap.set(o.orderCode || o.id, o));
+
+    return Array.from(mergedMap.values()).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }
 
   saveOrders() {
     safeSetItem('printora_orders', JSON.stringify(this.orders));
+    pushGlobalCloudState({ orders: this.orders });
     this.notify();
   }
 
