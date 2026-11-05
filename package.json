@@ -5,13 +5,11 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js",
-    "build": "echo 'Static build ready'"
+    "dev": "node server.js"
   },
   "keywords": [
     "printora",
     "custom-merchandise",
-    "custom-jerseys",
     "ecommerce"
   ],
   "author": "PRINTORA",
