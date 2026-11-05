@@ -1,5 +1,5 @@
 // PRINTORA 1-Click Automated Netlify Deployer
-// Deploys the current project directly to https://printoracustom.in
+// Uses Windows built-in tar.exe to produce standard POSIX zip structure for Linux servers
 import https from 'https';
 import fs from 'fs';
 import path from 'path';
@@ -14,11 +14,11 @@ const SITE_ID = '1e7ae1ee-956c-4b70-8782-e80976f65b21';
 const AUTH_TOKEN = 'nfp_NzZ73sUXoGVAnidHGS5TeWw4ctP3M7B74812';
 const ZIP_PATH = path.join(rootDir, 'dist.zip');
 
-console.log('📦 Packaging project files for deployment...');
+console.log('📦 Packaging project files with standard POSIX paths...');
 
-// Create ZIP using PowerShell Compress-Archive
 try {
-  execSync(`powershell -Command "Compress-Archive -Path index.html, netlify.toml, robots.txt, sitemap.xml, _redirects, src -DestinationPath dist.zip -Force"`, {
+  // tar.exe -a creates standard zip with Linux-compatible forward slashes
+  execSync('tar.exe -a -c -f dist.zip index.html netlify.toml robots.txt sitemap.xml _redirects src', {
     cwd: rootDir,
     stdio: 'inherit'
   });
@@ -44,7 +44,6 @@ const req = https.request({
   let body = '';
   res.on('data', chunk => body += chunk);
   res.on('end', () => {
-    // Clean up zip
     try { fs.unlinkSync(ZIP_PATH); } catch(err) {}
 
     if (res.statusCode >= 200 && res.statusCode < 300) {
