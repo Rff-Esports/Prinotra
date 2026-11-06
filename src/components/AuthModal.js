@@ -208,6 +208,14 @@ export function initAuthModalEvents() {
     closeBtn.addEventListener('click', closeAuthModal);
   }
 
+  // Delegated close listener for Auth Modal
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#auth-modal-close-btn') || e.target.id === 'auth-modal-close-btn') {
+      e.preventDefault();
+      closeAuthModal();
+    }
+  });
+
   // Password visibility toggles
   const toggleSignInPwd = document.getElementById('toggle-signin-pwd-btn');
   const signInPwdInput = document.getElementById('auth-signin-password');

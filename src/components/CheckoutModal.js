@@ -443,6 +443,16 @@ export function renderCheckoutModal() {
                 <span>•</span>
                 <span class="text-emerald-700 font-bold">₹0 Delivery Fee</span>
               </div>
+
+              <!-- Direct Action Pay Buttons (Instant 1-Click Visibility on Mobile & Desktop) -->
+              <div class="pt-3 border-t border-[#DDD4C4] space-y-2">
+                <button type="button" id="step3-card-pay-online-btn" onclick="document.getElementById('chk-pay-razorpay-btn')?.click();" class="w-full bg-[#111] hover:bg-[#FF6B35] text-white font-extrabold py-3.5 px-4 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 shadow-md flex items-center justify-center gap-2 cursor-pointer">
+                  <span>🔒 Pay Online via Razorpay / UPI (₹${total})</span>
+                </button>
+                <button type="button" id="step3-card-pay-cod-btn" onclick="document.getElementById('chk-confirm-cod-btn')?.click();" class="w-full bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-extrabold py-3 px-4 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 shadow-sm flex items-center justify-center gap-2 cursor-pointer">
+                  <span>🚚 Confirm Order (Pay on Delivery)</span>
+                </button>
+              </div>
             </div>
 
             <!-- WhatsApp Support Info Pill (Strictly for support, not a checkout redirect) -->
@@ -595,13 +605,41 @@ export function initCheckoutModalEvents() {
       }
     }
 
+    const step3Wrap = document.getElementById('chk-step3-buttons-wrap');
+    if (step3Wrap) {
+      if (step === 3) {
+        step3Wrap.classList.remove('hidden');
+        step3Wrap.classList.add('flex');
+      } else {
+        step3Wrap.classList.add('hidden');
+        step3Wrap.classList.remove('flex');
+      }
+    }
+
     if (payRazorpayBtn) {
       if (step === 3) {
         payRazorpayBtn.classList.remove('hidden');
+        payRazorpayBtn.disabled = false;
         payRazorpayBtn.innerHTML = `<span>🔒 Pay ₹${store.getCartTotal()} via Razorpay / UPI</span>`;
       } else {
         payRazorpayBtn.classList.add('hidden');
       }
+    }
+
+    const confirmCodBtn = document.getElementById('chk-confirm-cod-btn');
+    if (confirmCodBtn) {
+      if (step === 3) {
+        confirmCodBtn.classList.remove('hidden');
+        confirmCodBtn.disabled = false;
+        confirmCodBtn.innerHTML = `<span>🚚 Confirm Order (Pay on Delivery)</span>`;
+      } else {
+        confirmCodBtn.classList.add('hidden');
+      }
+    }
+
+    const cardPayOnlineBtn = document.getElementById('step3-card-pay-online-btn');
+    if (cardPayOnlineBtn) {
+      cardPayOnlineBtn.innerHTML = `<span>🔒 Pay Online via Razorpay / UPI (₹${store.getCartTotal()})</span>`;
     }
 
     if (backLabel) {
@@ -634,6 +672,15 @@ export function initCheckoutModalEvents() {
   // Close & Back navigation
   const closeBtn = document.getElementById('checkout-close-btn');
   if (closeBtn) closeBtn.addEventListener('click', closeCheckoutModal);
+
+  // Delegated close listener for checkout modal
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#checkout-close-btn') || e.target.id === 'checkout-close-btn') {
+      e.preventDefault();
+      closeCheckoutModal();
+      return;
+    }
+  });
 
   const backNavBtn = document.getElementById('checkout-back-nav-btn');
   if (backNavBtn) {

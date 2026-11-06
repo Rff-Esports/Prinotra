@@ -51,8 +51,8 @@ export function renderCartDrawer() {
             ${store.getCartCount()}
           </span>
         </div>
-        <button id="cart-close-btn" class="p-1.5 text-[#777] hover:text-black rounded-lg hover:bg-[#F0EAE1] transition-colors cursor-pointer" aria-label="Close Bag">
-          ${renderIcon('close', 'w-5 h-5')}
+        <button id="cart-close-btn" class="cart-close-trigger p-1.5 text-[#777] hover:text-black rounded-lg hover:bg-[#F0EAE1] transition-colors cursor-pointer" aria-label="Close Bag">
+          ${renderIcon('close', 'w-5 h-5 pointer-events-none')}
         </button>
       </div>
 
@@ -329,34 +329,57 @@ export function renderCartDrawer() {
 export function initCartDrawerEvents() {
   const drawer = document.getElementById('cart-drawer');
   const backdrop = document.getElementById('cart-drawer-backdrop');
-  const closeBtn = document.getElementById('cart-close-btn');
 
   const openDrawer = () => {
-    if (drawer && backdrop) {
-      backdrop.classList.remove('hidden');
+    const d = document.getElementById('cart-drawer');
+    const b = document.getElementById('cart-drawer-backdrop');
+    if (d && b) {
+      b.classList.remove('hidden');
+      b.classList.remove('pointer-events-none');
       requestAnimationFrame(() => {
-        backdrop.classList.remove('opacity-0');
-        drawer.classList.remove('translate-x-full');
+        b.classList.remove('opacity-0');
+        d.classList.remove('translate-x-full');
       });
     }
   };
 
   const closeDrawer = () => {
-    if (drawer && backdrop) {
-      backdrop.classList.add('opacity-0');
-      drawer.classList.add('translate-x-full');
-      setTimeout(() => backdrop.classList.add('hidden'), 300);
+    const d = document.getElementById('cart-drawer');
+    const b = document.getElementById('cart-drawer-backdrop');
+    if (d && b) {
+      b.classList.add('opacity-0');
+      b.classList.add('pointer-events-none');
+      d.classList.add('translate-x-full');
+      setTimeout(() => b.classList.add('hidden'), 300);
     }
   };
 
   window.openCartDrawer = openDrawer;
   window.closeCartDrawer = closeDrawer;
 
-  if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
-  if (backdrop) backdrop.addEventListener('click', closeDrawer);
+  // Delegated close listener on document ensures cross button & backdrop ALWAYS work even after innerHTML re-renders
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#cart-close-btn') || e.target.closest('.cart-close-trigger') || e.target.id === 'cart-close-btn') {
+      e.preventDefault();
+      closeDrawer();
+      return;
+    }
+    if (e.target.id === 'cart-drawer-backdrop') {
+      e.preventDefault();
+      closeDrawer();
+      return;
+    }
+  });
 
   if (drawer) {
     drawer.addEventListener('click', (e) => {
+      // 0. Close Drawer cross button inside drawer
+      if (e.target.closest('#cart-close-btn') || e.target.closest('.cart-close-trigger')) {
+        e.preventDefault();
+        closeDrawer();
+        return;
+      }
+
       // 1. Quantity modification
       const qtyBtn = e.target.closest('.cart-qty-btn');
       if (qtyBtn) {

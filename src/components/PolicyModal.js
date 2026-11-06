@@ -260,6 +260,14 @@ export function initPolicyModalEvents() {
     closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
   }
 
+  // Delegated close listener
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#policy-modal-close-btn') || e.target.id === 'policy-modal') {
+      const m = document.getElementById('policy-modal');
+      if (m) m.classList.add('hidden');
+    }
+  });
+
   // Hook all footer policy triggers
   document.querySelectorAll('[data-policy]').forEach(el => {
     el.addEventListener('click', (e) => {

@@ -1017,8 +1017,9 @@ export function initProductDetailModalEvents() {
     store.addToCart(currentSelectedProduct, options);
 
     if (modal) modal.classList.add('hidden');
-    const cartDrawer = document.getElementById('cart-drawer');
-    if (cartDrawer) cartDrawer.classList.remove('hidden');
+    if (typeof window.openCartDrawer === 'function') {
+      window.openCartDrawer();
+    }
   });
 
   // Buy Now

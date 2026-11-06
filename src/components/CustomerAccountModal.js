@@ -368,6 +368,13 @@ export function initCustomerAccountEvents() {
   const closeBtn = document.getElementById('account-modal-close-btn');
   if (closeBtn) closeBtn.addEventListener('click', closeCustomerAccountModal);
 
+  // Delegated close listener for customer account modal
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#account-modal-close-btn') || e.target.id === 'account-modal-close-btn') {
+      closeCustomerAccountModal();
+    }
+  });
+
   // Tabs switching
   document.querySelectorAll('.account-tab-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
