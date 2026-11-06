@@ -411,25 +411,115 @@ export function renderAdminDashboard() {
                     </div>
                   </div>
 
-                  <!-- Personalized Items -->
-                  <div class="bg-white p-3.5 rounded-xl border border-[#DDD4C4] space-y-2">
-                    <span class="text-[#777] font-bold uppercase tracking-wider text-[10px] block">Customized Items</span>
-                    <div class="space-y-1.5 text-xs">
-                      ${o.items.map(it => `
-                        <div class="flex items-start justify-between py-1 border-b border-[#F0EAE1] last:border-0">
-                          <div>
-                            <strong class="text-black">${it.name}</strong> (x${it.quantity})
-                            <div class="text-[11px] text-[#666] space-x-2">
-                              ${it.selectedSize ? `<span>Size: ${it.selectedSize}</span>` : ''}
-                              ${it.selectedColor ? `<span>Color: ${it.selectedColor}</span>` : ''}
-                              ${it.customName ? `<span>Name: <strong class="text-black uppercase">${it.customName}</strong></span>` : ''}
-                              ${it.customNumber ? `<span>Jersey #: <strong class="text-black font-mono">#${it.customNumber}</strong></span>` : ''}
+                  <!-- Personalized & Customized Items with Full Artwork and Print Details -->
+                  <div class="bg-white p-3.5 rounded-xl border border-[#DDD4C4] space-y-3">
+                    <div class="flex items-center justify-between border-b border-[#EFECE4] pb-2">
+                      <span class="text-[#777] font-bold uppercase tracking-wider text-[10px] block font-heading">Customized Items & Production Specifications</span>
+                      <span class="text-[11px] font-mono font-bold text-black">${o.items.length} Product${o.items.length > 1 ? 's' : ''}</span>
+                    </div>
+
+                    <div class="space-y-3 text-xs">
+                      ${o.items.map(it => {
+                        const design = it.uploadedDesign;
+                        const hasArtwork = Boolean(design && design.dataUrl);
+                        const isPdf = design?.isPdf || design?.type === 'application/pdf';
+                        const basePrice = it.basePrice || (it.price - (it.printingCharge || 0));
+                        const printCharge = it.printingCharge || 0;
+
+                        return `
+                          <div class="p-3 bg-[#FAF8F5] rounded-xl border border-[#E5E0D5] space-y-2.5">
+                            <div class="flex items-start justify-between gap-3">
+                              <div>
+                                <strong class="text-black font-heading text-sm">${it.name}</strong>
+                                <span class="text-xs font-mono font-bold text-[#FF6B35] ml-2">Qty: ${it.quantity}</span>
+                                
+                                <div class="flex flex-wrap items-center gap-1.5 mt-1 text-[11px]">
+                                  ${it.selectedSize ? `<span class="bg-white border border-[#DDD4C4] px-2 py-0.5 rounded-md font-mono font-bold text-black">Size: ${it.selectedSize}</span>` : ''}
+                                  ${it.selectedColor ? `<span class="bg-white border border-[#DDD4C4] px-2 py-0.5 rounded-md text-black">Color: ${it.selectedColor}</span>` : ''}
+                                  ${it.phoneModel ? `<span class="bg-[#FFF1E8] border border-[#FF6B35]/30 text-[#FF6B35] px-2 py-0.5 rounded-md font-bold font-mono">Model: ${it.phoneModel}</span>` : ''}
+                                </div>
+                              </div>
+
+                              <div class="text-right flex-shrink-0">
+                                <span class="font-mono font-black text-black text-sm block">₹${it.price * it.quantity}</span>
+                                <span class="text-[10px] text-[#777] font-mono">₹${it.price} each</span>
+                              </div>
                             </div>
-                            ${it.customNotes ? `<div class="text-[11px] text-[#777] italic">Instructions: "${it.customNotes}"</div>` : ''}
+
+                            <!-- Printing Customization Specifications -->
+                            ${it.printingType ? `
+                              <div class="p-2.5 bg-white border border-[#FF6B35]/30 rounded-lg text-[11px] space-y-1">
+                                <div class="flex items-center justify-between font-bold">
+                                  <span class="text-[#FF6B35]">🖨️ Printing Size: <strong>${it.printingType}</strong></span>
+                                  <span class="text-black">Position: <strong>${it.printingPosition || 'Front'}</strong></span>
+                                </div>
+                                <div class="flex items-center justify-between text-[10px] text-[#666] pt-0.5 border-t border-[#F0EAE1]">
+                                  <span>Base Garment: <strong class="text-black font-mono">₹${basePrice}</strong></span>
+                                  <span>Printing Charge: <strong class="text-[#FF6B35] font-mono">+₹${printCharge}</strong></span>
+                                  <span>Item Unit Total: <strong class="text-black font-mono">₹${it.price}</strong></span>
+                                </div>
+                              </div>
+                            ` : ''}
+
+                            ${it.customName || it.customNumber ? `
+                              <div class="text-[11px] text-[#555] space-x-3 bg-white p-2 rounded-lg border border-[#E5E0D5]">
+                                ${it.customName ? `<span>Custom Name: <strong class="text-black uppercase">${it.customName}</strong></span>` : ''}
+                                ${it.customNumber ? `<span>Jersey #: <strong class="text-black font-mono">#${it.customNumber}</strong></span>` : ''}
+                              </div>
+                            ` : ''}
+
+                            ${it.customNotes ? `
+                              <div class="text-[11px] text-[#777] italic bg-white p-2 rounded-lg border border-[#E5E0D5]">
+                                📝 Customer Notes: "${it.customNotes}"
+                              </div>
+                            ` : ''}
+
+                            <!-- Attached Customer Artwork / Design Preview & Action Buttons -->
+                            ${hasArtwork ? `
+                              <div class="mt-2 p-2.5 bg-white border border-[#DDD4C4] rounded-xl flex items-center justify-between gap-3 shadow-2xs">
+                                <div class="flex items-center gap-3 min-w-0">
+                                  <div class="w-14 h-14 rounded-lg bg-[#FAF8F5] border border-[#E5E0D5] flex items-center justify-center overflow-hidden flex-shrink-0">
+                                    ${isPdf ? `
+                                      <span class="text-2xl">📄</span>
+                                    ` : `
+                                      <img src="${design.dataUrl}" alt="Customer artwork" class="w-full h-full object-cover">
+                                    `}
+                                  </div>
+                                  <div class="min-w-0">
+                                    <span class="text-[9px] uppercase font-bold text-emerald-700 tracking-wider block font-heading">📎 Customer Artwork Attached</span>
+                                    <strong class="text-xs text-black block truncate font-mono">${design.name}</strong>
+                                    <span class="text-[10px] text-[#777] font-mono">${design.size} • ${isPdf ? 'PDF Document' : 'Raster Image'}</span>
+                                  </div>
+                                </div>
+
+                                <div class="flex items-center gap-1.5 flex-shrink-0">
+                                  ${!isPdf ? `
+                                    <button type="button" class="admin-view-design-btn bg-[#FAF7F2] hover:bg-[#F0EAE1] text-black border border-[#DDD4C4] py-1.5 px-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer" data-img-src="${design.dataUrl}" data-img-name="${design.name}" data-order="${o.orderCode}" data-cust="${o.customerName}">
+                                      🔍 View Full
+                                    </button>
+                                  ` : `
+                                    <a href="${design.dataUrl}" target="_blank" class="bg-[#FAF7F2] hover:bg-[#F0EAE1] text-black border border-[#DDD4C4] py-1.5 px-2.5 rounded-lg text-xs font-bold transition-all text-center">
+                                      📄 Open PDF
+                                    </a>
+                                  `}
+                                  <a href="${design.dataUrl}" download="${design.name || `Printora-${o.orderCode}-design`}" class="bg-[#111] hover:bg-[#FF6B35] text-white py-1.5 px-2.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer">
+                                    <span>⬇️ Download Design</span>
+                                  </a>
+                                </div>
+                              </div>
+                            ` : (it.artworkFile ? `
+                              <div class="p-2 bg-white rounded-lg border border-[#DDD4C4] text-[11px] text-[#555] flex items-center justify-between">
+                                <span>📎 Artwork File Reference: <strong class="text-black font-mono">${it.artworkFile}</strong></span>
+                                <span class="text-[10px] text-emerald-700 font-bold">✓ Listed</span>
+                              </div>
+                            ` : `
+                              <div class="text-[10px] text-[#888] italic bg-white p-2 rounded-lg border border-dashed border-[#DDD4C4]">
+                                No external artwork file attached (text customization / plain garment)
+                              </div>
+                            `)}
                           </div>
-                          <span class="font-mono font-bold text-black">₹${it.price * it.quantity}</span>
-                        </div>
-                      `).join('')}
+                        `;
+                      }).join('')}
                     </div>
                   </div>
 
@@ -1468,6 +1558,25 @@ export function initAdminEvents() {
   if (closeSetupBtn && setupModal) {
     closeSetupBtn.addEventListener('click', () => setupModal.classList.add('hidden'));
   }
+
+  // Manage Order Jump Handler from Overview Tab
+  document.addEventListener('click', (e) => {
+    const manageBtn = e.target.closest('.admin-view-order-btn');
+    if (manageBtn) {
+      e.preventDefault();
+      const orderId = manageBtn.getAttribute('data-order-id');
+      const ordersTabBtn = document.querySelector('.admin-tab-btn[data-tab="orders"]');
+      if (ordersTabBtn) ordersTabBtn.click();
+      setTimeout(() => {
+        const card = document.querySelector(`[data-order-card="${orderId}"]`);
+        if (card) {
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          card.classList.add('ring-2', 'ring-[#FF6B35]');
+          setTimeout(() => card.classList.remove('ring-2', 'ring-[#FF6B35]'), 2500);
+        }
+      }, 100);
+    }
+  });
 
   // Customer Uploaded Designs Lightbox Modal Handlers
   document.addEventListener('click', (e) => {

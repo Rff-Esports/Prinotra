@@ -489,9 +489,14 @@ export function renderCheckoutModal() {
             <span>${currentStep === 1 ? 'Continue to Address →' : 'Review & Confirm Order →'}</span>
           </button>
 
-          <button type="button" id="chk-pay-razorpay-btn" class="flex-1 bg-[#111] hover:bg-[#FF6B35] text-white font-extrabold py-3.5 px-4 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 shadow-xl flex items-center justify-center gap-2 cursor-pointer ${currentStep === 3 ? '' : 'hidden'}">
-            <span>🔒 Pay ₹${total} via Razorpay / UPI</span>
-          </button>
+          <div id="chk-step3-buttons-wrap" class="flex-1 flex flex-col sm:flex-row gap-2 ${currentStep === 3 ? '' : 'hidden'}">
+            <button type="button" id="chk-pay-razorpay-btn" class="flex-1 bg-[#111] hover:bg-[#FF6B35] text-white font-extrabold py-3.5 px-3 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 shadow-xl flex items-center justify-center gap-2 cursor-pointer">
+              <span>🔒 Pay ₹${total} via Razorpay / UPI</span>
+            </button>
+            <button type="button" id="chk-confirm-cod-btn" class="flex-1 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-extrabold py-3.5 px-3 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 shadow-xl flex items-center justify-center gap-2 cursor-pointer">
+              <span>🚚 Confirm Order (Pay on Delivery)</span>
+            </button>
+          </div>
         </div>
 
       </div>
@@ -870,6 +875,96 @@ export function initCheckoutModalEvents() {
     });
   }
 
+
+  // Helper to read customer checkout fields
+  function getCustomerCheckoutData() {
+    const name = document.getElementById('chk-name')?.value.trim() || 'Customer';
+    const phone = document.getElementById('chk-phone')?.value.trim() || '';
+    const email = document.getElementById('chk-email')?.value.trim() || '';
+    const pincode = document.getElementById('chk-pincode')?.value.trim() || '';
+    const house = document.getElementById('chk-house')?.value.trim() || '';
+    const area = document.getElementById('chk-area')?.value.trim() || '';
+    const city = document.getElementById('chk-city')?.value.trim() || '';
+    const district = document.getElementById('chk-district')?.value.trim() || '';
+    const state = document.getElementById('chk-state')?.value.trim() || '';
+    const instructions = document.getElementById('chk-instructions')?.value.trim() || '';
+
+    if (!name) {
+      alert("Please enter your name.");
+      window.setCheckoutStep(2);
+      return null;
+    }
+    if (!phone || phone.length !== 10) {
+      alert("Please enter a valid 10-digit mobile number.");
+      window.setCheckoutStep(2);
+      return null;
+    }
+    if (!email || !email.includes('@')) {
+      alert("Please enter a valid email address.");
+      window.setCheckoutStep(2);
+      return null;
+    }
+    if (!pincode || pincode.length !== 6) {
+      alert("Please enter a valid 6-digit postal PIN code.");
+      window.setCheckoutStep(2);
+      return null;
+    }
+
+    return { name, phone, email, pincode, house, area, city, district, state, instructions };
+  }
+
+  // Step 3 Direct Confirmation / Pay on Delivery (Instant Order Creation)
+  const confirmCodBtn = document.getElementById('chk-confirm-cod-btn');
+  if (confirmCodBtn) {
+    confirmCodBtn.addEventListener('click', async () => {
+      const custData = getCustomerCheckoutData();
+      if (!custData) return;
+
+      const total = store.getCartTotal();
+      if (total <= 0) {
+        alert("Your cart total is ₹0. Please add products to checkout.");
+        return;
+      }
+
+      confirmCodBtn.disabled = true;
+      confirmCodBtn.innerHTML = `<span>⏳ Creating Your Order...</span>`;
+
+      try {
+        const order = await store.submitOrder({
+          name: custData.name,
+          phone: custData.phone,
+          email: custData.email,
+          pincode: custData.pincode,
+          house: custData.house,
+          area: custData.area,
+          city: custData.city,
+          district: custData.district,
+          state: custData.state,
+          specialInstructions: custData.instructions,
+          paymentMethod: 'Pay on Delivery (Cash / UPI at Doorstep)',
+          paymentStatus: 'Order Placed',
+          status: 'Order Placed',
+          discount: store.getCouponDiscount()
+        });
+
+        if (typeof window.confetti === 'function') {
+          window.confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
+        }
+
+        try {
+          localStorage.setItem('printora_last_order', JSON.stringify(order));
+        } catch (e) {}
+
+        store.clearCart();
+        store.showToast('Order confirmed successfully!', 'success');
+        renderOrderSuccessView(order, 'PAY-ON-DELIVERY');
+      } catch (err) {
+        alert(`Order submission failed: ${err.message}`);
+        confirmCodBtn.disabled = false;
+        confirmCodBtn.innerHTML = `<span>🚚 Confirm Order (Pay on Delivery)</span>`;
+      }
+    });
+  }
 
   // Step 3 Razorpay Live Online Payment Handler
   const payRazorpayBtn = document.getElementById('chk-pay-razorpay-btn');

@@ -102,8 +102,9 @@ export function generateBulkWhatsAppUrl(enquiry) {
  * Note: Requires Meta Business verification and a pre-approved template in production.
  */
 export async function sendWhatsAppCloudApiNotification(order, settings) {
-  const token = settings?.whatsapp_cloud_api_token || import.meta.env.VITE_WHATSAPP_CLOUD_API_TOKEN;
-  const phoneNumberId = settings?.whatsapp_phone_number_id || import.meta.env.VITE_WHATSAPP_PHONE_NUMBER_ID;
+  const metaEnv = (typeof import.meta !== 'undefined' && import.meta.env) ? import.meta.env : {};
+  const token = settings?.whatsapp_cloud_api_token || metaEnv.VITE_WHATSAPP_CLOUD_API_TOKEN;
+  const phoneNumberId = settings?.whatsapp_phone_number_id || metaEnv.VITE_WHATSAPP_PHONE_NUMBER_ID;
 
   if (!token || !phoneNumberId) {
     return {

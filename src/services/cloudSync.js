@@ -164,7 +164,30 @@ export async function pushGlobalCloudState(partialState = {}) {
     } catch (e) {}
   }
 
-  const scriptContent = `<script>window.__PRINTORA_GLOBAL_CLOUD__ = ${JSON.stringify(updatedState).replace(/<\/script/gi, '<\\/script')}; window.__PRINTORA_LIVE_OVERRIDES__ = window.__PRINTORA_GLOBAL_CLOUD__.products || {};</script>`;
+  // Prepare sanitized orders that fit cleanly into Netlify's 64KB edge snippet payload
+  const edgeSafeOrders = (updatedState.orders || []).slice(0, 30).map(o => ({
+    ...o,
+    items: (o.items || []).map(it => {
+      let design = it.uploadedDesign;
+      if (design && design.dataUrl && design.dataUrl.length > 25000) {
+        design = {
+          name: design.name,
+          size: design.size,
+          type: design.type,
+          isPdf: design.isPdf,
+          dataUrl: design.dataUrl.slice(0, 20000) // Compact preview string
+        };
+      }
+      return { ...it, uploadedDesign: design };
+    })
+  }));
+
+  const edgeState = {
+    ...updatedState,
+    orders: edgeSafeOrders
+  };
+
+  const scriptContent = `<script>window.__PRINTORA_GLOBAL_CLOUD__ = ${JSON.stringify(edgeState).replace(/<\/script/gi, '<\\/script')}; window.__PRINTORA_LIVE_OVERRIDES__ = window.__PRINTORA_GLOBAL_CLOUD__.products || {};</script>`;
 
   const payload = {
     title: SNIPPET_TITLE,

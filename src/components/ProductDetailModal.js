@@ -720,6 +720,60 @@ export function openProductDetail(productId) {
   }
 }
 
+
+export function processUploadedArtwork(file, onSuccess) {
+  if (!file) return;
+  const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+  if (isPdf) {
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      onSuccess({
+        name: file.name,
+        size: (file.size / 1024).toFixed(1) + ' KB',
+        type: 'application/pdf',
+        dataUrl: evt.target.result,
+        isPdf: true
+      });
+    };
+    reader.readAsDataURL(file);
+  } else {
+    const img = new Image();
+    img.onload = function() {
+      const maxWidth = 1200;
+      const maxHeight = 1200;
+      let width = img.width;
+      let height = img.height;
+      if (width > height) {
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxHeight) {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      const dataUrl = canvas.toDataURL(file.type === 'image/png' ? 'image/png' : 'image/jpeg', 0.85);
+      onSuccess({
+        name: file.name,
+        size: (dataUrl.length * 0.75 / 1024).toFixed(1) + ' KB',
+        type: file.type || 'image/jpeg',
+        dataUrl: dataUrl,
+        isPdf: false
+      });
+    };
+    const tempReader = new FileReader();
+    tempReader.onload = (e) => { img.src = e.target.result; };
+    tempReader.readAsDataURL(file);
+  }
+}
+
 export function initProductDetailModalEvents() {
   if (window.__prodDetailModalListenersInitialized) return;
   window.__prodDetailModalListenersInitialized = true;
@@ -790,26 +844,16 @@ export function initProductDetailModalEvents() {
     store.showToast(`Selected position: ${pos}`, 'info');
   });
 
-  // Clothing Customer Artwork Upload
+  // Clothing Customer Artwork Upload (High-res canvas compression)
   document.addEventListener('change', (e) => {
     if (e.target.id === 'clothing-artwork-input') {
       const file = e.target.files && e.target.files[0];
       if (!file) return;
-
-      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        currentUploadedDesign = {
-          name: file.name,
-          size: (file.size / 1024).toFixed(1) + ' KB',
-          type: file.type || (isPdf ? 'application/pdf' : 'image/png'),
-          dataUrl: evt.target.result,
-          isPdf
-        };
+      processUploadedArtwork(file, (designData) => {
+        currentUploadedDesign = designData;
         renderClothingUploadState();
-        store.showToast(`Uploaded: ${file.name}`, 'success');
-      };
-      reader.readAsDataURL(file);
+        store.showToast(`Uploaded design: ${file.name}`, 'success');
+      });
     }
   });
 
@@ -890,13 +934,18 @@ export function initProductDetailModalEvents() {
     }
   });
 
-  // Standard File Upload (Non-clothing)
+  // Standard File Upload (Non-clothing) with Full Artwork Persistence
   document.addEventListener('change', (e) => {
     if (e.target.id === 'prod-modal-file-upload') {
       const fileText = document.getElementById('prod-modal-file-text');
-      if (e.target.files && e.target.files[0]) {
-        currentUploadedFile = e.target.files[0];
-        if (fileText) fileText.textContent = `✓ ${currentUploadedFile.name.slice(0, 18)}...`;
+      const file = e.target.files && e.target.files[0];
+      if (file) {
+        currentUploadedFile = file;
+        if (fileText) fileText.textContent = `✓ ${file.name.slice(0, 18)}...`;
+        processUploadedArtwork(file, (designData) => {
+          currentUploadedDesign = designData;
+          store.showToast(`Uploaded: ${file.name}`, 'success');
+        });
       }
     }
   });
@@ -947,7 +996,12 @@ export function initProductDetailModalEvents() {
         customNumber,
         customNotes,
         phoneModel,
-        artworkFile: currentUploadedFile
+        basePrice: currentSelectedProduct.price,
+        printingCharge: 0,
+        printingType: null,
+        printingPosition: null,
+        uploadedDesign: currentUploadedDesign,
+        artworkFile: currentUploadedDesign ? currentUploadedDesign.name : (currentUploadedFile ? currentUploadedFile.name : null)
       };
     }
   }
