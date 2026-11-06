@@ -1,6 +1,7 @@
 // PRINTORA Zero-Dependency Local Development Server
 // Serves static files and SPA route fallbacks to index.html
 import http from 'http';
+import https from 'https';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -49,6 +50,60 @@ const server = http.createServer((req, res) => {
 
         res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
         res.end(JSON.stringify({ success: true, message: 'Products persisted' }));
+      } catch (err) {
+        res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
+  // API endpoint for Razorpay Live Order Creation
+  if (pathname === '/api/razorpay/create-order' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+      try {
+        const { amount, receipt, notes } = JSON.parse(body || '{}');
+        const keyId = 'rzp_live_TwnbxHtTo3019C';
+        const keySecret = 'k5U6kxipoECI6VLiOgnX00YJ';
+
+        const amountPaise = Math.round(Number(amount) * 100);
+        if (!amountPaise || amountPaise <= 0) {
+          res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+          return res.end(JSON.stringify({ error: 'Invalid amount' }));
+        }
+
+        const auth = Buffer.from(`${keyId}:${keySecret}`).toString('base64');
+        const rzpReq = https.request({
+          hostname: 'api.razorpay.com',
+          path: '/v1/orders',
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${auth}`,
+            'Content-Type': 'application/json'
+          }
+        }, (rzpRes) => {
+          let rzpData = '';
+          rzpRes.on('data', c => rzpData += c);
+          rzpRes.on('end', () => {
+            res.writeHead(rzpRes.statusCode, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+            res.end(rzpData);
+          });
+        });
+
+        rzpReq.on('error', (err) => {
+          res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+          res.end(JSON.stringify({ error: err.message }));
+        });
+
+        rzpReq.write(JSON.stringify({
+          amount: amountPaise,
+          currency: 'INR',
+          receipt: receipt || `rcpt_${Date.now()}`,
+          notes: notes || {}
+        }));
+        rzpReq.end();
       } catch (err) {
         res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
         res.end(JSON.stringify({ error: err.message }));

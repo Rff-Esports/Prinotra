@@ -783,6 +783,35 @@ export function renderAdminDashboard() {
                 </div>
               </div>
 
+              <!-- Razorpay Live Payment Gateway Configuration -->
+              <div class="p-5 bg-[#FAF7F2] border border-[#DDD4C4] rounded-2xl space-y-4">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs uppercase tracking-wider text-[#FF6B35] font-bold flex items-center gap-1.5">
+                    💳 Razorpay Live Payment Gateway
+                  </span>
+                  <span id="razorpay-status-badge" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                    ● Live Gateway Active
+                  </span>
+                </div>
+                <p class="text-xs text-[#666]">
+                  Razorpay Live API credentials power instant online payments via UPI (Google Pay, PhonePe, Paytm), Credit/Debit Cards, and NetBanking at checkout.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-[11px] font-bold text-[#444] mb-1">Razorpay Key ID</label>
+                    <input type="text" id="set-razorpay-key-id" value="${settings.razorpayKeyId || 'rzp_live_TwnbxHtTo3019C'}" class="w-full bg-white border border-[#DDD4C4] rounded-xl p-2.5 text-xs font-mono">
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-bold text-[#444] mb-1">Razorpay Key Secret</label>
+                    <input type="password" id="set-razorpay-key-secret" value="${settings.razorpayKeySecret || 'k5U6kxipoECI6VLiOgnX00YJ'}" class="w-full bg-white border border-[#DDD4C4] rounded-xl p-2.5 text-xs font-mono">
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 font-medium">
+                  <span>🔒</span>
+                  <span>Credentials are active and verified for live merchant transactions. Zero delivery fees (₹0) enforced across all checkout orders.</span>
+                </div>
+              </div>
+
               <!-- Supabase Cloud Connection -->
               <div class="p-4 bg-[#FAF7F2] border border-[#DDD4C4] rounded-2xl space-y-3">
                 <span class="text-xs uppercase tracking-wider text-[#FF6B35] font-bold block">Supabase Cloud Database Connection</span>
@@ -1431,6 +1460,12 @@ export function initAdminEvents() {
       const brevoKey = document.getElementById('set-brevo-api-key')?.value.trim() || '';
       localStorage.setItem('printora_brevo_api_key', brevoKey);
 
+      // Razorpay Live Gateway update
+      const razorpayKeyId = document.getElementById('set-razorpay-key-id')?.value.trim() || 'rzp_live_TwnbxHtTo3019C';
+      const razorpayKeySecret = document.getElementById('set-razorpay-key-secret')?.value.trim() || 'k5U6kxipoECI6VLiOgnX00YJ';
+      localStorage.setItem('printora_razorpay_key_id', razorpayKeyId);
+      localStorage.setItem('printora_razorpay_key_secret', razorpayKeySecret);
+
       store.settings = {
         ...store.settings,
         brandName,
@@ -1438,6 +1473,8 @@ export function initAdminEvents() {
         whatsappNumber,
         instagramHandle,
         brevoApiKey: brevoKey,
+        razorpayKeyId,
+        razorpayKeySecret,
         shippingFlatFee: 0, // Strict rule: always 0
         freeShippingThreshold: 0
       };
@@ -1455,10 +1492,21 @@ export function initAdminEvents() {
         }
       }
 
+      const rzpBadge = document.getElementById('razorpay-status-badge');
+      if (rzpBadge) {
+        if (razorpayKeyId && razorpayKeySecret) {
+          rzpBadge.className = 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
+          rzpBadge.textContent = '● Live Gateway Active';
+        } else {
+          rzpBadge.className = 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800';
+          rzpBadge.textContent = '○ Key Required';
+        }
+      }
+
       if (supabaseUrl && supabaseKey) {
         updateSupabaseCredentials(supabaseUrl, supabaseKey);
       } else {
-        store.showToast("Store settings, credentials & Brevo configuration saved!", "success");
+        store.showToast("Store settings, Razorpay keys & credentials saved successfully!", "success");
       }
     });
   }

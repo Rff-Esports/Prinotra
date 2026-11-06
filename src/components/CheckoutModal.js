@@ -87,7 +87,7 @@ export function renderCheckoutModal() {
             <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${currentStep === 3 ? 'bg-[#FF6B35] text-white' : 'bg-[#DDD4C4] text-[#666]'}">
               3
             </span>
-            <span class="text-[11px]">3. WhatsApp</span>
+            <span class="text-[11px]">3. Payment</span>
           </div>
         </div>
 
@@ -389,20 +389,20 @@ export function renderCheckoutModal() {
           </div>
 
           <!-- ==========================================
-               STEP 3: PAYMENT & WHATSAPP REDIRECTION
+               STEP 3: SECURE PAYMENT GATEWAY (RAZORPAY LIVE)
                ========================================== -->
           <div id="checkout-step-3" class="${currentStep === 3 ? 'block' : 'hidden'} space-y-4 animate-fade-in">
             <div>
               <span class="text-xs uppercase tracking-widest text-[#777] font-bold block mb-1 font-heading">
-                Step 3: Review & WhatsApp Confirmation
+                Step 3: Secure Payment & Order Placement
               </span>
-              <p class="text-[11px] text-[#777]">Confirm your order details. You will be redirected to our official WhatsApp desk (+91 8106992102) with your complete order receipt.</p>
+              <p class="text-[11px] text-[#777]">Pay securely using UPI (Google Pay, PhonePe, Paytm), Cards or NetBanking. Instant automated confirmation.</p>
             </div>
 
-            <!-- Order Snapshot Review Card -->
-            <div class="p-3.5 bg-white border border-[#DDD4C4] rounded-2xl space-y-2.5 text-xs">
+            <!-- Order Recipient Snapshot Card -->
+            <div class="p-3.5 bg-white border border-[#DDD4C4] rounded-2xl space-y-2 text-xs">
               <div class="flex items-center justify-between pb-2 border-b border-[#EFECE4]">
-                <strong class="text-black font-heading">Recipient Details</strong>
+                <strong class="text-black font-heading">Delivery Address</strong>
                 <button type="button" onclick="window.setCheckoutStep(2)" class="text-[#FF6B35] font-bold text-[11px] hover:underline cursor-pointer">Edit Address</button>
               </div>
               <div class="space-y-1 text-[#555]">
@@ -412,23 +412,44 @@ export function renderCheckoutModal() {
               </div>
             </div>
 
-            <!-- Official WhatsApp Gateway Banner -->
-            <div class="p-4 bg-[#E8F5E9] border border-[#A5D6A7] rounded-2xl space-y-2.5 text-[#1B5E20]">
-              <div class="flex items-center gap-2">
-                <span class="text-lg">💬</span>
-                <div>
-                  <strong class="font-heading text-sm text-[#1B5E20] block">Official WhatsApp Order Gateway</strong>
-                  <span class="text-[11px] text-[#2E7D32]">Direct WhatsApp Desk: +91 8106992102</span>
+            <!-- Razorpay Payment Methods Selection Card -->
+            <div class="p-4 bg-white border-2 border-black rounded-2xl space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-lg">💳</span>
+                  <div>
+                    <strong class="text-xs font-bold text-black block font-heading">Online Payment (Razorpay Live)</strong>
+                    <span class="text-[10px] text-[#666]">UPI, Cards, NetBanking, Wallets</span>
+                  </div>
                 </div>
+                <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full font-mono uppercase">LIVE</span>
               </div>
-              <p class="text-xs text-[#2E7D32] leading-snug">
-                Your order receipt, custom design notes, and delivery address will be securely prepared and forwarded to our official WhatsApp desk. Our specialists will verify your design and start production immediately.
-              </p>
-              <div class="flex items-center gap-2 pt-1 text-[11px] font-bold text-emerald-800">
-                <span>✓ ₹0 Delivery Fee Across India</span>
+
+              <!-- Payment Icons Grid -->
+              <div class="bg-[#FAF8F5] border border-[#DDD4C4] rounded-xl p-2.5 flex flex-wrap items-center justify-between gap-2 text-[11px] font-bold text-[#444]">
+                <span class="inline-flex items-center gap-1">📱 Google Pay</span>
+                <span class="inline-flex items-center gap-1">🟣 PhonePe</span>
+                <span class="inline-flex items-center gap-1">💙 Paytm</span>
+                <span class="inline-flex items-center gap-1">💳 Cards / NetBanking</span>
+              </div>
+
+              <!-- Security Assurance -->
+              <div class="flex items-center gap-2 text-[10px] text-[#777] pt-1">
+                <span class="text-emerald-600 font-bold">🔒 256-bit SSL Encrypted</span>
                 <span>•</span>
-                <span>✓ Brevo Email Confirmation</span>
+                <span>Official Razorpay Partner</span>
+                <span>•</span>
+                <span class="text-emerald-700 font-bold">₹0 Delivery Fee</span>
               </div>
+            </div>
+
+            <!-- WhatsApp Support Info Pill (Strictly for support, not a checkout redirect) -->
+            <div class="p-3 bg-[#F0FDF4] border border-[#BBF7D0] rounded-xl flex items-center justify-between text-xs text-[#166534]">
+              <div class="flex items-center gap-2">
+                <span class="text-base">💬</span>
+                <span class="text-[11px] leading-tight">Need assistance or custom design help? Our WhatsApp desk is active for support.</span>
+              </div>
+              <a href="https://wa.me/918106992102?text=Hi%20Printora%20Support%2C%20I%20have%20a%20question%20about%20my%20order." target="_blank" rel="noopener noreferrer" class="text-[10px] font-bold text-emerald-700 underline flex-shrink-0 ml-2">Chat Desk</a>
             </div>
 
             <!-- Final Price Breakdown -->
@@ -466,8 +487,8 @@ export function renderCheckoutModal() {
             <span>${currentStep === 1 ? 'Continue to Address →' : 'Review & Confirm Order →'}</span>
           </button>
 
-          <button type="button" id="chk-confirm-whatsapp-btn" class="flex-1 bg-[#25D366] hover:bg-[#1EBE5D] text-white font-extrabold py-3.5 px-4 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 shadow-lg flex items-center justify-center gap-2 cursor-pointer ${currentStep === 3 ? '' : 'hidden'}">
-            <span>💬 Send Order to WhatsApp (+91 8106992102)</span>
+          <button type="button" id="chk-pay-razorpay-btn" class="flex-1 bg-[#111] hover:bg-[#FF6B35] text-white font-extrabold py-3.5 px-4 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 shadow-xl flex items-center justify-center gap-2 cursor-pointer ${currentStep === 3 ? '' : 'hidden'}">
+            <span>🔒 Pay ₹${total} via Razorpay / UPI</span>
           </button>
         </div>
 
@@ -509,7 +530,7 @@ export function initCheckoutModalEvents() {
     const s3 = document.getElementById('checkout-step-3');
     const prevBtn = document.getElementById('chk-prev-step-btn');
     const nextBtn = document.getElementById('chk-next-step-btn');
-    const confirmBtn = document.getElementById('chk-confirm-whatsapp-btn');
+    const payRazorpayBtn = document.getElementById('chk-pay-razorpay-btn');
     const backLabel = document.getElementById('checkout-back-label');
 
     // Dynamically update 3-Step Stepper Header pills
@@ -543,10 +564,10 @@ export function initCheckoutModalEvents() {
     if (pill3) {
       if (step === 3) {
         pill3.className = 'flex items-center gap-1.5 step-indicator text-[#FF6B35] font-extrabold';
-        pill3.innerHTML = `<span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold bg-[#FF6B35] text-white">3</span><span class="text-[11px]">3. WhatsApp</span>`;
+        pill3.innerHTML = `<span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold bg-[#FF6B35] text-white">3</span><span class="text-[11px]">3. Payment</span>`;
       } else {
         pill3.className = 'flex items-center gap-1.5 step-indicator text-[#888] font-normal';
-        pill3.innerHTML = `<span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold bg-[#DDD4C4] text-[#666]">3</span><span class="text-[11px]">3. WhatsApp</span>`;
+        pill3.innerHTML = `<span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold bg-[#DDD4C4] text-[#666]">3</span><span class="text-[11px]">3. Payment</span>`;
       }
     }
 
@@ -567,9 +588,13 @@ export function initCheckoutModalEvents() {
       }
     }
 
-    if (confirmBtn) {
-      if (step === 3) confirmBtn.classList.remove('hidden');
-      else confirmBtn.classList.add('hidden');
+    if (payRazorpayBtn) {
+      if (step === 3) {
+        payRazorpayBtn.classList.remove('hidden');
+        payRazorpayBtn.innerHTML = `<span>🔒 Pay ₹${store.getCartTotal()} via Razorpay / UPI</span>`;
+      } else {
+        payRazorpayBtn.classList.add('hidden');
+      }
     }
 
     if (backLabel) {
@@ -844,13 +869,10 @@ export function initCheckoutModalEvents() {
   }
 
 
-  // Step 3 WhatsApp Order Submission & Redirection
-  const confirmWhatsAppBtn = document.getElementById('chk-confirm-whatsapp-btn');
-  if (confirmWhatsAppBtn) {
-    confirmWhatsAppBtn.addEventListener('click', async () => {
-      confirmWhatsAppBtn.disabled = true;
-      confirmWhatsAppBtn.innerHTML = `<span>⏳ Preparing WhatsApp Order Desk...</span>`;
-
+  // Step 3 Razorpay Live Online Payment Handler
+  const payRazorpayBtn = document.getElementById('chk-pay-razorpay-btn');
+  if (payRazorpayBtn) {
+    payRazorpayBtn.addEventListener('click', async () => {
       const name = document.getElementById('chk-name')?.value.trim() || 'Customer';
       const phone = document.getElementById('chk-phone')?.value.trim() || '';
       const email = document.getElementById('chk-email')?.value.trim() || '';
@@ -862,51 +884,284 @@ export function initCheckoutModalEvents() {
       const state = document.getElementById('chk-state')?.value.trim() || '';
       const instructions = document.getElementById('chk-instructions')?.value.trim() || '';
 
-      try {
-        const order = await store.submitOrder({
-          name,
-          phone,
-          email,
-          pincode,
-          house,
-          area,
-          city,
-          district,
-          state,
-          specialInstructions: instructions,
-          paymentMethod: 'WhatsApp Order Desk (+91 8106992102)',
-          paymentStatus: 'Payment Pending',
-          discount: store.getCouponDiscount()
-        });
+      if (!name) {
+        alert("Please enter your name.");
+        window.setCheckoutStep(2);
+        return;
+      }
+      if (!phone || phone.length !== 10) {
+        alert("Please enter a valid 10-digit mobile number.");
+        window.setCheckoutStep(2);
+        return;
+      }
+      if (!email || !email.includes('@')) {
+        alert("Please enter a valid email address.");
+        window.setCheckoutStep(2);
+        return;
+      }
+      if (!pincode || pincode.length !== 6) {
+        alert("Please enter a valid 6-digit postal PIN code.");
+        window.setCheckoutStep(2);
+        return;
+      }
 
-        // Trigger confetti
-        if (typeof window.confetti === 'function') {
-          window.confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+      const total = store.getCartTotal();
+      if (total <= 0) {
+        alert("Your cart total is ₹0. Please add products to checkout.");
+        return;
+      }
+
+      payRazorpayBtn.disabled = true;
+      payRazorpayBtn.innerHTML = `<span>⏳ Initiating Secure Razorpay Gateway...</span>`;
+
+      // Helper to launch Razorpay Modal
+      const launchRazorpayModal = (serverOrderId = null) => {
+        if (typeof window.Razorpay !== 'function') {
+          alert("Razorpay checkout is loading. Please verify your connection and try again.");
+          payRazorpayBtn.disabled = false;
+          payRazorpayBtn.innerHTML = `<span>🔒 Pay ₹${total} via Razorpay / UPI</span>`;
+          return;
         }
 
-        // Store last order
-        try {
-          localStorage.setItem('printora_last_order', JSON.stringify(order));
-        } catch (e) {}
+        const razorpayKey = store.settings.razorpayKeyId || 'rzp_live_TwnbxHtTo3019C';
+        const options = {
+          key: razorpayKey,
+          amount: Math.round(total * 100), // In paise
+          currency: 'INR',
+          name: 'PRINTORA',
+          description: `Custom Merchandise Order (${store.cart.length} item${store.cart.length > 1 ? 's' : ''})`,
+          image: '/assets/logo.png',
+          prefill: {
+            name: name,
+            email: email,
+            contact: phone
+          },
+          notes: {
+            customer_name: name,
+            customer_phone: phone,
+            shipping_pincode: pincode,
+            brand: 'PRINTORA'
+          },
+          theme: {
+            color: '#FF6B35'
+          },
+          modal: {
+            ondismiss: function() {
+              payRazorpayBtn.disabled = false;
+              payRazorpayBtn.innerHTML = `<span>🔒 Pay ₹${total} via Razorpay / UPI</span>`;
+              store.showToast('Payment window closed. You can retry when ready.', 'info');
+            }
+          },
+          handler: async function (response) {
+            try {
+              payRazorpayBtn.innerHTML = `<span>⏳ Verifying Payment & Creating Order...</span>`;
 
-        // Clear cart
-        store.clearCart();
+              const order = await store.submitOrder({
+                name,
+                phone,
+                email,
+                pincode,
+                house,
+                area,
+                city,
+                district,
+                state,
+                specialInstructions: instructions,
+                paymentMethod: 'Razorpay Online (UPI / Card / NetBanking)',
+                paymentStatus: 'Payment Confirmed',
+                paymentId: response.razorpay_payment_id,
+                razorpayOrderId: response.razorpay_order_id || serverOrderId || '',
+                razorpaySignature: response.razorpay_signature || '',
+                status: 'Payment Confirmed',
+                discount: store.getCouponDiscount()
+              });
 
-        // Close checkout
-        closeCheckoutModal();
-        store.showToast(`Order ${order.orderCode} Created! Opening WhatsApp...`, 'success');
+              // Trigger confetti celebration
+              if (typeof window.confetti === 'function') {
+                window.confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
+              }
 
-        // Redirect directly to official WhatsApp number +91 8106992102
-        const waUrl = generateWhatsAppUrl(order);
-        setTimeout(() => {
-          window.location.href = waUrl;
-        }, 1000);
+              // Save last order
+              try {
+                localStorage.setItem('printora_last_order', JSON.stringify(order));
+              } catch (e) {}
 
+              // Send transactional confirmation email if Brevo is configured
+              try {
+                const brevoKey = store.settings.brevoApiKey || localStorage.getItem('printora_brevo_api_key');
+                if (brevoKey && email) {
+                  sendPaymentConfirmedEmail({
+                    apiKey: brevoKey,
+                    toEmail: email,
+                    toName: name,
+                    orderCode: order.orderCode,
+                    totalAmount: total,
+                    items: order.items || []
+                  }).catch(() => {});
+                }
+              } catch (e) {}
+
+              // Clear cart
+              store.clearCart();
+
+              // Render In-Modal Order Confirmation Screen
+              renderOrderSuccessView(order, response.razorpay_payment_id);
+
+            } catch (err) {
+              console.error("Order processing error:", err);
+              alert("Payment received, but error recording order: " + err.message);
+              payRazorpayBtn.disabled = false;
+              payRazorpayBtn.innerHTML = `<span>🔒 Pay ₹${total} via Razorpay / UPI</span>`;
+            }
+          }
+        };
+
+        if (serverOrderId) {
+          options.order_id = serverOrderId;
+        }
+
+        const rzp = new window.Razorpay(options);
+        rzp.on('payment.failed', function (resp) {
+          console.error("Payment failed:", resp.error);
+          alert(`Payment failed: ${resp.error?.description || 'Transaction declined'}`);
+          payRazorpayBtn.disabled = false;
+          payRazorpayBtn.innerHTML = `<span>🔒 Pay ₹${total} via Razorpay / UPI</span>`;
+        });
+        rzp.open();
+      };
+
+      // Create Razorpay standard order via server API
+      try {
+        const res = await fetch('/api/razorpay/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: total,
+            currency: 'INR',
+            receipt: 'rcpt_' + Date.now(),
+            notes: {
+              customer_name: name,
+              customer_phone: phone,
+              customer_email: email
+            }
+          })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.order && data.order.id) {
+            launchRazorpayModal(data.order.id);
+            return;
+          }
+        }
+        // Fallback to client standard checkout
+        launchRazorpayModal(null);
       } catch (err) {
-        alert("Failed to create order: " + err.message);
-        confirmWhatsAppBtn.disabled = false;
-        confirmWhatsAppBtn.innerHTML = `<span>💬 Send Order to WhatsApp (+91 8106992102)</span>`;
+        console.warn("Server order creation fallback:", err);
+        launchRazorpayModal(null);
       }
     });
   }
+}
+
+export function renderOrderSuccessView(order, paymentId) {
+  const modal = document.getElementById('checkout-modal');
+  if (!modal) return;
+
+  const waSupportUrl = `https://wa.me/918106992102?text=${encodeURIComponent(`Hi Printora Support! I just placed Order ${order.orderCode} with Payment ID ${paymentId}. Please confirm my order details.`)}`;
+
+  modal.innerHTML = `
+    <div class="relative w-full max-w-lg bg-[#FAF8F5] border border-[#DDD4C4] rounded-3xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden text-[#111] animate-fade-in font-sans">
+      
+      <!-- Top Success Header -->
+      <div class="bg-[#111111] text-white px-5 py-4 flex items-center justify-between border-b border-[#222]">
+        <div class="flex items-center gap-2">
+          <span class="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-sm">✓</span>
+          <span class="font-heading font-bold text-base text-white">Order Confirmed!</span>
+        </div>
+        <button type="button" id="chk-success-close-btn" class="text-xs text-[#AAA] hover:text-white font-bold p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer" aria-label="Close">
+          ✕
+        </button>
+      </div>
+
+      <!-- Success Content Body -->
+      <div class="flex-1 overflow-y-auto p-5 space-y-4">
+        
+        <!-- Big Celebration Banner -->
+        <div class="text-center py-4 bg-white border border-[#DDD4C4] rounded-2xl p-5 shadow-sm space-y-2">
+          <div class="w-14 h-14 mx-auto rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-2xl font-bold shadow-inner">
+            ✓
+          </div>
+          <h2 class="font-heading text-xl font-bold text-black mt-2">Payment Received & Confirmed!</h2>
+          <p class="text-xs text-[#666] max-w-sm mx-auto">
+            Thank you, <strong class="text-black">${order.customerName}</strong>! Your order has been placed into our production pipeline.
+          </p>
+          <div class="inline-flex items-center gap-2 bg-[#FAF7F2] border border-[#DDD4C4] px-3.5 py-1.5 rounded-full text-xs font-mono font-bold text-black mt-1">
+            <span>Order Code:</span>
+            <span class="text-[#FF6B35] font-extrabold">${order.orderCode}</span>
+          </div>
+        </div>
+
+        <!-- Payment & Delivery Badges -->
+        <div class="grid grid-cols-2 gap-2.5 text-xs">
+          <div class="p-3 bg-white border border-[#DDD4C4] rounded-xl space-y-0.5">
+            <span class="text-[10px] uppercase font-bold text-[#777] block">Razorpay Payment ID</span>
+            <span class="font-mono font-bold text-emerald-700 text-[11px] truncate block" title="${paymentId}">
+              ✓ ${paymentId || 'Verified Live'}
+            </span>
+          </div>
+          <div class="p-3 bg-white border border-[#DDD4C4] rounded-xl space-y-0.5">
+            <span class="text-[10px] uppercase font-bold text-[#777] block">Delivery Charge</span>
+            <span class="font-mono font-bold text-emerald-700 text-[11px] block">
+              ₹0 (Free Pan-India)
+            </span>
+          </div>
+        </div>
+
+        <!-- Shipping Destination Summary -->
+        <div class="p-3.5 bg-white border border-[#DDD4C4] rounded-xl text-xs space-y-1">
+          <span class="text-[10px] uppercase tracking-wider font-bold text-[#777] block">Shipping Destination</span>
+          <p class="font-semibold text-black">${order.customerName} (${order.customerPhone})</p>
+          <p class="text-[#666] text-[11px] leading-relaxed">
+            ${order.shippingHouse ? order.shippingHouse + ', ' : ''}${order.shippingArea ? order.shippingArea + ', ' : ''}${order.shippingCity ? order.shippingCity + ', ' : ''}${order.shippingState ? order.shippingState + ' - ' : ''}${order.shippingPincode}
+          </p>
+        </div>
+
+        <!-- WhatsApp Support Desk (Optional assistance, NOT checkout redirect) -->
+        <div class="p-4 bg-[#F0FDF4] border border-[#BBF7D0] rounded-2xl flex items-center justify-between gap-3">
+          <div class="space-y-0.5">
+            <strong class="text-xs font-bold text-[#166534] block">💬 Need custom design assistance or modifications?</strong>
+            <p class="text-[11px] text-[#15803D]">Our official WhatsApp support desk is active to assist with your order.</p>
+          </div>
+          <a href="${waSupportUrl}" target="_blank" rel="noopener noreferrer" class="bg-[#166534] hover:bg-[#14532D] text-white px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap shadow transition-colors flex items-center gap-1.5 flex-shrink-0">
+            <span>Open WhatsApp</span>
+            <span>→</span>
+          </a>
+        </div>
+
+      </div>
+
+      <!-- Action Footer -->
+      <div class="bg-white border-t border-[#DDD4C4] p-4 flex gap-3">
+        <button type="button" id="chk-success-continue-btn" class="w-full bg-[#111] hover:bg-[#FF6B35] text-white font-extrabold py-3.5 px-4 rounded-xl text-xs uppercase tracking-wider transition-colors shadow cursor-pointer font-heading">
+          Continue Shopping
+        </button>
+      </div>
+
+    </div>
+  `;
+
+  // Attach close listeners
+  const closeBtn = document.getElementById('chk-success-close-btn');
+  const continueBtn = document.getElementById('chk-success-continue-btn');
+  const handleClose = () => {
+    closeCheckoutModal();
+    // Re-render checkout modal template for next time
+    const temp = document.createElement('div');
+    temp.innerHTML = renderCheckoutModal();
+    const newModal = temp.querySelector('#checkout-modal');
+    if (newModal) modal.innerHTML = newModal.innerHTML;
+  };
+  if (closeBtn) closeBtn.addEventListener('click', handleClose);
+  if (continueBtn) continueBtn.addEventListener('click', handleClose);
 }

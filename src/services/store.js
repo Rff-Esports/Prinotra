@@ -950,13 +950,20 @@ class PrintoraStore {
       announcementBanner: "FREE SHIPPING ACROSS INDIA • USE COUPON 'PRINTORA 25' FOR FLAT ₹25 OFF ON MRP!",
       whatsappCloudApiToken: "",
       whatsappPhoneNumberId: "",
-      razorpayKeyId: safeGetItem('printora_razorpay_key_id') || "rzp_test_Tw51XlubBFx1y1",
+      razorpayKeyId: safeGetItem('printora_razorpay_key_id') || "rzp_live_TwnbxHtTo3019C",
+      razorpayKeySecret: safeGetItem('printora_razorpay_key_secret') || "k5U6kxipoECI6VLiOgnX00YJ",
       brevoApiKey: safeGetItem('printora_brevo_api_key') || "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"
     };
     if (!saved) return defaults;
     try {
       const parsed = JSON.parse(saved);
-      return { ...defaults, ...parsed, announcementBanner: "FREE SHIPPING ACROSS INDIA • USE COUPON 'PRINTORA 25' FOR FLAT ₹25 OFF ON MRP!" };
+      return {
+        ...defaults,
+        ...parsed,
+        razorpayKeyId: (parsed.razorpayKeyId && parsed.razorpayKeyId !== "rzp_test_Tw51XlubBFx1y1") ? parsed.razorpayKeyId : "rzp_live_TwnbxHtTo3019C",
+        razorpayKeySecret: parsed.razorpayKeySecret || "k5U6kxipoECI6VLiOgnX00YJ",
+        announcementBanner: "FREE SHIPPING ACROSS INDIA • USE COUPON 'PRINTORA 25' FOR FLAT ₹25 OFF ON MRP!"
+      };
     } catch(e) {
       return defaults;
     }
@@ -1373,14 +1380,15 @@ class PrintoraStore {
       shippingPincode: customerData.pincode.trim(),
       shippingCountry: 'India',
       specialInstructions: customerData.specialInstructions?.trim() || '',
-      paymentMethod: customerData.paymentMethod || 'Online (Razorpay / UPI)',
+      paymentMethod: customerData.paymentMethod || 'Razorpay Online (UPI / Card / NetBanking)',
       paymentStatus: customerData.paymentStatus || 'Payment Confirmed',
+      paymentId: customerData.paymentId || null,
       items: [...this.cart],
       subtotal,
       discount,
       shippingCharge: 0,
       totalAmount,
-      status: 'Order Placed',
+      status: customerData.status || (customerData.paymentStatus === 'Payment Confirmed' ? 'Payment Confirmed' : 'Order Placed'),
       createdAt: new Date().toISOString()
     };
 
