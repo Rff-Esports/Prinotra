@@ -1,6 +1,8 @@
 // PRINTORA Master Product Catalogue
 // Rule: Never invent prices. Products without confirmed prices have price: null (displays "REQUEST A QUOTE").
 
+import { CUSTOM_IMAGE_OVERRIDES } from './customProducts.js';
+
 export const CATEGORIES = [
   {
     id: "apparel",
@@ -1685,3 +1687,15 @@ export const INITIAL_PRODUCTS = [
     }
   }
 ];
+
+// Apply uploaded product images so ALL visitors (logged in, guests, or new devices) see the exact uploaded images
+for (const prod of INITIAL_PRODUCTS) {
+  const custom = CUSTOM_IMAGE_OVERRIDES?.[prod.id];
+  if (custom) {
+    if (custom.images && custom.images.length > 0) {
+      prod.images = [...custom.images];
+    } else if (custom.image) {
+      prod.images = [custom.image];
+    }
+  }
+}
