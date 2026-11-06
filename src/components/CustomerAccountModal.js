@@ -182,12 +182,12 @@ export function renderCustomerAccountModal() {
                   <div class="flex items-center gap-2">
                     ${renderIcon('mail', 'w-4 h-4 text-[#FF6B35]')}
                     <span class="font-bold text-black">Support Email:</span>
-                    <a href="mailto:support@printoracustom.in" class="underline">support@printoracustom.in</a>
+                    <a href="mailto:printora256@gmail.com" class="underline">printora256@gmail.com</a>
                   </div>
                   <div class="flex items-center gap-2">
                     ${renderIcon('instagram', 'w-4 h-4 text-[#FF6B35]')}
                     <span class="font-bold text-black">Official Instagram:</span>
-                    <a href="https://instagram.com/printora.gifts" target="_blank" class="underline">@printora.gifts</a>
+                    <a href="https://www.instagram.com/printoracustom.in?vrfl=MXRwdDYyMWo3ajR0NA==" target="_blank" class="underline">@printoracustom.in</a>
                   </div>
                 </div>
               </div>

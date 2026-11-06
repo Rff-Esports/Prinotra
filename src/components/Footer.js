@@ -30,8 +30,8 @@ export function renderFooter() {
             <div class="text-xs text-[#CCC] space-y-1.5 pt-2">
               <div>📍 <strong>Domain:</strong> <a href="https://printoracustom.in" class="hover:underline text-[#FF6B35]">https://printoracustom.in</a></div>
               <div>💬 <strong>WhatsApp:</strong> +91 8106992102</div>
-              <div>📸 <strong>Instagram:</strong> @printora.gifts</div>
-              <div>✉️ <strong>Support:</strong> support@printoracustom.in</div>
+              <div>📸 <strong>Instagram:</strong> <a href="https://www.instagram.com/printoracustom.in?vrfl=MXRwdDYyMWo3ajR0NA==" target="_blank" rel="noopener noreferrer" class="hover:underline text-[#FF6B35]">@printoracustom.in</a></div>
+              <div>✉️ <strong>Support:</strong> <a href="mailto:printora256@gmail.com" class="hover:underline text-[#FF6B35]">printora256@gmail.com</a></div>
               <div>🚚 <strong>Shipping:</strong> FREE SHIPPING ON ALL ORDERS ACROSS INDIA</div>
             </div>
 
@@ -41,7 +41,7 @@ export function renderFooter() {
                  class="w-10 h-10 rounded-full bg-[#202020] border border-[#333] text-[#25D366] hover:bg-[#25D366] hover:text-black flex items-center justify-center transition-all shadow-sm" aria-label="Official WhatsApp">
                 ${renderIcon('whatsapp', 'w-5 h-5')}
               </a>
-              <a href="https://instagram.com/printora.gifts" target="_blank" rel="noopener noreferrer" 
+              <a href="https://www.instagram.com/printoracustom.in?vrfl=MXRwdDYyMWo3ajR0NA==" target="_blank" rel="noopener noreferrer" 
                  class="w-10 h-10 rounded-full bg-[#202020] border border-[#333] text-[#FF6B35] hover:bg-[#FF6B35] hover:text-white flex items-center justify-center transition-all shadow-sm" aria-label="Official Instagram">
                 ${renderIcon('instagram', 'w-5 h-5')}
               </a>

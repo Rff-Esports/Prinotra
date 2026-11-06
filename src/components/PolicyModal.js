@@ -35,7 +35,7 @@ export const POLICIES = {
       <p>We work with vetted printing and textile dealers (located in Nizamabad, Hyderabad, and Tirupur) under strict non-disclosure obligations. Dealers receive only the production artwork and delivery destination required to manufacture and dispatch the item. Dealer agreements explicitly forbid the sale or external sharing of your data.</p>
 
       <h4>6. Contact for Privacy Inquiries</h4>
-      <p>For data rectification, access, or deletion requests, please contact our privacy compliance desk at <strong>support@printoracustom.in</strong> or write to PRINTORA, Nizamabad, Telangana 503001, India.</p>
+      <p>For data rectification, access, or deletion requests, please contact our privacy compliance desk at <strong>printora256@gmail.com</strong> or write to PRINTORA, Nizamabad, Telangana 503001, India.</p>
     `
   },
   terms: {
@@ -96,7 +96,7 @@ export const POLICIES = {
       </ul>
 
       <h4>3. Evidence Required & Reporting Window</h4>
-      <p>To report a valid complaint, please contact our support team on WhatsApp (+91 8106992102) or email <strong>support@printoracustom.in</strong> within <strong>48 hours of delivery</strong>. Please provide:</p>
+      <p>To report a valid complaint, please contact our support team on WhatsApp (+91 8106992102) or email <strong>printora256@gmail.com</strong> within <strong>48 hours of delivery</strong>. Please provide:</p>
       <ul>
         <li>Your Unique Order ID (e.g. PRN-20261104-XXXX).</li>
         <li>An unedited parcel unboxing video and clear, high-resolution photographs showing the defect or transit damage.</li>
@@ -162,12 +162,12 @@ export const POLICIES = {
 
         <div>
           <strong class="text-black block text-sm">Official Support Email:</strong>
-          <a href="mailto:support@printoracustom.in" class="text-[#997A52] font-semibold text-sm hover:underline">support@printoracustom.in</a>
+          <a href="mailto:printora256@gmail.com" class="text-[#997A52] font-semibold text-sm hover:underline">printora256@gmail.com</a>
         </div>
 
         <div>
           <strong class="text-black block text-sm">Instagram Community:</strong>
-          <a href="https://instagram.com/printoracustom.in" target="_blank" class="text-[#997A52] font-semibold text-sm hover:underline">@printoracustom.in</a>
+          <a href="https://www.instagram.com/printoracustom.in?vrfl=MXRwdDYyMWo3ajR0NA==" target="_blank" class="text-[#997A52] font-semibold text-sm hover:underline">@printoracustom.in</a>
         </div>
 
         <div>

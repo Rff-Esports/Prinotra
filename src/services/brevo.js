@@ -116,7 +116,7 @@ export async function sendBrevoOtpEmail({
                   </div>
 
                   <p style="margin: 0; font-size: 11px; color: #777777; line-height: 1.5;">
-                    If you did not request this code, please ignore this email or contact support at <a href="mailto:support@printoracustom.in" style="color: #FF6B35; text-decoration: none;">support@printoracustom.in</a>.
+                    If you did not request this code, please ignore this email or contact support at <a href="mailto:printora256@gmail.com" style="color: #FF6B35; text-decoration: none;">printora256@gmail.com</a>.
                   </p>
                 </td>
               </tr>
