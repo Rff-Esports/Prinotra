@@ -22,6 +22,79 @@ export const ADMIN_ORDER_STATUSES = [
   "Cancelled"
 ];
 
+// Robust binary blob downloader that avoids Chrome/Edge/Safari data: URL blocking
+export function downloadArtworkFile(dataUrl, fileName) {
+  if (!dataUrl) {
+    alert("Artwork file data is missing or empty.");
+    return;
+  }
+
+  const safeName = (fileName || 'printora-customer-design.png').replace(/[^a-zA-Z0-9._-]/g, '_');
+
+  try {
+    if (dataUrl.startsWith('data:')) {
+      const parts = dataUrl.split(',');
+      const meta = parts[0];
+      const mime = meta.match(/:(.*?);/)?.[1] || 'image/png';
+      const b64Data = parts[1] || '';
+      
+      const cleanB64 = b64Data.replace(/[\s\r\n]+/g, '');
+      const binaryString = atob(cleanB64);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      
+      const blob = new Blob([bytes], { type: mime });
+      const blobUrl = URL.createObjectURL(blob);
+      
+      const tempLink = document.createElement('a');
+      tempLink.href = blobUrl;
+      tempLink.download = safeName;
+      tempLink.style.display = 'none';
+      document.body.appendChild(tempLink);
+      tempLink.click();
+      
+      setTimeout(() => {
+        if (tempLink.parentNode) tempLink.parentNode.removeChild(tempLink);
+        URL.revokeObjectURL(blobUrl);
+      }, 3000);
+      return;
+    }
+
+    const tempLink = document.createElement('a');
+    tempLink.href = dataUrl;
+    tempLink.download = safeName;
+    tempLink.target = '_blank';
+    tempLink.style.display = 'none';
+    document.body.appendChild(tempLink);
+    tempLink.click();
+    setTimeout(() => {
+      if (tempLink.parentNode) tempLink.parentNode.removeChild(tempLink);
+    }, 1000);
+  } catch (err) {
+    console.error("Blob download error, using visual tab fallback:", err);
+    const win = window.open();
+    if (win) {
+      win.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head><title>Printora Customer Artwork - ${safeName}</title></head>
+          <body style="margin:0;padding:24px;background:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:90vh;font-family:sans-serif;color:white;">
+            <p style="margin-bottom:16px;font-size:14px;color:#FF6B35;font-weight:bold;">Right-click (or long press) the image below and select "Save Image As...":</p>
+            <img src="${dataUrl}" style="max-width:92%;max-height:80vh;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,0.8);background:#fff;" alt="${safeName}">
+          </body>
+        </html>
+      `);
+      win.document.close();
+    }
+  }
+}
+if (typeof window !== 'undefined') {
+  window.downloadArtworkFile = downloadArtworkFile;
+}
+
 export function getAdminCredentials() {
   try {
     const saved = typeof localStorage !== 'undefined' ? localStorage.getItem('printora_admin_credentials') : null;
@@ -139,6 +212,7 @@ export function renderAdminDashboard() {
         customDesignItems.push({
           order: o,
           item,
+          itemIndex: itemIdx,
           uniqueKey: `${o.orderCode || o.id}-${itemIdx}`
         });
       }
@@ -419,8 +493,14 @@ export function renderAdminDashboard() {
                     </div>
 
                     <div class="space-y-3 text-xs">
-                      ${o.items.map(it => {
-                        const design = it.uploadedDesign;
+                      ${o.items.map((it, itemIdx) => {
+                        let design = it.uploadedDesign;
+                        if ((!design || !design.dataUrl) && typeof window !== 'undefined') {
+                          try {
+                            const cached = localStorage.getItem(`printora_artwork_${o.orderCode}_${itemIdx}`);
+                            if (cached) design = JSON.parse(cached);
+                          } catch (e) {}
+                        }
                         const hasArtwork = Boolean(design && design.dataUrl);
                         const isPdf = design?.isPdf || design?.type === 'application/pdf';
                         const basePrice = it.basePrice || (it.price - (it.printingCharge || 0));
@@ -498,13 +578,13 @@ export function renderAdminDashboard() {
                                       🔍 View Full
                                     </button>
                                   ` : `
-                                    <a href="${design.dataUrl}" target="_blank" class="bg-[#FAF7F2] hover:bg-[#F0EAE1] text-black border border-[#DDD4C4] py-1.5 px-2.5 rounded-lg text-xs font-bold transition-all text-center">
+                                    <button type="button" class="admin-download-design-btn bg-[#FAF7F2] hover:bg-[#F0EAE1] text-black border border-[#DDD4C4] py-1.5 px-2.5 rounded-lg text-xs font-bold transition-all text-center cursor-pointer" data-img-src="${design.dataUrl}" data-img-name="${design.name}">
                                       📄 Open PDF
-                                    </a>
+                                    </button>
                                   `}
-                                  <a href="${design.dataUrl}" download="${design.name || `Printora-${o.orderCode}-design`}" class="bg-[#111] hover:bg-[#FF6B35] text-white py-1.5 px-2.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer">
+                                  <button type="button" class="admin-download-design-btn bg-[#111] hover:bg-[#FF6B35] text-white py-1.5 px-2.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer" data-img-src="${design.dataUrl}" data-img-name="${design.name || `Printora-${o.orderCode}-design`}">
                                     <span>⬇️ Download Design</span>
-                                  </a>
+                                  </button>
                                 </div>
                               </div>
                             ` : (it.artworkFile ? `
@@ -565,8 +645,14 @@ export function renderAdminDashboard() {
               </div>
             ` : `
               <div class="space-y-4" id="admin-custom-designs-grid">
-                ${customDesignItems.map(({ order, item, uniqueKey }) => {
-                  const design = item.uploadedDesign;
+                ${customDesignItems.map(({ order, item, uniqueKey, itemIndex }) => {
+                  let design = item.uploadedDesign;
+                  if ((!design || !design.dataUrl) && typeof window !== 'undefined') {
+                    try {
+                      const cached = localStorage.getItem(`printora_artwork_${order.orderCode}_${itemIndex}`);
+                      if (cached) design = JSON.parse(cached);
+                    } catch (e) {}
+                  }
                   const hasArtwork = Boolean(design && design.dataUrl);
                   const isPdf = design?.isPdf || design?.type === 'application/pdf';
                   const basePrice = item.basePrice || (item.price - (item.printingCharge || 0));
@@ -671,14 +757,14 @@ export function renderAdminDashboard() {
                                     🔍 View Full
                                   </button>
                                 ` : `
-                                  <a href="${design.dataUrl}" target="_blank" class="bg-[#FAF7F2] hover:bg-[#F0EAE1] text-black border border-[#DDD4C4] py-2 px-2.5 rounded-lg text-xs font-bold transition-all text-center">
+                                  <button type="button" class="admin-download-design-btn bg-[#FAF7F2] hover:bg-[#F0EAE1] text-black border border-[#DDD4C4] py-2 px-2.5 rounded-lg text-xs font-bold transition-all text-center cursor-pointer" data-img-src="${design.dataUrl}" data-img-name="${design.name}">
                                     📄 Open PDF
-                                  </a>
+                                  </button>
                                 `}
 
-                                <a href="${design.dataUrl}" download="${design.name || `Printora-${order.orderCode}-design`}" class="bg-[#111] hover:bg-[#FF6B35] text-white py-2 px-2.5 rounded-lg text-xs font-bold transition-colors text-center cursor-pointer flex items-center justify-center gap-1">
+                                <button type="button" class="admin-download-design-btn bg-[#111] hover:bg-[#FF6B35] text-white py-2 px-2.5 rounded-lg text-xs font-bold transition-colors text-center cursor-pointer flex items-center justify-center gap-1" data-img-src="${design.dataUrl}" data-img-name="${design.name || `Printora-${order.orderCode}-design`}">
                                   <span>⬇️ Download</span>
-                                </a>
+                                </button>
                               </div>
                             </div>
                           ` : (item.artworkFile ? `
@@ -1442,6 +1528,36 @@ ON CONFLICT (user_id) DO UPDATE SET role = 'admin';</pre>
         </div>
       </div>
 
+      <!-- Dedicated Lightbox Modal for Customer Uploaded Designs -->
+      <div id="admin-design-lightbox-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md">
+        <div class="relative w-full max-w-2xl bg-white border border-[#DDD4C4] rounded-3xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden text-[#111] animate-fade-in">
+          <!-- Lightbox Header -->
+          <div class="bg-[#111] text-white px-5 py-4 flex items-center justify-between border-b border-[#222]">
+            <div>
+              <span class="text-[10px] text-[#FF6B35] font-bold uppercase tracking-wider block font-heading">Artwork Preview Inspector</span>
+              <h3 class="font-heading text-base sm:text-lg font-bold text-white truncate" id="admin-lightbox-filename">Customer Design</h3>
+              <p class="text-xs text-[#AAA]" id="admin-lightbox-subtitle">Order & Customer Info</p>
+            </div>
+            <button type="button" id="admin-close-lightbox-btn" class="p-1.5 text-[#AAA] hover:text-white rounded-lg hover:bg-white/10 transition-colors cursor-pointer text-lg font-bold" aria-label="Close Preview">
+              ✕
+            </button>
+          </div>
+
+          <!-- Lightbox Image View Area -->
+          <div class="flex-1 overflow-auto p-4 sm:p-6 bg-[#1A1A1A] flex items-center justify-center min-h-[300px]">
+            <img id="admin-lightbox-img" src="" alt="Customer Uploaded Artwork" class="max-w-full max-h-[60vh] object-contain rounded-xl shadow-2xl border border-white/10">
+          </div>
+
+          <!-- Lightbox Footer -->
+          <div class="bg-white border-t border-[#DDD4C4] p-4 flex items-center justify-between gap-3">
+            <span class="text-xs text-[#666]">Original Full-Resolution Production Asset</span>
+            <button type="button" id="admin-lightbox-download-btn" class="bg-[#111] hover:bg-[#FF6B35] text-white font-bold py-2.5 px-4 rounded-xl text-xs uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shadow-md">
+              <span>⬇️ Download Original Design</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
   `;
 }
@@ -1592,14 +1708,14 @@ export function initAdminEvents() {
       const modalImg = document.getElementById('admin-lightbox-img');
       const modalSub = document.getElementById('admin-lightbox-subtitle');
       const modalFile = document.getElementById('admin-lightbox-filename');
-      const downloadLink = document.getElementById('admin-lightbox-download-link');
+      const downloadBtn = document.getElementById('admin-lightbox-download-btn');
 
       if (modalImg) modalImg.src = imgSrc;
       if (modalSub) modalSub.textContent = `Order: ${orderCode} | Customer: ${custName}`;
       if (modalFile) modalFile.textContent = imgName;
-      if (downloadLink) {
-        downloadLink.href = imgSrc;
-        downloadLink.download = imgName;
+      if (downloadBtn) {
+        downloadBtn.setAttribute('data-img-src', imgSrc);
+        downloadBtn.setAttribute('data-img-name', imgName);
       }
       if (modal) modal.classList.remove('hidden');
     }
@@ -1607,6 +1723,15 @@ export function initAdminEvents() {
     if (e.target.closest('#admin-close-lightbox-btn') || e.target.id === 'admin-design-lightbox-modal') {
       const modal = document.getElementById('admin-design-lightbox-modal');
       if (modal) modal.classList.add('hidden');
+    }
+
+    // Direct Download Click (from card button or lightbox modal)
+    const downloadBtn = e.target.closest('.admin-download-design-btn') || e.target.closest('#admin-lightbox-download-btn');
+    if (downloadBtn) {
+      e.preventDefault();
+      const imgSrc = downloadBtn.getAttribute('data-img-src');
+      const imgName = downloadBtn.getAttribute('data-img-name') || 'customer-design.png';
+      downloadArtworkFile(imgSrc, imgName);
     }
   });
 

@@ -169,13 +169,15 @@ export async function pushGlobalCloudState(partialState = {}) {
     ...o,
     items: (o.items || []).map(it => {
       let design = it.uploadedDesign;
-      if (design && design.dataUrl && design.dataUrl.length > 25000) {
+      if (design && design.dataUrl && design.dataUrl.length > 30000) {
+        // If dataUrl is too large for the 64KB edge snippet, keep artwork metadata
+        // and avoid corrupting the base64 string with arbitrary slicing. Full image stays preserved in local order vault.
         design = {
           name: design.name,
           size: design.size,
           type: design.type,
           isPdf: design.isPdf,
-          dataUrl: design.dataUrl.slice(0, 20000) // Compact preview string
+          hasVaultStorage: true
         };
       }
       return { ...it, uploadedDesign: design };

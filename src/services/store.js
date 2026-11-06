@@ -796,7 +796,26 @@ class PrintoraStore {
     const mergedMap = new Map();
     defaultOrders.forEach(o => mergedMap.set(o.orderCode || o.id, o));
     localOrders.forEach(o => mergedMap.set(o.orderCode || o.id, o));
-    cloudOrders.forEach(o => mergedMap.set(o.orderCode || o.id, o));
+    cloudOrders.forEach(cOrd => {
+      const code = cOrd.orderCode || cOrd.id;
+      const existing = mergedMap.get(code);
+      if (existing) {
+        // Retain local intact uploadedDesign dataUrl if available so cloud snippet never degrades local quality
+        const mergedItems = (cOrd.items || []).map((cItem, i) => {
+          const locItem = existing.items?.[i];
+          if (locItem?.uploadedDesign?.dataUrl && (!cItem?.uploadedDesign?.dataUrl || cItem.uploadedDesign.dataUrl.length < locItem.uploadedDesign.dataUrl.length)) {
+            return {
+              ...cItem,
+              uploadedDesign: locItem.uploadedDesign
+            };
+          }
+          return cItem;
+        });
+        mergedMap.set(code, { ...cOrd, items: mergedItems });
+      } else {
+        mergedMap.set(code, cOrd);
+      }
+    });
 
     return Array.from(mergedMap.values()).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }
@@ -1371,7 +1390,14 @@ class PrintoraStore {
       createdAt: new Date().toISOString()
     };
 
-    // 1. Save locally so order is never lost
+    // 1. Save locally and archive artwork to persistent design vault
+    (orderRecord.items || []).forEach((it, idx) => {
+      if (it.uploadedDesign && it.uploadedDesign.dataUrl) {
+        try {
+          safeSetItem(`printora_artwork_${orderCode}_${idx}`, JSON.stringify(it.uploadedDesign));
+        } catch (e) {}
+      }
+    });
     this.orders.unshift(orderRecord);
     this.saveOrders();
 

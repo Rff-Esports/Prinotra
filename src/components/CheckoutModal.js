@@ -444,13 +444,10 @@ export function renderCheckoutModal() {
                 <span class="text-emerald-700 font-bold">₹0 Delivery Fee</span>
               </div>
 
-              <!-- Direct Action Pay Buttons (Instant 1-Click Visibility on Mobile & Desktop) -->
-              <div class="pt-3 border-t border-[#DDD4C4] space-y-2">
+              <!-- Direct Action Pay Button (Instant 1-Click Razorpay Gateway) -->
+              <div class="pt-3 border-t border-[#DDD4C4]">
                 <button type="button" id="step3-card-pay-online-btn" onclick="document.getElementById('chk-pay-razorpay-btn')?.click();" class="w-full bg-[#111] hover:bg-[#FF6B35] text-white font-extrabold py-3.5 px-4 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 shadow-md flex items-center justify-center gap-2 cursor-pointer">
                   <span>🔒 Pay Online via Razorpay / UPI (₹${total})</span>
-                </button>
-                <button type="button" id="step3-card-pay-cod-btn" onclick="document.getElementById('chk-confirm-cod-btn')?.click();" class="w-full bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-extrabold py-3 px-4 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 shadow-sm flex items-center justify-center gap-2 cursor-pointer">
-                  <span>🚚 Confirm Order (Pay on Delivery)</span>
                 </button>
               </div>
             </div>
@@ -499,12 +496,9 @@ export function renderCheckoutModal() {
             <span>${currentStep === 1 ? 'Continue to Address →' : 'Review & Confirm Order →'}</span>
           </button>
 
-          <div id="chk-step3-buttons-wrap" class="flex-1 flex flex-col sm:flex-row gap-2 ${currentStep === 3 ? '' : 'hidden'}">
-            <button type="button" id="chk-pay-razorpay-btn" class="flex-1 bg-[#111] hover:bg-[#FF6B35] text-white font-extrabold py-3.5 px-3 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 shadow-xl flex items-center justify-center gap-2 cursor-pointer">
+          <div id="chk-step3-buttons-wrap" class="flex-1 ${currentStep === 3 ? 'flex' : 'hidden'}">
+            <button type="button" id="chk-pay-razorpay-btn" class="w-full bg-[#111] hover:bg-[#FF6B35] text-white font-extrabold py-3.5 px-3 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 shadow-xl flex items-center justify-center gap-2 cursor-pointer">
               <span>🔒 Pay ₹${total} via Razorpay / UPI</span>
-            </button>
-            <button type="button" id="chk-confirm-cod-btn" class="flex-1 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-extrabold py-3.5 px-3 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 shadow-xl flex items-center justify-center gap-2 cursor-pointer">
-              <span>🚚 Confirm Order (Pay on Delivery)</span>
             </button>
           </div>
         </div>
@@ -623,17 +617,6 @@ export function initCheckoutModalEvents() {
         payRazorpayBtn.innerHTML = `<span>🔒 Pay ₹${store.getCartTotal()} via Razorpay / UPI</span>`;
       } else {
         payRazorpayBtn.classList.add('hidden');
-      }
-    }
-
-    const confirmCodBtn = document.getElementById('chk-confirm-cod-btn');
-    if (confirmCodBtn) {
-      if (step === 3) {
-        confirmCodBtn.classList.remove('hidden');
-        confirmCodBtn.disabled = false;
-        confirmCodBtn.innerHTML = `<span>🚚 Confirm Order (Pay on Delivery)</span>`;
-      } else {
-        confirmCodBtn.classList.add('hidden');
       }
     }
 
@@ -958,59 +941,6 @@ export function initCheckoutModalEvents() {
     }
 
     return { name, phone, email, pincode, house, area, city, district, state, instructions };
-  }
-
-  // Step 3 Direct Confirmation / Pay on Delivery (Instant Order Creation)
-  const confirmCodBtn = document.getElementById('chk-confirm-cod-btn');
-  if (confirmCodBtn) {
-    confirmCodBtn.addEventListener('click', async () => {
-      const custData = getCustomerCheckoutData();
-      if (!custData) return;
-
-      const total = store.getCartTotal();
-      if (total <= 0) {
-        alert("Your cart total is ₹0. Please add products to checkout.");
-        return;
-      }
-
-      confirmCodBtn.disabled = true;
-      confirmCodBtn.innerHTML = `<span>⏳ Creating Your Order...</span>`;
-
-      try {
-        const order = await store.submitOrder({
-          name: custData.name,
-          phone: custData.phone,
-          email: custData.email,
-          pincode: custData.pincode,
-          house: custData.house,
-          area: custData.area,
-          city: custData.city,
-          district: custData.district,
-          state: custData.state,
-          specialInstructions: custData.instructions,
-          paymentMethod: 'Pay on Delivery (Cash / UPI at Doorstep)',
-          paymentStatus: 'Order Placed',
-          status: 'Order Placed',
-          discount: store.getCouponDiscount()
-        });
-
-        if (typeof window.confetti === 'function') {
-          window.confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
-        }
-
-        try {
-          localStorage.setItem('printora_last_order', JSON.stringify(order));
-        } catch (e) {}
-
-        store.clearCart();
-        store.showToast('Order confirmed successfully!', 'success');
-        renderOrderSuccessView(order, 'PAY-ON-DELIVERY');
-      } catch (err) {
-        alert(`Order submission failed: ${err.message}`);
-        confirmCodBtn.disabled = false;
-        confirmCodBtn.innerHTML = `<span>🚚 Confirm Order (Pay on Delivery)</span>`;
-      }
-    });
   }
 
   // Step 3 Razorpay Live Online Payment Handler

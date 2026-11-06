@@ -79,9 +79,9 @@ async function runTest() {
     district: 'Hyderabad',
     state: 'Telangana',
     specialInstructions: 'Leave with security if not available',
-    paymentMethod: 'Pay on Delivery (Cash / UPI at Doorstep)',
-    paymentStatus: 'Order Placed',
-    status: 'Order Placed'
+    paymentMethod: 'Razorpay Online (UPI / Card / NetBanking)',
+    paymentStatus: 'Payment Confirmed',
+    status: 'Payment Confirmed'
   });
 
   console.log('Placed Order Code:', placedOrder.orderCode);

@@ -758,12 +758,17 @@ export function processUploadedArtwork(file, onSuccess) {
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext('2d');
+      const isPng = file.type === 'image/png' || file.name.toLowerCase().endsWith('.png');
+      if (!isPng) {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, width, height);
+      }
       ctx.drawImage(img, 0, 0, width, height);
-      const dataUrl = canvas.toDataURL(file.type === 'image/png' ? 'image/png' : 'image/jpeg', 0.85);
+      const dataUrl = canvas.toDataURL(isPng ? 'image/png' : 'image/jpeg', 0.88);
       onSuccess({
         name: file.name,
         size: (dataUrl.length * 0.75 / 1024).toFixed(1) + ' KB',
-        type: file.type || 'image/jpeg',
+        type: isPng ? 'image/png' : 'image/jpeg',
         dataUrl: dataUrl,
         isPdf: false
       });
