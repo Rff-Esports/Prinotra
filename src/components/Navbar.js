@@ -93,6 +93,12 @@ export function renderNavbar() {
               </span>
             </button>
 
+            <!-- Install App Trigger -->
+            <button id="pwa-install-nav-btn" class="hidden sm:inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full bg-[#111111] hover:bg-[#FF6B35] text-white text-xs font-bold font-heading transition-all shadow-sm cursor-pointer" title="Install PRINTORA App">
+              <span>📲</span>
+              <span>Install App</span>
+            </button>
+
             <!-- User Greeting & Account Trigger (Shows "Hi, [Name]" as user inputs) -->
             <button id="nav-account-btn" class="flex items-center gap-1.5 py-1.5 px-3 rounded-full hover:bg-[#F5F5F5] border border-[#DDD4C4]/60 hover:border-[#FF6B35] transition-all text-[#333] hover:text-[#FF6B35] cursor-pointer" title="My Account" aria-label="My Account">
               <span class="w-6 h-6 rounded-full bg-[#111] text-white flex items-center justify-center text-[10px] font-bold font-mono">
@@ -129,8 +135,17 @@ export function renderNavbar() {
       <a href="#bulk-orders" class="block py-2 border-b border-[#F0EAE1] hover:text-[#FF6B35]">Corporate & Bulk Orders</a>
       <a href="#about-us" data-policy="about" class="block py-2 border-b border-[#F0EAE1] hover:text-[#FF6B35]">About Us</a>
       <a href="#contact-us" data-policy="contact" class="block py-2 border-b border-[#F0EAE1] hover:text-[#FF6B35]">Contact</a>
-      <div class="pt-2 flex items-center justify-end">
-        <span class="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Free Pan-India Delivery</span>
+      <div class="pt-2 flex flex-col gap-2">
+        <button type="button" id="pwa-install-mobile-drawer-btn" class="w-full text-left py-2.5 px-3 rounded-xl bg-[#FAF7F2] border border-[#DDD4C4] hover:border-[#FF6B35] text-black font-bold flex items-center justify-between text-xs cursor-pointer">
+          <span class="flex items-center gap-2">
+            <span>📲</span>
+            <span>Install PRINTORA App</span>
+          </span>
+          <span class="text-[10px] bg-[#FF6B35] text-white px-2 py-0.5 rounded-full uppercase">1-Tap</span>
+        </button>
+        <div class="flex items-center justify-end">
+          <span class="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Free Pan-India Delivery</span>
+        </div>
       </div>
     </div>
   `;

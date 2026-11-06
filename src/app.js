@@ -17,6 +17,7 @@ import { renderAuthModal, openAuthModal, initAuthModalEvents } from './component
 import { renderAdminDashboard, initAdminEvents } from './components/AdminDashboard.js';
 import { renderShirtFlipLoader, hideShirtLoader } from './components/ShirtFlipLoader.js';
 import { renderProductCard } from './components/ProductCard.js';
+import { initPwa, renderPwaBottomBanner } from './components/PwaInstallPrompt.js';
 import { store } from './services/store.js';
 
 // Expose global helper methods for inline click handlers
@@ -76,6 +77,9 @@ class PrintoraApp {
 
     // Initialize Smooth Offline / Online Status Listener
     this.initNetworkStatusListener();
+
+    // Initialize PWA Service Worker & Install Prompts
+    initPwa();
 
     // Route immediately on initial page mount (supports direct links like #admin or ?admin=1)
     this.route();
@@ -234,6 +238,9 @@ class PrintoraApp {
       ${renderCustomerAccountModal()}
       ${renderPolicyModal()}
       ${renderAuthModal()}
+
+      <!-- PWA Install Prompt Banner -->
+      ${renderPwaBottomBanner()}
     `;
   }
 
