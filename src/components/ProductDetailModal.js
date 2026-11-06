@@ -194,7 +194,34 @@ export function renderProductDetailModal() {
                 </div>
               </div>
 
-              <!-- 4. Automatic Price Calculation Breakdown -->
+              <!-- 4. Custom Name, Jersey Number & Directions Comment Box -->
+              <div class="space-y-3 pt-2 border-t border-[#E5E0D5]">
+                <span class="text-[10px] uppercase tracking-wider font-extrabold text-[#FF6B35] block font-heading">
+                  4. Custom Name, Number & Directions
+                </span>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div>
+                    <label for="clothing-input-name" class="block text-[11px] font-bold text-[#444] mb-1">Custom Name to Print (Optional)</label>
+                    <input type="text" id="clothing-input-name" placeholder="e.g. RAHUL or TITANS" 
+                           class="w-full bg-white border border-[#DDD4C4] rounded-xl px-3 py-2 text-xs uppercase font-bold outline-none focus:border-black">
+                  </div>
+
+                  <div>
+                    <label for="clothing-input-number" class="block text-[11px] font-bold text-[#444] mb-1">Jersey / Lucky Number (Optional)</label>
+                    <input type="text" id="clothing-input-number" maxlength="3" placeholder="e.g. 07" 
+                           class="w-full bg-white border border-[#DDD4C4] rounded-xl px-3 py-2 text-xs font-mono font-bold outline-none focus:border-black">
+                  </div>
+                </div>
+
+                <div>
+                  <label for="clothing-input-notes" class="block text-[11px] font-bold text-[#444] mb-1">Directions to Print / Special Instructions</label>
+                  <textarea id="clothing-input-notes" rows="2" placeholder="e.g. Print logo on left chest, print name on upper back arch, handle with care" 
+                            class="w-full bg-white border border-[#DDD4C4] rounded-xl p-2.5 text-xs outline-none focus:border-black resize-none"></textarea>
+                </div>
+              </div>
+
+              <!-- 5. Automatic Price Calculation Breakdown -->
               <div class="bg-white border border-[#E5E0D5] rounded-xl p-3 space-y-1.5 text-xs">
                 <div class="flex items-center justify-between text-[#555]">
                   <span>Base Product Price:</span>
@@ -563,6 +590,16 @@ export function openProductDetail(productId) {
   currentPrintingPosition = 'Front';
   currentUploadedDesign = null;
 
+  // Clear clothing inputs
+  const clothingNameInput = document.getElementById('clothing-input-name');
+  if (clothingNameInput) clothingNameInput.value = '';
+  const clothingNumberInput = document.getElementById('clothing-input-number');
+  if (clothingNumberInput) clothingNumberInput.value = '';
+  const clothingNotesInput = document.getElementById('clothing-input-notes');
+  if (clothingNotesInput) clothingNotesInput.value = '';
+  const clothingArtworkInput = document.getElementById('clothing-artwork-input');
+  if (clothingArtworkInput) clothingArtworkInput.value = '';
+
   const modal = document.getElementById('product-detail-modal');
   const catEl = document.getElementById('prod-modal-cat');
   const titleEl = document.getElementById('prod-modal-title');
@@ -737,45 +774,66 @@ export function processUploadedArtwork(file, onSuccess) {
     };
     reader.readAsDataURL(file);
   } else {
-    const img = new Image();
-    img.onload = function() {
-      const maxWidth = 1200;
-      const maxHeight = 1200;
-      let width = img.width;
-      let height = img.height;
-      if (width > height) {
-        if (width > maxWidth) {
-          height = Math.round((height * maxWidth) / width);
-          width = maxWidth;
+    // Read raw original file directly as foolproof fallback
+    const rawReader = new FileReader();
+    rawReader.onload = function(rawEvt) {
+      const rawDataUrl = rawEvt.target.result;
+      
+      const img = new Image();
+      img.onload = function() {
+        const maxWidth = 1000;
+        const maxHeight = 1000;
+        let width = img.width;
+        let height = img.height;
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
         }
-      } else {
-        if (height > maxHeight) {
-          width = Math.round((width * maxHeight) / height);
-          height = maxHeight;
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        const isPng = file.type === 'image/png' || file.name.toLowerCase().endsWith('.png');
+        if (!isPng) {
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, width, height);
         }
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      const isPng = file.type === 'image/png' || file.name.toLowerCase().endsWith('.png');
-      if (!isPng) {
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(0, 0, width, height);
-      }
-      ctx.drawImage(img, 0, 0, width, height);
-      const dataUrl = canvas.toDataURL(isPng ? 'image/png' : 'image/jpeg', 0.88);
-      onSuccess({
-        name: file.name,
-        size: (dataUrl.length * 0.75 / 1024).toFixed(1) + ' KB',
-        type: isPng ? 'image/png' : 'image/jpeg',
-        dataUrl: dataUrl,
-        isPdf: false
-      });
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressedDataUrl = canvas.toDataURL(isPng ? 'image/png' : 'image/jpeg', 0.85);
+        
+        // Choose compressed if valid or raw if smaller
+        const finalDataUrl = (compressedDataUrl && compressedDataUrl.length > 50 && compressedDataUrl.length < rawDataUrl.length) ? compressedDataUrl : rawDataUrl;
+
+        onSuccess({
+          name: file.name,
+          size: (finalDataUrl.length * 0.75 / 1024).toFixed(1) + ' KB',
+          type: isPng ? 'image/png' : 'image/jpeg',
+          dataUrl: finalDataUrl,
+          isPdf: false
+        });
+      };
+
+      img.onerror = function() {
+        // Fallback to raw dataUrl if canvas draw fails
+        onSuccess({
+          name: file.name,
+          size: (file.size / 1024).toFixed(1) + ' KB',
+          type: file.type || 'image/jpeg',
+          dataUrl: rawDataUrl,
+          isPdf: false
+        });
+      };
+
+      img.src = rawDataUrl;
     };
-    const tempReader = new FileReader();
-    tempReader.onload = (e) => { img.src = e.target.result; };
-    tempReader.readAsDataURL(file);
+    rawReader.readAsDataURL(file);
   }
 }
 
@@ -968,9 +1026,25 @@ export function initProductDetailModalEvents() {
       }
     }
 
-    const customName = document.getElementById('prod-modal-input-name')?.value || '';
-    const customNumber = document.getElementById('prod-modal-input-number')?.value || '';
-    let customNotes = document.getElementById('prod-modal-input-notes')?.value || '';
+    let customName = '';
+    let customNumber = '';
+    let customNotes = '';
+
+    if (isClothing) {
+      customName = document.getElementById('clothing-input-name')?.value?.trim() || '';
+      customNumber = document.getElementById('clothing-input-number')?.value?.trim() || '';
+      customNotes = document.getElementById('clothing-input-notes')?.value?.trim() || '';
+
+      // Fallback to standard inputs if clothing inputs were not used
+      if (!customName) customName = document.getElementById('prod-modal-input-name')?.value?.trim() || '';
+      if (!customNumber) customNumber = document.getElementById('prod-modal-input-number')?.value?.trim() || '';
+      if (!customNotes) customNotes = document.getElementById('prod-modal-input-notes')?.value?.trim() || '';
+    } else {
+      customName = document.getElementById('prod-modal-input-name')?.value?.trim() || '';
+      customNumber = document.getElementById('prod-modal-input-number')?.value?.trim() || '';
+      customNotes = document.getElementById('prod-modal-input-notes')?.value?.trim() || '';
+    }
+
     if (phoneModel) {
       customNotes = customNotes ? `Model: ${phoneModel} | ${customNotes}` : `Model: ${phoneModel}`;
     }

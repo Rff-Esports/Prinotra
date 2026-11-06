@@ -1395,6 +1395,12 @@ class PrintoraStore {
       if (it.uploadedDesign && it.uploadedDesign.dataUrl) {
         try {
           safeSetItem(`printora_artwork_${orderCode}_${idx}`, JSON.stringify(it.uploadedDesign));
+          if (it.artworkFile) {
+            safeSetItem(`printora_design_${it.artworkFile}`, JSON.stringify(it.uploadedDesign));
+          }
+          if (it.uploadedDesign.name) {
+            safeSetItem(`printora_design_${it.uploadedDesign.name}`, JSON.stringify(it.uploadedDesign));
+          }
         } catch (e) {}
       }
     });

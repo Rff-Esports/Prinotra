@@ -495,10 +495,21 @@ export function renderAdminDashboard() {
                     <div class="space-y-3 text-xs">
                       ${o.items.map((it, itemIdx) => {
                         let design = it.uploadedDesign;
+                        const artworkFileName = design?.name || it.artworkFile || '';
                         if ((!design || !design.dataUrl) && typeof window !== 'undefined') {
                           try {
                             const cached = localStorage.getItem(`printora_artwork_${o.orderCode}_${itemIdx}`);
-                            if (cached) design = JSON.parse(cached);
+                            if (cached) {
+                              const parsed = JSON.parse(cached);
+                              if (parsed?.dataUrl) design = parsed;
+                            }
+                            if ((!design || !design.dataUrl) && artworkFileName) {
+                              const cachedFile = localStorage.getItem(`printora_design_${artworkFileName}`);
+                              if (cachedFile) {
+                                const parsedFile = JSON.parse(cachedFile);
+                                if (parsedFile?.dataUrl) design = parsedFile;
+                              }
+                            }
                           } catch (e) {}
                         }
                         const hasArtwork = Boolean(design && design.dataUrl);
@@ -550,7 +561,7 @@ export function renderAdminDashboard() {
 
                             ${it.customNotes ? `
                               <div class="text-[11px] text-[#777] italic bg-white p-2 rounded-lg border border-[#E5E0D5]">
-                                📝 Customer Notes: "${it.customNotes}"
+                                📝 Directions / Notes: "${it.customNotes}"
                               </div>
                             ` : ''}
 
@@ -587,10 +598,15 @@ export function renderAdminDashboard() {
                                   </button>
                                 </div>
                               </div>
-                            ` : (it.artworkFile ? `
-                              <div class="p-2 bg-white rounded-lg border border-[#DDD4C4] text-[11px] text-[#555] flex items-center justify-between">
-                                <span>📎 Artwork File Reference: <strong class="text-black font-mono">${it.artworkFile}</strong></span>
-                                <span class="text-[10px] text-emerald-700 font-bold">✓ Listed</span>
+                            ` : (artworkFileName ? `
+                              <div class="p-2.5 bg-white rounded-xl border border-[#DDD4C4] text-xs flex items-center justify-between gap-3">
+                                <div>
+                                  <span class="text-[10px] uppercase font-bold text-[#FF6B35] block">📎 Custom Artwork:</span>
+                                  <strong class="text-black font-mono text-xs block">${artworkFileName}</strong>
+                                </div>
+                                <a href="https://wa.me/91${(o.customerPhone || '').replace(/\D/g, '')}?text=${encodeURIComponent(`Hi ${o.customerName}, regarding Order #${o.orderCode} for "${it.name}", please share the original artwork file "${artworkFileName}" here so we can start production.`)}" target="_blank" class="bg-[#111] hover:bg-[#FF6B35] text-white text-[11px] font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1">
+                                  💬 Request via WhatsApp
+                                </a>
                               </div>
                             ` : `
                               <div class="text-[10px] text-[#888] italic bg-white p-2 rounded-lg border border-dashed border-[#DDD4C4]">
@@ -647,10 +663,21 @@ export function renderAdminDashboard() {
               <div class="space-y-4" id="admin-custom-designs-grid">
                 ${customDesignItems.map(({ order, item, uniqueKey, itemIndex }) => {
                   let design = item.uploadedDesign;
+                  const artworkFileName = design?.name || item.artworkFile || '';
                   if ((!design || !design.dataUrl) && typeof window !== 'undefined') {
                     try {
                       const cached = localStorage.getItem(`printora_artwork_${order.orderCode}_${itemIndex}`);
-                      if (cached) design = JSON.parse(cached);
+                      if (cached) {
+                        const parsed = JSON.parse(cached);
+                        if (parsed?.dataUrl) design = parsed;
+                      }
+                      if ((!design || !design.dataUrl) && artworkFileName) {
+                        const cachedFile = localStorage.getItem(`printora_design_${artworkFileName}`);
+                        if (cachedFile) {
+                          const parsedFile = JSON.parse(cachedFile);
+                          if (parsedFile?.dataUrl) design = parsedFile;
+                        }
+                      }
                     } catch (e) {}
                   }
                   const hasArtwork = Boolean(design && design.dataUrl);
@@ -720,10 +747,11 @@ export function renderAdminDashboard() {
                               </div>
                             </div>
 
-                            ${item.customName || item.customNotes ? `
-                              <div class="pt-2 border-t border-[#EFECE4] text-[11px] text-[#555]">
-                                ${item.customName ? `<div>Custom Text: <strong class="text-black uppercase">${item.customName}</strong></div>` : ''}
-                                ${item.customNotes ? `<div>Notes: <em>${item.customNotes}</em></div>` : ''}
+                            ${item.customName || item.customNumber || item.customNotes ? `
+                              <div class="pt-2 border-t border-[#EFECE4] text-[11px] text-[#555] space-y-1">
+                                ${item.customName ? `<div>Custom Name: <strong class="text-black uppercase">${item.customName}</strong></div>` : ''}
+                                ${item.customNumber ? `<div>Jersey #: <strong class="text-black font-mono">#${item.customNumber}</strong></div>` : ''}
+                                ${item.customNotes ? `<div>Directions to Print: <em class="text-[#222] font-medium">${item.customNotes}</em></div>` : ''}
                               </div>
                             ` : ''}
                           </div>
@@ -763,15 +791,30 @@ export function renderAdminDashboard() {
                                 `}
 
                                 <button type="button" class="admin-download-design-btn bg-[#111] hover:bg-[#FF6B35] text-white py-2 px-2.5 rounded-lg text-xs font-bold transition-colors text-center cursor-pointer flex items-center justify-center gap-1" data-img-src="${design.dataUrl}" data-img-name="${design.name || `Printora-${order.orderCode}-design`}">
-                                  <span>⬇️ Download</span>
+                                  <span>⬇️ Download Exact</span>
                                 </button>
                               </div>
                             </div>
-                          ` : (item.artworkFile ? `
-                            <div class="p-3 bg-white rounded-xl border border-[#E5E0D5] space-y-2">
-                              <span class="text-xs font-bold text-black block font-heading">📎 Custom Artwork:</span>
-                              <span class="text-[11px] font-mono text-[#555] block bg-[#FAF7F2] p-2 rounded-lg border border-[#DDD4C4]">${item.artworkFile}</span>
-                              <span class="text-[10px] text-emerald-700 font-bold block">✓ File associated with order</span>
+                          ` : (artworkFileName ? `
+                            <div class="p-3 bg-white rounded-xl border border-[#E5E0D5] space-y-2.5">
+                              <div class="w-full aspect-video rounded-lg overflow-hidden bg-[#FAF7F2] flex items-center justify-center border border-[#DDD4C4]">
+                                <div class="flex flex-col items-center justify-center p-3 text-center">
+                                  <span class="text-3xl">🖼️</span>
+                                  <span class="text-xs font-bold text-black mt-1 font-mono">${artworkFileName}</span>
+                                  <span class="text-[10px] text-emerald-700 font-bold">✓ Attached by Customer</span>
+                                </div>
+                              </div>
+
+                              <div class="space-y-1">
+                                <span class="text-xs font-bold text-black block font-heading">Custom Artwork File:</span>
+                                <span class="text-[11px] font-mono text-[#555] block bg-[#FAF7F2] p-2 rounded-lg border border-[#DDD4C4]">${artworkFileName}</span>
+                              </div>
+
+                              <div class="pt-1">
+                                <a href="https://wa.me/91${(order.customerPhone || '').replace(/\D/g, '')}?text=${encodeURIComponent(`Hi ${order.customerName}, regarding Order #${order.orderCode} for "${item.name}", please share the original artwork file "${artworkFileName}" here so we can start production.`)}" target="_blank" class="w-full bg-[#111] hover:bg-[#FF6B35] text-white py-2 px-3 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
+                                  <span>💬 Request File via WhatsApp (${order.customerPhone})</span>
+                                </a>
+                              </div>
                             </div>
                           ` : `
                             <div class="p-5 bg-white rounded-xl border border-dashed border-[#DDD4C4] text-center space-y-1">

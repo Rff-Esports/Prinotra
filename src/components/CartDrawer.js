@@ -120,10 +120,11 @@ export function renderCartDrawer() {
                   ` : ''}
 
                   <!-- Customization tag if present -->
-                  ${item.customName || item.customNumber ? `
+                  ${item.customName || item.customNumber || item.customNotes ? `
                     <div class="mt-1 bg-[#FAF7F2] border border-[#E5E0D5] rounded-lg p-1.5 text-[10px] text-[#555] space-y-0.5">
                       ${item.customName ? `<div>Custom Name: <strong class="text-black uppercase">${item.customName}</strong></div>` : ''}
                       ${item.customNumber ? `<div>Jersey #: <strong class="text-black font-mono">#${item.customNumber}</strong></div>` : ''}
+                      ${item.customNotes ? `<div>Directions: <em class="text-[#333]">${item.customNotes}</em></div>` : ''}
                     </div>
                   ` : ''}
 

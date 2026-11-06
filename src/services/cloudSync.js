@@ -164,23 +164,11 @@ export async function pushGlobalCloudState(partialState = {}) {
     } catch (e) {}
   }
 
-  // Prepare sanitized orders that fit cleanly into Netlify's 64KB edge snippet payload
+  // Prepare orders preserving full customer uploaded designs for cross-device admin previews and downloads
   const edgeSafeOrders = (updatedState.orders || []).slice(0, 30).map(o => ({
     ...o,
     items: (o.items || []).map(it => {
-      let design = it.uploadedDesign;
-      if (design && design.dataUrl && design.dataUrl.length > 30000) {
-        // If dataUrl is too large for the 64KB edge snippet, keep artwork metadata
-        // and avoid corrupting the base64 string with arbitrary slicing. Full image stays preserved in local order vault.
-        design = {
-          name: design.name,
-          size: design.size,
-          type: design.type,
-          isPdf: design.isPdf,
-          hasVaultStorage: true
-        };
-      }
-      return { ...it, uploadedDesign: design };
+      return { ...it, uploadedDesign: it.uploadedDesign || null };
     })
   }));
 

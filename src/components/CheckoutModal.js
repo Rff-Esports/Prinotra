@@ -122,6 +122,7 @@ export function renderCheckoutModal() {
                         ${item.uploadedDesign ? ` • <span class="text-emerald-700 font-bold">📎 ${item.uploadedDesign.name}</span>` : ''}
                         ${item.customName ? ` • Name: <strong>${item.customName}</strong>` : ''}
                         ${item.customNumber ? ` • #${item.customNumber}` : ''}
+                        ${item.customNotes ? ` • Notes: <em>${item.customNotes}</em>` : ''}
                       </span>
                       <span class="text-[#666] text-[11px]">Qty: ${item.quantity} × ₹${item.price}</span>
                     </div>

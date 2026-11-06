@@ -361,6 +361,7 @@ export function initJerseyCustomizerEvents() {
   }
 
   // Logo file upload handler
+  let customLogoDesign = null;
   const logoInput = document.getElementById('jersey-logo-upload');
   const logoLabel = document.getElementById('jersey-logo-label');
   if (logoInput && logoLabel) {
@@ -368,6 +369,18 @@ export function initJerseyCustomizerEvents() {
       if (e.target.files && e.target.files[0]) {
         customLogoFile = e.target.files[0];
         logoLabel.textContent = `✓ ${customLogoFile.name.slice(0, 16)}...`;
+        
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          customLogoDesign = {
+            name: customLogoFile.name,
+            size: (customLogoFile.size / 1024).toFixed(1) + ' KB',
+            type: customLogoFile.type || 'image/png',
+            dataUrl: evt.target.result,
+            isPdf: false
+          };
+        };
+        reader.readAsDataURL(customLogoFile);
       }
     });
   }
@@ -391,7 +404,8 @@ export function initJerseyCustomizerEvents() {
         customName: (nameInput ? nameInput.value.toUpperCase().trim() : 'VARMA') || 'VARMA',
         customNumber: (numberInput ? numberInput.value.trim() : '07') || '07',
         customNotes: `Front Sponsor: ${sponsorInput ? sponsorInput.value.trim() : 'PRINTORA'}`,
-        artworkFile: customLogoFile
+        artworkFile: customLogoFile ? customLogoFile.name : null,
+        uploadedDesign: customLogoDesign
       });
 
       if (success) {
