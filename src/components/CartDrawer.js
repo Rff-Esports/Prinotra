@@ -105,6 +105,20 @@ export function renderCartDrawer() {
                     ${item.phoneModel ? `<span class="bg-[#FFF1E8] text-[#FF6B35] px-1.5 py-0.5 rounded-md text-[10px] font-bold font-mono">Model: ${item.phoneModel}</span>` : ''}
                   </div>
 
+                  <!-- Printing Customization Badge -->
+                  ${item.printingType ? `
+                    <div class="mt-1 flex flex-wrap items-center gap-1">
+                      <span class="bg-[#FFF1E8] border border-[#FF6B35]/30 text-[#FF6B35] px-1.5 py-0.5 rounded-md text-[10px] font-bold">
+                        🖨️ ${item.printingType} (${item.printingPosition || 'Front'})${item.printingCharge ? ` +₹${item.printingCharge}` : ''}
+                      </span>
+                      ${item.uploadedDesign ? `
+                        <span class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-1.5 py-0.5 rounded-md text-[10px] font-bold flex items-center gap-1">
+                          📎 ${item.uploadedDesign.name.length > 14 ? item.uploadedDesign.name.slice(0, 14) + '...' : item.uploadedDesign.name}
+                        </span>
+                      ` : ''}
+                    </div>
+                  ` : ''}
+
                   <!-- Customization tag if present -->
                   ${item.customName || item.customNumber ? `
                     <div class="mt-1 bg-[#FAF7F2] border border-[#E5E0D5] rounded-lg p-1.5 text-[10px] text-[#555] space-y-0.5">

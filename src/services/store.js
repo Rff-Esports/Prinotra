@@ -1239,16 +1239,30 @@ class PrintoraStore {
       customNotes = '',
       artworkFile = null,
       frontDesign = null,
-      backDesign = null
+      backDesign = null,
+      basePrice = null,
+      printingCharge = 0,
+      printingType = null,
+      printingPosition = null,
+      uploadedDesign = null
     } = options;
 
-    const cartItemId = `${product.id}-${size}-${color}-${customName}-${customNumber}-${Date.now()}`;
+    const chargeNum = Number(printingCharge) || 0;
+    const itemBasePrice = (basePrice !== null && basePrice !== undefined) ? Number(basePrice) : product.price;
+    const finalUnitPrice = itemBasePrice + chargeNum;
+
+    const cartItemId = `${product.id}-${size}-${color}-${printingType || 'plain'}-${printingPosition || 'front'}-${Date.now()}`;
     
     this.cart.push({
       cartItemId,
       id: product.id,
       name: product.name,
-      price: product.price,
+      price: finalUnitPrice,
+      basePrice: itemBasePrice,
+      printingCharge: chargeNum,
+      printingType: printingType || null,
+      printingPosition: printingPosition || null,
+      uploadedDesign: uploadedDesign || null,
       originalPrice: product.originalPrice,
       image: product.images?.[0] || '',
       category: product.categoryName,

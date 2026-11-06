@@ -118,6 +118,8 @@ export function renderCheckoutModal() {
                       <span class="text-[#777] block text-[11px]">
                         ${item.selectedSize}${item.selectedColor ? ` • ${item.selectedColor}` : ''}
                         ${item.phoneModel ? ` • Model: <strong class="text-[#FF6B35]">${item.phoneModel}</strong>` : ''}
+                        ${item.printingType ? ` • <strong class="text-[#FF6B35]">🖨️ ${item.printingType} (${item.printingPosition || 'Front'})</strong>` : ''}
+                        ${item.uploadedDesign ? ` • <span class="text-emerald-700 font-bold">📎 ${item.uploadedDesign.name}</span>` : ''}
                         ${item.customName ? ` • Name: <strong>${item.customName}</strong>` : ''}
                         ${item.customNumber ? ` • #${item.customNumber}` : ''}
                       </span>

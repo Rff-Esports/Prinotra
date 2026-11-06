@@ -123,7 +123,7 @@
     <!-- Immediate Branded Pre-Hydration State (Replaced immediately when JS mounts) -->
     <div id="printora-initial-boot" class="min-h-screen bg-[#0A0A0A] text-white flex flex-col items-center justify-center p-6 text-center">
       <div class="space-y-4 max-w-sm flex flex-col items-center">
-        <img src="/assets/logo.png" alt="PRINTORA" class="w-28 h-auto object-contain rounded-2xl shadow-2xl animate-fade-in bg-white p-1">
+        <img src="/assets/logo.png" alt="PRINTORA" onerror="this.style.display='none'" class="w-28 h-auto object-contain rounded-2xl shadow-2xl animate-fade-in bg-white p-1">
         <h1 class="font-heading text-2xl font-extrabold tracking-[0.25em] text-white">PRINTORA</h1>
         <p class="text-xs uppercase tracking-[0.3em] text-[#FF6B35] font-semibold">CUSTOMISED CLOTHING</p>
         <div class="w-32 h-1 bg-[#222] rounded-full mx-auto overflow-hidden mt-3">
@@ -132,6 +132,18 @@
       </div>
     </div>
   </div>
+
+  <!-- Immediate Preloader Timeout Guard -->
+  <script>
+    setTimeout(function() {
+      var b = document.getElementById('printora-initial-boot');
+      if (b) {
+        b.style.transition = 'opacity 0.3s ease-out';
+        b.style.opacity = '0';
+        setTimeout(function() { if (b && b.parentNode) b.remove(); }, 300);
+      }
+    }, 900);
+  </script>
 
   <!-- Main ES Module Entry Point -->
   <script type="module" src="/src/app.js"></script>

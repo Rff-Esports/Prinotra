@@ -1,5 +1,5 @@
-// PRINTORA Product Detail Modal with Customizer, 360° 3D Preview Link, PIN Checker & Reviews
-// Section 9: Title, Price, Discount, Desc, Colors, Sizes, Qty, Gallery, Reviews, PIN code checker, Add to Cart, Buy Now, Wishlist, Free Shipping Badge
+// PRINTORA Product Detail Modal with Clothing Customization, Customer Artwork Upload, 360° 3D Preview Link, PIN Checker & Reviews
+// Complete clothing customization & customer artwork upload pipeline
 
 import { renderIcon } from '../utils/icons.js';
 import { store } from '../services/store.js';
@@ -66,8 +66,8 @@ export function renderProductDetailModal() {
 
             <!-- Pricing Banner -->
             <div class="flex items-baseline gap-3 py-2 border-y border-[#EFECE4]">
-              <span id="prod-modal-price" class="text-2xl font-black font-mono text-black">₹499</span>
-              <span id="prod-modal-original-price" class="text-xs text-[#888] line-through font-mono">₹699</span>
+              <span id="prod-modal-price" class="text-2xl font-black font-mono text-black">₹399</span>
+              <span id="prod-modal-original-price" class="text-xs text-[#888] line-through font-mono">₹599</span>
               <span id="prod-modal-discount-tag" class="bg-[#F0EAE1] text-[#FF6B35] text-[10px] font-extrabold px-2 py-0.5 rounded font-heading">SAVE 28%</span>
             </div>
 
@@ -97,8 +97,126 @@ export function renderProductDetailModal() {
               </div>
             </div>
 
-            <!-- Customization Form Fields -->
-            <div class="bg-[#FAF8F5] border border-[#DDD4C4] rounded-2xl p-4 space-y-3">
+            <!-- ======================================================== -->
+            <!-- CLOTHING PRINTING & CUSTOMER UPLOAD SECTION (Apparel)     -->
+            <!-- ======================================================== -->
+            <div id="prod-modal-clothing-customization" class="hidden bg-[#FAF8F5] border-2 border-[#111] rounded-2xl p-4 sm:p-5 space-y-4 shadow-sm">
+              <div class="flex items-center justify-between border-b border-[#E5E0D5] pb-2.5">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-[#FF6B35]"></span>
+                  <h4 class="font-heading text-xs sm:text-sm font-extrabold uppercase tracking-wider text-black">Clothing Printing & Customization</h4>
+                </div>
+                <span class="text-[10px] bg-[#111] text-[#FF6B35] px-2 py-0.5 rounded font-bold font-mono">PRINTORA LAB</span>
+              </div>
+
+              <!-- 1. Choose Printing Size -->
+              <div class="space-y-2">
+                <label class="block text-[11px] uppercase tracking-wider font-bold text-[#444] font-heading">
+                  1. Choose Printing Size *
+                </label>
+                <div class="grid grid-cols-2 gap-2" id="clothing-print-size-options">
+                  <button type="button" class="clothing-print-size-btn p-3 rounded-xl border-2 text-left transition-all cursor-pointer border-[#111] bg-[#111] text-white shadow-sm" data-size-key="small_logo">
+                    <div class="flex items-center justify-between">
+                      <span class="font-bold text-xs font-heading">Small Logo</span>
+                      <span class="font-mono text-xs font-extrabold text-[#FF6B35]">+₹25</span>
+                    </div>
+                    <p class="text-[10px] text-gray-300 mt-0.5">Chest / pocket crest or sleeve</p>
+                  </button>
+
+                  <button type="button" class="clothing-print-size-btn p-3 rounded-xl border-2 text-left transition-all cursor-pointer border-[#DDD4C4] bg-white text-[#444] hover:border-[#111]" data-size-key="large_a4">
+                    <div class="flex items-center justify-between">
+                      <span class="font-bold text-xs font-heading">Large A4 Print</span>
+                      <span class="font-mono text-xs font-extrabold text-[#FF6B35]">+₹60</span>
+                    </div>
+                    <p class="text-[10px] text-[#777] mt-0.5">Full front or back centerpiece</p>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 2. Choose Printing Position -->
+              <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                  <label class="block text-[11px] uppercase tracking-wider font-bold text-[#444] font-heading">
+                    2. Choose Printing Position *
+                  </label>
+                  <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">No extra charge</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2" id="clothing-print-pos-options">
+                  <button type="button" class="clothing-print-pos-btn py-2.5 px-3 rounded-xl border-2 text-center text-xs font-bold transition-all cursor-pointer border-[#111] bg-[#111] text-white shadow-sm" data-pos="Front">
+                    <span>👕 Front</span>
+                  </button>
+                  <button type="button" class="clothing-print-pos-btn py-2.5 px-3 rounded-xl border-2 text-center text-xs font-bold transition-all cursor-pointer border-[#DDD4C4] bg-white text-[#444] hover:border-[#111]" data-pos="Back">
+                    <span>🔄 Back</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 3. Customer Design / Logo Upload -->
+              <div class="space-y-2 pt-1 border-t border-[#E5E0D5]">
+                <div class="flex items-center justify-between">
+                  <label class="block text-[11px] uppercase tracking-wider font-bold text-[#444] font-heading">
+                    3. Upload Your Design / Logo <span class="text-[#888] font-normal lowercase">(optional)</span>
+                  </label>
+                </div>
+                <p class="text-[11px] text-[#666] leading-snug">
+                  “Upload your own design or logo. We will use your uploaded artwork for your customized product.”
+                </p>
+
+                <!-- Idle State: Upload Button -->
+                <div id="clothing-upload-idle-state" class="border-2 border-dashed border-[#DDD4C4] hover:border-[#FF6B35] bg-white rounded-xl p-3.5 text-center transition-all cursor-pointer relative">
+                  <input type="file" id="clothing-artwork-input" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                  <div class="flex flex-col items-center justify-center gap-1 pointer-events-none">
+                    <div class="w-8 h-8 rounded-full bg-orange-50 text-[#FF6B35] flex items-center justify-center">
+                      ${renderIcon('upload', 'w-4 h-4')}
+                    </div>
+                    <span class="text-xs font-bold text-[#111] font-heading">Upload Your Design / Logo</span>
+                    <span class="text-[10px] text-[#777]">JPG, JPEG, PNG or PDF (up to 15MB)</span>
+                  </div>
+                </div>
+
+                <!-- Preview State (Shown when uploaded) -->
+                <div id="clothing-upload-preview-state" class="hidden bg-white border border-[#DDD4C4] rounded-xl p-3 flex items-center justify-between gap-3 shadow-xs">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div id="clothing-preview-thumb-box" class="w-12 h-12 rounded-lg bg-[#FAF8F5] border border-[#E5E0D5] flex items-center justify-center overflow-hidden flex-shrink-0">
+                      <img id="clothing-preview-img" src="" class="w-full h-full object-cover hidden" alt="Artwork preview">
+                      <span id="clothing-preview-pdf-icon" class="text-xl hidden">📄</span>
+                    </div>
+                    <div class="min-w-0">
+                      <div id="clothing-preview-filename" class="text-xs font-bold text-black truncate font-heading">design.png</div>
+                      <div id="clothing-preview-filesize" class="text-[10px] text-[#777] font-mono">1.2 MB</div>
+                      <span class="text-[9px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.2 rounded inline-block mt-0.5">✓ Ready for printing</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2 flex-shrink-0">
+                    <label for="clothing-artwork-input" class="text-[11px] font-bold text-[#FF6B35] hover:underline cursor-pointer">Replace</label>
+                    <button type="button" id="clothing-remove-file-btn" class="text-[11px] font-bold text-rose-600 hover:text-rose-800 p-1 cursor-pointer" title="Remove uploaded design">✕</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 4. Automatic Price Calculation Breakdown -->
+              <div class="bg-white border border-[#E5E0D5] rounded-xl p-3 space-y-1.5 text-xs">
+                <div class="flex items-center justify-between text-[#555]">
+                  <span>Base Product Price:</span>
+                  <span class="font-mono font-bold text-black" id="clothing-calc-base">₹399</span>
+                </div>
+                <div class="flex items-center justify-between text-[#555]">
+                  <span>Printing Charges (<span id="clothing-calc-type-label">Small Logo</span>):</span>
+                  <span class="font-mono font-bold text-[#FF6B35]" id="clothing-calc-charge">+₹25</span>
+                </div>
+                <div class="flex items-center justify-between pt-1.5 border-t border-[#EFECE4] font-extrabold text-sm text-black">
+                  <span class="font-heading">Final Unit Price:</span>
+                  <span class="font-mono text-base text-[#111]" id="clothing-calc-final">₹424</span>
+                </div>
+                <div id="clothing-calc-qty-row" class="hidden flex items-center justify-between text-[11px] text-[#777] pt-1">
+                  <span>Total (<span id="clothing-calc-qty-num">1</span> items):</span>
+                  <span class="font-mono font-bold text-black" id="clothing-calc-total">₹424</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Standard Customization Form Fields (Non-Clothing) -->
+            <div id="prod-modal-standard-customization" class="bg-[#FAF8F5] border border-[#DDD4C4] rounded-2xl p-4 space-y-3">
               <span class="text-[10px] uppercase tracking-wider font-extrabold text-[#FF6B35] block font-heading">Personalization Options</span>
               
               <div id="prod-modal-model-group" class="hidden">
@@ -277,7 +395,7 @@ export function renderProductDetailModal() {
                 </td>
               </tr>
               <tr class="hover:bg-[#FAF9F5]">
-                <td class="py-2.5 px-3 font-bold text-black font-mono">XXXL (3XL)</td>
+                <td class="py-2.5 px-3 font-bold text-black font-mono">3XL</td>
                 <td class="py-2.5 px-3 font-mono">48"</td>
                 <td class="py-2.5 px-3 font-mono">32"</td>
                 <td class="py-2.5 px-3 font-mono">22.5"</td>
@@ -287,14 +405,6 @@ export function renderProductDetailModal() {
               </tr>
             </tbody>
           </table>
-        </div>
-
-        <!-- Fitting Tips -->
-        <div class="p-3 bg-[#FAF8F5] rounded-xl border border-[#DDD4C4] text-[11px] text-[#666] space-y-1">
-          <strong class="text-black block font-heading">💡 Pro Tip for Best Fit:</strong>
-          <p>• <strong>Classic / Regular Fit:</strong> Order your exact chest measurement.</p>
-          <p>• <strong>Oversized Streetwear Fit:</strong> Order your normal size (our oversized tees are already tailored with a 4-inch relaxed chest drop).</p>
-          <p>• All garments are 100% bio-washed pre-shrunk cotton, zero shrinkage after washing.</p>
         </div>
 
         <div class="flex justify-end pt-1">
@@ -313,20 +423,145 @@ let currentSelectedColor = null;
 let currentModalQty = 1;
 let currentUploadedFile = null;
 
+// Clothing customization state
+let currentPrintingSize = 'small_logo'; // 'small_logo' (+25), 'large_a4' (+60)
+let currentPrintingPosition = 'Front'; // 'Front', 'Back'
+let currentUploadedDesign = null; // { name, size, type, dataUrl, isPdf }
+
+export function isClothingProduct(product) {
+  if (!product) return false;
+  return product.categoryId === 'apparel' ||
+    ['prn-app-01', 'prn-app-02', 'prn-app-03', 'prn-app-04', 'prn-app-05', 'prn-app-06', 'prn-app-07', 'prn-app-08'].includes(product.id) ||
+    product.name.toLowerCase().includes('t-shirt') || 
+    product.name.toLowerCase().includes('hoodie') || 
+    product.name.toLowerCase().includes('sweatshirt') || 
+    product.name.toLowerCase().includes('polo') ||
+    product.name.toLowerCase().includes('top') ||
+    product.name.toLowerCase().includes('jersey');
+}
+
+export function updateClothingCustomizationUI() {
+  if (!currentSelectedProduct) return;
+  const isClothing = isClothingProduct(currentSelectedProduct);
+
+  const clothingBox = document.getElementById('prod-modal-clothing-customization');
+  const standardBox = document.getElementById('prod-modal-standard-customization');
+
+  if (!isClothing) {
+    if (clothingBox) clothingBox.classList.add('hidden');
+    if (standardBox) standardBox.classList.remove('hidden');
+    return;
+  }
+
+  if (clothingBox) clothingBox.classList.remove('hidden');
+  if (standardBox) standardBox.classList.add('hidden');
+
+  const basePrice = currentSelectedProduct.price;
+  const printCharge = currentPrintingSize === 'small_logo' ? 25 : (currentPrintingSize === 'large_a4' ? 60 : 0);
+  const finalUnitPrice = basePrice + printCharge;
+  const totalPrice = finalUnitPrice * currentModalQty;
+
+  const baseEl = document.getElementById('clothing-calc-base');
+  const chargeEl = document.getElementById('clothing-calc-charge');
+  const typeLabelEl = document.getElementById('clothing-calc-type-label');
+  const finalEl = document.getElementById('clothing-calc-final');
+  const totalRowEl = document.getElementById('clothing-calc-qty-row');
+  const totalEl = document.getElementById('clothing-calc-total');
+  const qtyNumEl = document.getElementById('clothing-calc-qty-num');
+  const mainPriceEl = document.getElementById('prod-modal-price');
+
+  if (baseEl) baseEl.textContent = `₹${basePrice}`;
+  if (chargeEl) chargeEl.textContent = `+₹${printCharge}`;
+  if (typeLabelEl) typeLabelEl.textContent = currentPrintingSize === 'small_logo' ? 'Small Logo' : 'Large A4 Print';
+  if (finalEl) finalEl.textContent = `₹${finalUnitPrice}`;
+  if (mainPriceEl) mainPriceEl.textContent = `₹${finalUnitPrice}`;
+
+  if (totalRowEl && totalEl && qtyNumEl) {
+    if (currentModalQty > 1) {
+      totalRowEl.classList.remove('hidden');
+      qtyNumEl.textContent = currentModalQty;
+      totalEl.textContent = `₹${totalPrice}`;
+    } else {
+      totalRowEl.classList.add('hidden');
+    }
+  }
+
+  // Update button active state for printing size
+  document.querySelectorAll('.clothing-print-size-btn').forEach(btn => {
+    const key = btn.getAttribute('data-size-key');
+    if (key === currentPrintingSize) {
+      btn.className = 'clothing-print-size-btn p-3 rounded-xl border-2 text-left transition-all cursor-pointer border-[#111] bg-[#111] text-white shadow-sm';
+      const label = btn.querySelector('.font-heading');
+      if (label) label.className = 'font-bold text-xs font-heading text-white';
+      const desc = btn.querySelector('p');
+      if (desc) desc.className = 'text-[10px] text-gray-300 mt-0.5';
+    } else {
+      btn.className = 'clothing-print-size-btn p-3 rounded-xl border-2 text-left transition-all cursor-pointer border-[#DDD4C4] bg-white text-[#444] hover:border-[#111]';
+      const label = btn.querySelector('.font-heading');
+      if (label) label.className = 'font-bold text-xs font-heading text-[#111]';
+      const desc = btn.querySelector('p');
+      if (desc) desc.className = 'text-[10px] text-[#777] mt-0.5';
+    }
+  });
+
+  // Update button active state for printing position
+  document.querySelectorAll('.clothing-print-pos-btn').forEach(btn => {
+    const pos = btn.getAttribute('data-pos');
+    if (pos === currentPrintingPosition) {
+      btn.className = 'clothing-print-pos-btn py-2.5 px-3 rounded-xl border-2 text-center text-xs font-bold transition-all cursor-pointer border-[#111] bg-[#111] text-white shadow-sm';
+    } else {
+      btn.className = 'clothing-print-pos-btn py-2.5 px-3 rounded-xl border-2 text-center text-xs font-bold transition-all cursor-pointer border-[#DDD4C4] bg-white text-[#444] hover:border-[#111]';
+    }
+  });
+}
+
+export function renderClothingUploadState() {
+  const idleState = document.getElementById('clothing-upload-idle-state');
+  const previewState = document.getElementById('clothing-upload-preview-state');
+  const imgEl = document.getElementById('clothing-preview-img');
+  const pdfIconEl = document.getElementById('clothing-preview-pdf-icon');
+  const nameEl = document.getElementById('clothing-preview-filename');
+  const sizeEl = document.getElementById('clothing-preview-filesize');
+
+  if (!currentUploadedDesign) {
+    if (idleState) idleState.classList.remove('hidden');
+    if (previewState) previewState.classList.add('hidden');
+    return;
+  }
+
+  if (idleState) idleState.classList.add('hidden');
+  if (previewState) previewState.classList.remove('hidden');
+  if (nameEl) nameEl.textContent = currentUploadedDesign.name;
+  if (sizeEl) sizeEl.textContent = currentUploadedDesign.size;
+
+  if (currentUploadedDesign.isPdf) {
+    if (imgEl) imgEl.classList.add('hidden');
+    if (pdfIconEl) pdfIconEl.classList.remove('hidden');
+  } else {
+    if (pdfIconEl) pdfIconEl.classList.add('hidden');
+    if (imgEl) {
+      imgEl.src = currentUploadedDesign.dataUrl;
+      imgEl.classList.remove('hidden');
+    }
+  }
+}
+
 export function openProductDetail(productId) {
   const product = store.products.find(p => p.id === productId || p.slug === productId);
   if (!product) return;
 
-  const isGarment = product.categoryId === 'apparel' || product.categoryId === 'sportswear' || 
-    product.name.toLowerCase().includes('shirt') || product.name.toLowerCase().includes('hoodie') || 
-    product.name.toLowerCase().includes('sweatshirt') || product.name.toLowerCase().includes('jersey') ||
-    product.name.toLowerCase().includes('top') || product.name.toLowerCase().includes('uniform');
+  const isGarment = isClothingProduct(product);
 
   currentSelectedProduct = product;
   currentSelectedSize = isGarment ? 'M' : (product.sizes?.[0] || 'Standard');
   currentSelectedColor = product.colors?.[0]?.name || 'Standard';
   currentModalQty = 1;
   currentUploadedFile = null;
+
+  // Reset clothing customization state
+  currentPrintingSize = 'small_logo';
+  currentPrintingPosition = 'Front';
+  currentUploadedDesign = null;
 
   const modal = document.getElementById('product-detail-modal');
   const catEl = document.getElementById('prod-modal-cat');
@@ -355,7 +590,7 @@ export function openProductDetail(productId) {
   if (qtyVal) qtyVal.textContent = '1';
   if (fileText) fileText.innerHTML = `${renderIcon('upload', 'w-3 h-3 text-[#FF6B35]')} Select Graphic / Artwork`;
 
-  // Phone model input visibility: Strictly ONLY for phone cases, completely removed for all other products!
+  // Phone model input visibility: Strictly ONLY for phone cases
   const modelGroup = document.getElementById('prod-modal-model-group');
   const modelInput = document.getElementById('prod-modal-input-model');
   if (modelInput) modelInput.value = '';
@@ -375,7 +610,7 @@ export function openProductDetail(productId) {
     if (btnLabel) btnLabel.textContent = "Request Quote via WhatsApp";
     if (buyNowBtn) buyNowBtn.classList.add('hidden');
   } else {
-    if (priceEl) priceEl.textContent = `₹${product.price}${product.isOnwards ? ' onwards' : ''}`;
+    if (priceEl) priceEl.textContent = `₹${product.price}`;
     if (origPriceEl) {
       if (product.originalPrice) {
         origPriceEl.textContent = `₹${product.originalPrice}`;
@@ -476,11 +711,14 @@ export function openProductDetail(productId) {
     }
   }
 
+  // Render and sync clothing customization UI
+  updateClothingCustomizationUI();
+  renderClothingUploadState();
+
   if (modal) {
     modal.classList.remove('hidden');
   }
 }
-
 
 export function initProductDetailModalEvents() {
   if (window.__prodDetailModalListenersInitialized) return;
@@ -495,7 +733,7 @@ export function initProductDetailModalEvents() {
     }
   });
 
-  // Delegated Size Selection Click (100% Guaranteed to work for XS, S, M, L, XL, XXL, 3XL)
+  // Delegated Size Selection Click
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('.prod-modal-size-btn');
     if (!btn) return;
@@ -527,6 +765,65 @@ export function initProductDetailModalEvents() {
     store.showToast(`Selected color: ${color}`, 'info');
   });
 
+  // Printing Size selection (+25 / +60)
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.clothing-print-size-btn');
+    if (!btn) return;
+    e.preventDefault();
+    const key = btn.getAttribute('data-size-key');
+    if (!key) return;
+    currentPrintingSize = key;
+    updateClothingCustomizationUI();
+    const label = key === 'small_logo' ? 'Small Logo (+₹25)' : 'Large A4 Print (+₹60)';
+    store.showToast(`Selected printing size: ${label}`, 'info');
+  });
+
+  // Printing Position selection (Front / Back)
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.clothing-print-pos-btn');
+    if (!btn) return;
+    e.preventDefault();
+    const pos = btn.getAttribute('data-pos');
+    if (!pos) return;
+    currentPrintingPosition = pos;
+    updateClothingCustomizationUI();
+    store.showToast(`Selected position: ${pos}`, 'info');
+  });
+
+  // Clothing Customer Artwork Upload
+  document.addEventListener('change', (e) => {
+    if (e.target.id === 'clothing-artwork-input') {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        currentUploadedDesign = {
+          name: file.name,
+          size: (file.size / 1024).toFixed(1) + ' KB',
+          type: file.type || (isPdf ? 'application/pdf' : 'image/png'),
+          dataUrl: evt.target.result,
+          isPdf
+        };
+        renderClothingUploadState();
+        store.showToast(`Uploaded: ${file.name}`, 'success');
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Remove uploaded clothing design
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#clothing-remove-file-btn')) {
+      currentUploadedDesign = null;
+      const input = document.getElementById('clothing-artwork-input');
+      if (input) input.value = '';
+      renderClothingUploadState();
+      store.showToast('Uploaded design removed', 'info');
+    }
+  });
+
   // Delegated Open Size Chart Modal
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('#open-size-chart-btn');
@@ -552,7 +849,6 @@ export function initProductDetailModalEvents() {
     const size = btn.getAttribute('data-size');
     if (!size) return;
     currentSelectedSize = size;
-    // Reflect on modal size buttons
     document.querySelectorAll('.prod-modal-size-btn').forEach(b => {
       if (b.getAttribute('data-size') === size) {
         b.className = 'prod-modal-size-btn px-3.5 py-1.5 rounded-xl border text-xs font-bold border-black bg-[#111] text-white shadow-sm transition-all cursor-pointer';
@@ -585,14 +881,16 @@ export function initProductDetailModalEvents() {
       if (currentModalQty > 1) {
         currentModalQty--;
         if (qtyVal) qtyVal.textContent = currentModalQty;
+        updateClothingCustomizationUI();
       }
     } else if (e.target.closest('#prod-modal-qty-plus')) {
       currentModalQty++;
       if (qtyVal) qtyVal.textContent = currentModalQty;
+      updateClothingCustomizationUI();
     }
   });
 
-  // File Upload
+  // Standard File Upload (Non-clothing)
   document.addEventListener('change', (e) => {
     if (e.target.id === 'prod-modal-file-upload') {
       const fileText = document.getElementById('prod-modal-file-text');
@@ -603,18 +901,16 @@ export function initProductDetailModalEvents() {
     }
   });
 
-  // Add to Bag
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('#prod-modal-add-bag-btn')) return;
-    if (!currentSelectedProduct) return;
-
+  // Common Add to Bag helper
+  function buildCartOptions() {
+    const isClothing = isClothingProduct(currentSelectedProduct);
     const phoneModel = document.getElementById('prod-modal-input-model')?.value.trim() || '';
-    // Only require phone model for strict phone case product
+
     if (currentSelectedProduct.id === 'prn-tch-01' && (currentSelectedProduct.slug?.includes('phone') || currentSelectedProduct.name?.toLowerCase().includes('phone'))) {
       if (!phoneModel) {
         alert("Please enter your mobile phone model (e.g. iPhone 15, Samsung S24) so we print the exact fit.");
         document.getElementById('prod-modal-input-model')?.focus();
-        return;
+        return null;
       }
     }
 
@@ -625,16 +921,46 @@ export function initProductDetailModalEvents() {
       customNotes = customNotes ? `Model: ${phoneModel} | ${customNotes}` : `Model: ${phoneModel}`;
     }
 
-    store.addToCart(currentSelectedProduct, {
-      size: currentSelectedSize,
-      color: currentSelectedColor,
-      quantity: currentModalQty,
-      customName,
-      customNumber,
-      customNotes,
-      phoneModel,
-      artworkFile: currentUploadedFile
-    });
+    if (isClothing) {
+      const printCharge = currentPrintingSize === 'small_logo' ? 25 : (currentPrintingSize === 'large_a4' ? 60 : 0);
+      const printType = currentPrintingSize === 'small_logo' ? 'Small Logo' : 'Large A4 Print';
+      return {
+        size: currentSelectedSize,
+        color: currentSelectedColor,
+        quantity: currentModalQty,
+        customName,
+        customNumber,
+        customNotes,
+        basePrice: currentSelectedProduct.price,
+        printingCharge: printCharge,
+        printingType: printType,
+        printingPosition: currentPrintingPosition,
+        uploadedDesign: currentUploadedDesign,
+        artworkFile: currentUploadedDesign ? currentUploadedDesign.name : (currentUploadedFile ? currentUploadedFile.name : null)
+      };
+    } else {
+      return {
+        size: currentSelectedSize,
+        color: currentSelectedColor,
+        quantity: currentModalQty,
+        customName,
+        customNumber,
+        customNotes,
+        phoneModel,
+        artworkFile: currentUploadedFile
+      };
+    }
+  }
+
+  // Add to Bag
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#prod-modal-add-bag-btn')) return;
+    if (!currentSelectedProduct) return;
+
+    const options = buildCartOptions();
+    if (!options) return;
+
+    store.addToCart(currentSelectedProduct, options);
 
     if (modal) modal.classList.add('hidden');
     const cartDrawer = document.getElementById('cart-drawer');
@@ -646,36 +972,12 @@ export function initProductDetailModalEvents() {
     if (!e.target.closest('#prod-modal-buy-now-btn')) return;
     if (!currentSelectedProduct) return;
 
-    const phoneModel = document.getElementById('prod-modal-input-model')?.value.trim() || '';
-    // Only require phone model for strict phone case product
-    if (currentSelectedProduct.id === 'prn-tch-01' && (currentSelectedProduct.slug?.includes('phone') || currentSelectedProduct.name?.toLowerCase().includes('phone'))) {
-      if (!phoneModel) {
-        alert("Please enter your mobile phone model (e.g. iPhone 15, Samsung S24) so we print the exact fit.");
-        document.getElementById('prod-modal-input-model')?.focus();
-        return;
-      }
-    }
+    const options = buildCartOptions();
+    if (!options) return;
 
-    const customName = document.getElementById('prod-modal-input-name')?.value || '';
-    const customNumber = document.getElementById('prod-modal-input-number')?.value || '';
-    let customNotes = document.getElementById('prod-modal-input-notes')?.value || '';
-    if (phoneModel) {
-      customNotes = customNotes ? `Model: ${phoneModel} | ${customNotes}` : `Model: ${phoneModel}`;
-    }
-
-    store.addToCart(currentSelectedProduct, {
-      size: currentSelectedSize,
-      color: currentSelectedColor,
-      quantity: currentModalQty,
-      customName,
-      customNumber,
-      customNotes,
-      phoneModel,
-      artworkFile: currentUploadedFile
-    });
+    store.addToCart(currentSelectedProduct, options);
 
     if (modal) modal.classList.add('hidden');
     openCheckoutModal();
   });
 }
-

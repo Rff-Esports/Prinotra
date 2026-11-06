@@ -5,12 +5,13 @@ console.log('Testing business rules and pricing compliance...');
 
 // Check product pricing for official products
 const expectedPrices = {
-  'Round Neck T-shirt': 499,
-  'Premium T-shirt': 599,
-  'Oversized T-shirt': 799,
+  'Round Neck T-shirt': 399,
+  'Premium T-shirt': 499,
+  'Oversized T-shirt': 599,
   'Polo T-shirt': 599,
-  'Hoodie': 949,
-  'Custom Jersey': 499,
+  'Hoodie': 699,
+  'Sweatshirts': 599,
+  'Tank Tops': 399,
   'Cap': 399,
   'Coffee Mug': 299,
   'Magic Mug': 399,

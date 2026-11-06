@@ -131,6 +131,20 @@ export function renderAdminDashboard() {
   const deliveredOrders = orders.filter(o => o.status === 'Delivered').length;
   const totalRevenue = orders.reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0);
 
+  // Extract all customer orders containing custom clothing prints or uploaded designs
+  const customDesignItems = [];
+  orders.forEach(o => {
+    (o.items || []).forEach((item, itemIdx) => {
+      if (item.uploadedDesign || item.printingType || item.artworkFile) {
+        customDesignItems.push({
+          order: o,
+          item,
+          uniqueKey: `${o.orderCode || o.id}-${itemIdx}`
+        });
+      }
+    });
+  });
+
   return `
     <div id="admin-view" class="min-h-screen bg-[#F5F5F5] text-[#111111] pb-24 font-sans">
       
@@ -194,6 +208,9 @@ export function renderAdminDashboard() {
           </button>
           <button class="admin-tab-btn py-3 border-b-2 border-transparent hover:text-white whitespace-nowrap" data-tab="orders">
             Orders (${totalOrders})
+          </button>
+          <button class="admin-tab-btn py-3 border-b-2 border-transparent hover:text-white whitespace-nowrap" data-tab="custom-designs">
+            Customer Uploaded Designs (${customDesignItems.length})
           </button>
           <button class="admin-tab-btn py-3 border-b-2 border-transparent hover:text-white whitespace-nowrap" data-tab="products">
             Products (${products.length})
@@ -428,6 +445,172 @@ export function renderAdminDashboard() {
                 </div>
               `).join('')}
             </div>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             TAB: CUSTOMER UPLOADED DESIGNS
+             ========================================== -->
+        <div id="admin-tab-custom-designs" class="admin-tab-content hidden space-y-6">
+          <div class="bg-white border border-[#DDD4C4] rounded-2xl p-6 shadow-sm">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+              <div>
+                <h3 class="font-heading text-xl font-bold text-black flex items-center gap-2">
+                  <span>Customer Uploaded Designs</span>
+                  <span class="text-xs bg-[#FF6B35] text-white px-2.5 py-0.5 rounded-full font-mono">${customDesignItems.length}</span>
+                </h3>
+                <p class="text-xs text-[#777]">Inspect customer artwork files, print placement, and download full-resolution production assets.</p>
+              </div>
+
+              <!-- Search -->
+              <input type="text" id="admin-custom-design-search" placeholder="Search order code, customer name or phone..." 
+                     class="bg-[#FAFAF7] border border-[#DDD4C4] rounded-xl px-3.5 py-2 text-xs outline-none w-full sm:w-72">
+            </div>
+
+            ${customDesignItems.length === 0 ? `
+              <div class="text-center py-16 bg-[#FAF9F6] rounded-2xl border border-dashed border-[#DDD4C4] p-8">
+                <span class="text-4xl block mb-2">🎨</span>
+                <h4 class="font-heading text-lg font-bold text-black">No Customer Uploaded Designs Yet</h4>
+                <p class="text-xs text-[#777] max-w-sm mx-auto mt-1">When customers order customized clothing with small/A4 logo prints or upload artwork, they will appear here with full previews and instant download buttons.</p>
+              </div>
+            ` : `
+              <div class="space-y-4" id="admin-custom-designs-grid">
+                ${customDesignItems.map(({ order, item, uniqueKey }) => {
+                  const design = item.uploadedDesign;
+                  const hasArtwork = Boolean(design && design.dataUrl);
+                  const isPdf = design?.isPdf || design?.type === 'application/pdf';
+                  const basePrice = item.basePrice || (item.price - (item.printingCharge || 0));
+                  const printCharge = item.printingCharge || 0;
+                  const finalPrice = item.price;
+
+                  return `
+                    <div class="border border-[#DDD4C4] rounded-2xl p-5 bg-[#FAF9F6] hover:border-black transition-all space-y-4 admin-design-card" data-search="${(order.orderCode || '') + ' ' + (order.customerName || '') + ' ' + (order.customerPhone || '') + ' ' + (item.name || '')}">
+                      <!-- Card Header -->
+                      <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-[#E5E0D5] pb-3">
+                        <div class="flex items-center gap-3">
+                          <span class="font-mono font-extrabold text-sm text-black">${order.orderCode}</span>
+                          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${getStatusBadgeClass(order.status)}">${order.status}</span>
+                          <span class="text-[11px] text-[#777]">Ordered on ${new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                        </div>
+                        <div class="text-xs font-bold text-[#111] font-mono">
+                          Order Total: ₹${order.totalAmount}
+                        </div>
+                      </div>
+
+                      <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
+                        <!-- Left: Customer Details (Cols 1-4) -->
+                        <div class="md:col-span-4 space-y-2 text-xs">
+                          <span class="text-[10px] uppercase font-bold tracking-wider text-[#FF6B35] font-heading block">Customer Details</span>
+                          <div>
+                            <strong class="text-sm font-bold text-black block font-heading">${order.customerName}</strong>
+                            <a href="tel:${order.customerPhone}" class="text-[#555] hover:text-[#FF6B35] font-mono block mt-0.5">📞 ${order.customerPhone}</a>
+                            ${order.customerEmail ? `<a href="mailto:${order.customerEmail}" class="text-[#555] hover:text-[#FF6B35] block truncate">✉️ ${order.customerEmail}</a>` : ''}
+                          </div>
+                          <div class="p-2.5 bg-white rounded-xl border border-[#E5E0D5] text-[11px] text-[#555] leading-relaxed">
+                            <span class="font-bold text-black block mb-0.5">Delivery Address:</span>
+                            ${order.shippingHouse}, ${order.shippingArea}, ${order.shippingCity}, ${order.shippingState} - <span class="font-mono font-bold">${order.shippingPincode}</span>
+                          </div>
+                        </div>
+
+                        <!-- Center: Customization & Product Details (Cols 5-8) -->
+                        <div class="md:col-span-4 space-y-2 text-xs">
+                          <span class="text-[10px] uppercase font-bold tracking-wider text-[#FF6B35] font-heading block">Product & Printing Details</span>
+                          <div class="p-3 bg-white rounded-xl border border-[#E5E0D5] space-y-2">
+                            <div>
+                              <strong class="text-xs font-bold text-black font-heading block">${item.name}</strong>
+                              <span class="text-[11px] text-[#777]">Size: <strong class="text-black font-mono">${item.selectedSize}</strong> • Color: <strong class="text-black">${item.selectedColor}</strong> • Qty: <strong class="text-black font-mono">${item.quantity}</strong></span>
+                            </div>
+
+                            <div class="pt-2 border-t border-[#EFECE4] space-y-1 text-[11px]">
+                              <div class="flex items-center justify-between">
+                                <span class="text-[#666]">Printing Type:</span>
+                                <span class="font-bold text-[#FF6B35]">${item.printingType || 'Small Logo'}</span>
+                              </div>
+                              <div class="flex items-center justify-between">
+                                <span class="text-[#666]">Printing Position:</span>
+                                <span class="font-bold text-black">${item.printingPosition || 'Front'}</span>
+                              </div>
+                              <div class="flex items-center justify-between">
+                                <span class="text-[#666]">Base Product Price:</span>
+                                <span class="font-mono font-bold text-black">₹${basePrice}</span>
+                              </div>
+                              <div class="flex items-center justify-between">
+                                <span class="text-[#666]">Printing Charges:</span>
+                                <span class="font-mono font-bold text-[#FF6B35]">+₹${printCharge}</span>
+                              </div>
+                              <div class="flex items-center justify-between pt-1 border-t border-[#EFECE4] font-bold text-xs">
+                                <span>Final Product Price:</span>
+                                <span class="font-mono font-black text-black">₹${finalPrice}</span>
+                              </div>
+                            </div>
+
+                            ${item.customName || item.customNotes ? `
+                              <div class="pt-2 border-t border-[#EFECE4] text-[11px] text-[#555]">
+                                ${item.customName ? `<div>Custom Text: <strong class="text-black uppercase">${item.customName}</strong></div>` : ''}
+                                ${item.customNotes ? `<div>Notes: <em>${item.customNotes}</em></div>` : ''}
+                              </div>
+                            ` : ''}
+                          </div>
+                        </div>
+
+                        <!-- Right: Uploaded Artwork Preview & Actions (Cols 9-12) -->
+                        <div class="md:col-span-4 space-y-2 text-xs">
+                          <span class="text-[10px] uppercase font-bold tracking-wider text-[#FF6B35] font-heading block">Uploaded Design Asset</span>
+                          ${hasArtwork ? `
+                            <div class="p-3 bg-white rounded-xl border border-[#E5E0D5] space-y-2.5">
+                              <div class="w-full aspect-video rounded-lg overflow-hidden bg-[#F0EAE1] flex items-center justify-center border border-[#DDD4C4] relative group">
+                                ${isPdf ? `
+                                  <div class="flex flex-col items-center justify-center p-3 text-center">
+                                    <span class="text-3xl">📄</span>
+                                    <span class="text-xs font-bold text-black mt-1 font-heading">PDF Document</span>
+                                    <span class="text-[10px] text-[#777] font-mono">${design.size}</span>
+                                  </div>
+                                ` : `
+                                  <img src="${design.dataUrl}" alt="Customer artwork" class="w-full h-full object-contain p-1">
+                                `}
+                              </div>
+
+                              <div class="space-y-1">
+                                <div class="font-bold text-black truncate font-mono text-[11px]">${design.name}</div>
+                                <div class="text-[10px] text-[#777] font-mono">${design.size} • ${isPdf ? 'PDF Document' : 'Raster Image'}</div>
+                              </div>
+
+                              <div class="grid grid-cols-2 gap-2 pt-1">
+                                ${!isPdf ? `
+                                  <button type="button" class="admin-view-design-btn bg-[#FAF7F2] hover:bg-[#F0EAE1] text-black border border-[#DDD4C4] py-2 px-2.5 rounded-lg text-xs font-bold transition-all text-center cursor-pointer" data-img-src="${design.dataUrl}" data-img-name="${design.name}" data-order="${order.orderCode}" data-cust="${order.customerName}">
+                                    🔍 View Full
+                                  </button>
+                                ` : `
+                                  <a href="${design.dataUrl}" target="_blank" class="bg-[#FAF7F2] hover:bg-[#F0EAE1] text-black border border-[#DDD4C4] py-2 px-2.5 rounded-lg text-xs font-bold transition-all text-center">
+                                    📄 Open PDF
+                                  </a>
+                                `}
+
+                                <a href="${design.dataUrl}" download="${design.name || `Printora-${order.orderCode}-design`}" class="bg-[#111] hover:bg-[#FF6B35] text-white py-2 px-2.5 rounded-lg text-xs font-bold transition-colors text-center cursor-pointer flex items-center justify-center gap-1">
+                                  <span>⬇️ Download</span>
+                                </a>
+                              </div>
+                            </div>
+                          ` : (item.artworkFile ? `
+                            <div class="p-3 bg-white rounded-xl border border-[#E5E0D5] space-y-2">
+                              <span class="text-xs font-bold text-black block font-heading">📎 Custom Artwork:</span>
+                              <span class="text-[11px] font-mono text-[#555] block bg-[#FAF7F2] p-2 rounded-lg border border-[#DDD4C4]">${item.artworkFile}</span>
+                              <span class="text-[10px] text-emerald-700 font-bold block">✓ File associated with order</span>
+                            </div>
+                          ` : `
+                            <div class="p-5 bg-white rounded-xl border border-dashed border-[#DDD4C4] text-center space-y-1">
+                              <span class="text-2xl block text-[#AAA]">📂</span>
+                              <strong class="text-xs font-bold text-[#666] block">No Design Uploaded</strong>
+                              <p class="text-[10px] text-[#888]">Customer ordered with custom text / plain garment without uploading artwork file.</p>
+                            </div>
+                          `)}
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            `}
           </div>
         </div>
 
@@ -1284,6 +1467,54 @@ export function initAdminEvents() {
   }
   if (closeSetupBtn && setupModal) {
     closeSetupBtn.addEventListener('click', () => setupModal.classList.add('hidden'));
+  }
+
+  // Customer Uploaded Designs Lightbox Modal Handlers
+  document.addEventListener('click', (e) => {
+    const viewBtn = e.target.closest('.admin-view-design-btn');
+    if (viewBtn) {
+      e.preventDefault();
+      const imgSrc = viewBtn.getAttribute('data-img-src');
+      const imgName = viewBtn.getAttribute('data-img-name') || 'customer-design';
+      const orderCode = viewBtn.getAttribute('data-order') || '';
+      const custName = viewBtn.getAttribute('data-cust') || '';
+
+      const modal = document.getElementById('admin-design-lightbox-modal');
+      const modalImg = document.getElementById('admin-lightbox-img');
+      const modalSub = document.getElementById('admin-lightbox-subtitle');
+      const modalFile = document.getElementById('admin-lightbox-filename');
+      const downloadLink = document.getElementById('admin-lightbox-download-link');
+
+      if (modalImg) modalImg.src = imgSrc;
+      if (modalSub) modalSub.textContent = `Order: ${orderCode} | Customer: ${custName}`;
+      if (modalFile) modalFile.textContent = imgName;
+      if (downloadLink) {
+        downloadLink.href = imgSrc;
+        downloadLink.download = imgName;
+      }
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    if (e.target.closest('#admin-close-lightbox-btn') || e.target.id === 'admin-design-lightbox-modal') {
+      const modal = document.getElementById('admin-design-lightbox-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+  });
+
+  // Customer Uploaded Designs Search Filter
+  const customDesignSearch = document.getElementById('admin-custom-design-search');
+  if (customDesignSearch) {
+    customDesignSearch.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      document.querySelectorAll('.admin-design-card').forEach(card => {
+        const text = (card.getAttribute('data-search') || '').toLowerCase();
+        if (!query || text.includes(query)) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    });
   }
 
   // Admin Delete Order (Globally removes from Admin and Customer views)
