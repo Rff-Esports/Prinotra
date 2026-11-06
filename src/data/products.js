@@ -70,7 +70,16 @@ export const CATEGORIES = [
   }
 ];
 
-export const INITIAL_PRODUCTS = [
+export const ADMIN_ALLOWED_IDS = new Set([
+  'prn-app-01', 'prn-app-02', 'prn-app-03', 'prn-app-04',
+  'prn-app-05', 'prn-app-06', 'prn-app-07', 'prn-app-08',
+  'prn-spt-01', 'prn-bag-01', 'prn-drk-01', 'prn-drk-02',
+  'prn-drk-03', 'prn-drk-05', 'prn-gft-01', 'prn-gft-02',
+  'prn-gft-03', 'prn-gft-04', 'prn-gft-05', 'prn-gft-07',
+  'prn-crp-02', 'prn-crp-04', 'prn-crp-08'
+]);
+
+const RAW_INITIAL_PRODUCTS = [
   // ==========================================
   // A. APPAREL
   // ==========================================
@@ -1687,6 +1696,9 @@ export const INITIAL_PRODUCTS = [
     }
   }
 ];
+
+// Filter down strictly to the 23 items configured in Admin Dashboard
+export const INITIAL_PRODUCTS = RAW_INITIAL_PRODUCTS.filter(p => ADMIN_ALLOWED_IDS.has(p.id));
 
 // Apply uploaded product images so ALL visitors (logged in, guests, or new devices) see the exact uploaded images
 for (const prod of INITIAL_PRODUCTS) {

@@ -3,7 +3,7 @@ import store from '../src/services/store.js';
 
 console.log('Testing business rules and pricing compliance...');
 
-// Check product pricing
+// Check product pricing for official products
 const expectedPrices = {
   'Round Neck T-shirt': 499,
   'Premium T-shirt': 599,
@@ -14,12 +14,9 @@ const expectedPrices = {
   'Cap': 399,
   'Coffee Mug': 299,
   'Magic Mug': 399,
-  '500ml Tumbler': 549,
   'Photo Frame': 499,
   'Gift Box': 799,
-  'Tote Bag': 449,
-  'Notebook': 429,
-  'Stickers': 299
+  'Tote Bag': 449
 };
 
 let errors = [];

@@ -4,7 +4,7 @@
 // WhatsApp: +91 8106992102
 // Delivery: STRICT ₹0 FREE DELIVERY ACROSS INDIA
 
-import { CATEGORIES, INITIAL_PRODUCTS } from '../data/products.js';
+import { CATEGORIES, INITIAL_PRODUCTS, ADMIN_ALLOWED_IDS } from '../data/products.js';
 import { supabase, isSupabaseConfigured } from './supabase.js';
 import { formatWhatsAppOrderMessage, generateWhatsAppUrl, sendWhatsAppCloudApiNotification, generateBulkWhatsAppUrl } from './whatsapp.js';
 import { getCloudOverrides, pushOverridesToCloud, fetchLiveCloudOverrides, getGlobalCloudState, fetchLiveGlobalCloud, pushGlobalCloudState } from './cloudSync.js';
@@ -142,44 +142,8 @@ class PrintoraStore {
       })
       .filter(p => p.isAvailable !== false);
 
-    // Also include any custom items added by admin that are not in INITIAL_PRODUCTS and not deleted
-    const initialIdSet = new Set(INITIAL_PRODUCTS.map(p => p.id));
-    for (const [id, prod] of localSavedMap.entries()) {
-      if (!initialIdSet.has(id) && !deletedSet.has(id) && prod.isAvailable !== false && !mergedProducts.some(p => p.id === id)) {
-        mergedProducts.push(prod);
-      }
-    }
-    for (const [id, ov] of Object.entries(cloudOverrides)) {
-      if (!initialIdSet.has(id) && !deletedSet.has(id) && ov.isAvailable !== false && !mergedProducts.some(p => p.id === id)) {
-        mergedProducts.push({
-          id: ov.id || id,
-          slug: (ov.name || 'custom-item').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
-          categoryId: ov.categoryId || 'apparel',
-          categoryName: ov.categoryName || 'Apparel',
-          name: ov.name || 'Custom Product',
-          subtitle: ov.subtitle || 'Custom Merchandise',
-          description: ov.description || 'Crafted with premium materials by Printora.',
-          price: ov.price,
-          originalPrice: ov.originalPrice,
-          isQuoteOnly: ov.price === null || ov.price === undefined,
-          isOnwards: false,
-          images: (ov.images && ov.images.length > 0) ? ov.images : ['https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1000&q=80'],
-          sizes: ov.sizes || ["S", "M", "L", "XL", "XXL"],
-          colors: ov.colors || [{ name: "Black", hex: "#111111" }, { name: "White", hex: "#FFFFFF" }],
-          isFeatured: false,
-          isAvailable: true,
-          customization: {
-            allowName: true,
-            allowNumber: false,
-            allowLogo: true,
-            allowNotes: true,
-            placementOptions: ["Center Chest", "Left Chest", "Back Print"]
-          }
-        });
-      }
-    }
-
-    return mergedProducts;
+    // Strictly keep only the 23 official admin products globally
+    return mergedProducts.filter(p => ADMIN_ALLOWED_IDS ? ADMIN_ALLOWED_IDS.has(p.id) : true);
   }
 
   saveProducts() {

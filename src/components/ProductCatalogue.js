@@ -123,7 +123,7 @@ export function renderProductCatalogue() {
         <button class="cat-filter-btn px-4 py-2 rounded-xl text-xs font-bold transition-all ${store.activeCategory === 'all' ? 'bg-[#111] text-white shadow-md' : 'bg-white hover:bg-[#F0EAE1] text-[#444] border border-[#DDD4C4]'}" data-cat="all">
           All Products (${totalCount})
         </button>
-        ${CATEGORIES.map(c => `
+        ${CATEGORIES.filter(c => store.products.some(p => p.categoryId === c.id)).map(c => `
           <button class="cat-filter-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${store.activeCategory === c.slug ? 'bg-[#111] text-white shadow-md' : 'bg-white hover:bg-[#F0EAE1] text-[#444] border border-[#DDD4C4]'}" data-cat="${c.slug}">
             ${c.name}
           </button>
