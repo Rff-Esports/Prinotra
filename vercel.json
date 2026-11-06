@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "rewrites": [
-    { "source": "/((?!assets/|src/|.*\\..*).*)", "destination": "/index.html" }
-  ],
+  "framework": null,
+  "outputDirectory": ".",
+  "cleanUrls": true,
   "headers": [
     {
       "source": "/(.*)",
